@@ -319,3 +319,10 @@ pub fn bswap_r32(x86: &mut X86, instr: &Instruction) -> StepResult<()> {
     );
     Ok(())
 }
+
+pub fn cmovb_r32_rm32(x86: &mut X86, instr: &Instruction) -> StepResult<()> {
+    if x86.regs.flags.contains(Flags::CF) {
+        mov_r32_rm32(x86, instr)?;
+    }
+    Ok(())
+}
