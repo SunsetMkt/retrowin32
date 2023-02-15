@@ -1,21 +1,45 @@
-#include <stdio.h>
+#define WIN32_LEAN_AND_MEAN
+#define STRICT
+#include <windows.h>
 #include <stdint.h>
+
+int str_len(const char* str) {
+  for (int i = 0; ; i++) {
+    if (str[i] == 0) return i;
+  }
+}
+
+void print(const char* buf) {
+  WriteFile(GetStdHandle(STD_OUTPUT_HANDLE), buf, str_len(buf), nullptr, nullptr);
+}
+
+void print_hex(uint32_t x) {
+  char buf[16];
+  buf[15] = 0;
+  int pos = 15;
+  do {
+    pos--;
+    buf[pos] = "0123456789abcdef"[x & 0xf];
+    x = x >> 4;
+  } while (x > 0);
+  print(buf + pos);
+}
 
 void print_flags(uint16_t flags) {
   if ((flags & 1) != 0)
-    printf(" CF");
+    print(" CF");
   if ((flags & (1<<6)) != 0)
-    printf(" ZF");
+    print(" ZF");
   if ((flags & (1<<7)) != 0)
-    printf(" SF");
+    print(" SF");
   if ((flags & (1<<10)) != 0)
-    printf(" DF");
+    print(" DF");
   if ((flags & (1<<11)) != 0)
-    printf(" OF");
+    print(" OF");
 }
 
 #define asm_start(desc) { \
-  printf(desc); \
+  print(desc); \
   uint32_t result; \
   uint16_t flags = 0; \
   __asm { \
@@ -27,9 +51,10 @@ void print_flags(uint16_t flags) {
     __asm pushf \
     __asm pop flags \
   } \
-  printf(" => %x", result); \
+  print(" => "); \
+  print_hex(result); \
   print_flags(flags); \
-  printf("\n"); \
+  print("\n"); \
 }
 
 void add() {
@@ -96,10 +121,9 @@ void shl() {
 #undef shl
 }
 
-int main(void) {
+void mainCRTStartup(void) {
   add();
   shr();
   sar();
   shl();
-  return 0;
 }
