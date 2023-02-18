@@ -1,0 +1,1 @@
+/opt/homebrew/Cellar/mingw-w64/10.0.0_4/toolchain-i686/bin/i686-w64-mingw32-dlltool -d kernel32.def -l kernel32.lib
