@@ -27,13 +27,18 @@ fn genAsm(comptime desc: []const u8, comptime T: type, comptime code: []const u8
         pub fn f(x: T, y: T) void {
             std.debug.print(desc ++ "({x},{x})", .{ x, y });
             var flags: u16 = 0;
-            const ret = asm (clearFlags ++ "\n" ++ code ++ "\n" ++ readFlags
-                : [ret] "={eax}" (-> T),
-                  [flags] "={cx}" (flags),
-                : [x] "{eax}" (x),
-                  [y] "{ebx}" (y),
-            );
-            std.debug.print(" => {x}", .{ret});
+            switch (T) {
+                u32 => {
+                    const ret = asm (clearFlags ++ "\n" ++ code ++ "\n" ++ readFlags
+                        : [ret] "={eax}" (-> u32),
+                          [flags] "={cx}" (flags),
+                        : [x] "{eax}" (x),
+                          [y] "{ebx}" (y),
+                    );
+                    std.debug.print(" => {x}", .{ret});
+                },
+                else => unreachable,
+            }
             printFlags(flags);
             std.debug.print("\n", .{});
         }
@@ -42,10 +47,11 @@ fn genAsm(comptime desc: []const u8, comptime T: type, comptime code: []const u8
 
 fn testAdd() void {
     const add32 = genAsm("add", u32, "addl %[y],%[x]");
-    const t: i32 = -3;
-    add32(3, @bitCast(u32, t));
+    add32(3, 4);
     add32(0xFFFF_FFFF, 0);
     add32(0xFFFF_FFFF, 1);
+    const add8 = genAsm("add", u8, "addb %[y],%[x]");
+    add8(3, 4);
 }
 
 pub fn main() void {
