@@ -208,6 +208,12 @@ pub fn shr_rm32_imm8(x86: &mut X86, instr: &Instruction) -> StepResult<()> {
     Ok(())
 }
 
+pub fn shr_rm8_imm8(x86: &mut X86, instr: &Instruction) -> StepResult<()> {
+    let y = instr.immediate8();
+    rm8_x(x86, instr, |x86, x| shr(x86, x, y));
+    Ok(())
+}
+
 fn sar<I: Int>(x86: &mut X86, x: I, y: I) -> I {
     if y.is_zero() {
         return x;
