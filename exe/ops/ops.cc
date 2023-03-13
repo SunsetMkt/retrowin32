@@ -168,6 +168,6 @@ int main(void) {
   sar();
   shl();
   rol();
-  ror()
+  ror();
   return 0;
 }
