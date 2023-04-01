@@ -2,12 +2,14 @@
 
 use iced_x86::FlowControl;
 
+use crate::uops::{self, UOp};
 use crate::{
     memory::{Memory, VecMem},
     ops,
     registers::{Flags, Registers},
     Mem, StepError, StepResult,
 };
+
 use std::collections::{BTreeMap, HashMap};
 
 /// Addresses from 0 up to this point cause panics if we access them.
@@ -127,18 +129,21 @@ impl X86 {
 pub struct BasicBlock {
     pub len: u32,
     pub instrs: Vec<iced_x86::Instruction>,
+    pub uops: Vec<UOp>,
 }
 impl Default for BasicBlock {
     fn default() -> Self {
         Self {
             len: Default::default(),
             instrs: Default::default(),
+            uops: Default::default(),
         }
     }
 }
 impl BasicBlock {
     fn disassemble(buf: &Mem, ip: u32, single_step: bool) -> Self {
         let mut instrs = Vec::new();
+        let mut asm = uops::Assembler::new();
         let mut decoder = iced_x86::Decoder::with_ip(
             32,
             buf.as_slice_todo(),
@@ -147,14 +152,16 @@ impl BasicBlock {
         );
         while decoder.can_decode() {
             let instr = decoder.decode();
+            asm.add_instr(&instr);
             instrs.push(instr);
             if instr.flow_control() != FlowControl::Next || single_step {
                 break;
             }
         }
         BasicBlock {
-            instrs,
             len: decoder.ip() as u32 - ip,
+            instrs,
+            uops: asm.assemble(),
         }
     }
 }

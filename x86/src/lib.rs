@@ -2,6 +2,7 @@ pub mod debug;
 mod memory;
 pub mod ops;
 mod registers;
+pub mod uops;
 mod x86;
 
 pub use memory::{Mem, Memory, Pod, VecMem};
