@@ -2,6 +2,7 @@
 pub enum X86Reg {
     ECX,
     ESP,
+    EIP,
 }
 
 impl std::fmt::Display for X86Reg {
@@ -9,6 +10,7 @@ impl std::fmt::Display for X86Reg {
         match self {
             X86Reg::ECX => f.write_str("ecx"),
             X86Reg::ESP => f.write_str("esp"),
+            X86Reg::EIP => f.write_str("eip"),
         }
     }
 }
@@ -17,21 +19,19 @@ impl std::fmt::Display for X86Reg {
 pub enum Arg {
     X,
     Y,
-    Reg(X86Reg),
 }
 impl std::fmt::Display for Arg {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Arg::X => f.write_str("x"),
             Arg::Y => f.write_str("y"),
-            Arg::Reg(reg) => reg.fmt(f),
         }
     }
 }
 
 #[derive(Debug)]
 pub enum UOp {
-    Comment(String),
+    Comment(Box<str>),
     Const(Arg, u32),
     GetReg(Arg, X86Reg),
     GetMem(Arg),
@@ -40,6 +40,7 @@ pub enum UOp {
     Sub,
     Mov,
     Call,
+    Cmp,
 }
 
 impl std::fmt::Display for UOp {
@@ -54,6 +55,7 @@ impl std::fmt::Display for UOp {
             UOp::Sub => f.write_str("sub"),
             UOp::Mov => f.write_str("mov"),
             UOp::Call => f.write_str("call"),
+            UOp::Cmp => f.write_str("cmp"),
         }
     }
 }
@@ -71,29 +73,30 @@ impl Assembler {
 
     pub fn add_instr(&mut self, instr: &iced_x86::Instruction) {
         log::warn!("{} {:?}", instr, instr.op0_kind());
-        self.add(UOp::Comment(format!("{}", instr)));
+        self.op(UOp::Comment(format!("{}", instr).into_boxed_str()));
         let f = match instr.mnemonic() {
             iced_x86::Mnemonic::Call => mnemonic::call,
             iced_x86::Mnemonic::Mov => mnemonic::mov,
             iced_x86::Mnemonic::Push => mnemonic::push,
+            iced_x86::Mnemonic::Cmp => mnemonic::todo,
+            iced_x86::Mnemonic::Je => mnemonic::todo,
+            iced_x86::Mnemonic::Sub => mnemonic::todo,
+            iced_x86::Mnemonic::And => mnemonic::todo,
+            iced_x86::Mnemonic::Lea => mnemonic::todo,
             m => unimplemented!("mnemonic {m:?}"),
         };
         f(self, instr);
-
-        for op in &self.uops {
-            log::info!("{}", op);
-        }
     }
 
-    fn add(&mut self, uop: UOp) {
+    fn op(&mut self, uop: UOp) {
         self.uops.push(uop);
     }
 
-    fn op(&mut self, instr: &iced_x86::Instruction, arg: Arg, idx: u32) {
+    fn operand(&mut self, instr: &iced_x86::Instruction, arg: Arg, idx: u32) {
         match instr.op_kind(idx) {
-            iced_x86::OpKind::Register => self.add(UOp::GetReg(arg, X86Reg::ESP)),
-            iced_x86::OpKind::Memory => self.add(UOp::GetMem(arg)),
-            iced_x86::OpKind::Immediate32 => self.add(UOp::Const(arg, instr.immediate32())),
+            iced_x86::OpKind::Register => self.op(UOp::GetReg(arg, X86Reg::ESP)),
+            iced_x86::OpKind::Memory => self.op(UOp::GetMem(arg)),
+            iced_x86::OpKind::Immediate32 => self.op(UOp::Const(arg, instr.immediate32())),
             k => unimplemented!("{:?}", k),
         }
     }
@@ -101,42 +104,55 @@ impl Assembler {
     pub fn assemble(&mut self) -> Vec<UOp> {
         std::mem::replace(&mut self.uops, Vec::new())
     }
+
+    pub fn dump(&self) {
+        for op in &self.uops {
+            log::info!("{}", op);
+        }
+    }
 }
 
 mod mnemonic {
     use super::*;
 
+    pub fn todo(asm: &mut Assembler, _instr: &iced_x86::Instruction) {
+        asm.op(UOp::Comment("todo".into()));
+    }
+
     pub fn call(asm: &mut Assembler, instr: &iced_x86::Instruction) {
         use {Arg::*, UOp::*, X86Reg::*};
         assert!(instr.op_count() == 1);
-        asm.add(GetReg(X, ESP));
-        // XXX write eip
-        asm.add(Const(Y, 4));
-        asm.add(Sub);
+        asm.op(GetReg(X, ESP));
+        asm.op(Const(Y, 4));
+        asm.op(Sub);
+        asm.op(GetReg(Y, EIP));
+        asm.op(Deref(X));
+        asm.op(Mov);
         match instr.op0_kind() {
-            iced_x86::OpKind::NearBranch32 => asm.add(Const(X, instr.near_branch32())),
-            _ => unimplemented!(),
+            iced_x86::OpKind::NearBranch32 => asm.op(Const(X, instr.near_branch32())),
+            iced_x86::OpKind::Memory => asm.operand(instr, X, 0),
+            k => unimplemented!("{:?}", k),
         };
-        asm.add(Call);
+        asm.op(Call);
     }
 
     pub fn mov(asm: &mut Assembler, instr: &iced_x86::Instruction) {
         use Arg::*;
         assert!(instr.op_count() == 2);
         // instr.memory_size() => size of mov
-        asm.op(instr, X, 0);
-        asm.op(instr, Y, 1);
-        asm.add(UOp::Mov)
+        asm.operand(instr, X, 0);
+        asm.operand(instr, Y, 1);
+        asm.op(UOp::Mov)
     }
 
     pub fn push(asm: &mut Assembler, instr: &iced_x86::Instruction) {
         use {Arg::*, UOp::*, X86Reg::*};
         assert!(instr.op_count() == 1);
-        asm.add(GetReg(X, ESP));
-        asm.add(Const(Y, 4));
-        asm.add(Sub);
-        asm.add(Deref(X));
-        asm.op(instr, Y, 0);
-        asm.add(Mov);
+        asm.op(GetReg(X, ESP));
+        asm.op(Const(Y, 4));
+        asm.op(Sub);
+        asm.op(Deref(X));
+        asm.operand(instr, Y, 0);
+        asm.op(Mov);
     }
 }

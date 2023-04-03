@@ -158,6 +158,7 @@ impl BasicBlock {
                 break;
             }
         }
+        asm.dump();
         BasicBlock {
             len: decoder.ip() as u32 - ip,
             instrs,
