@@ -2,7 +2,7 @@
 
 use iced_x86::FlowControl;
 
-use crate::uops::{self, UOp};
+use crate::uops;
 use crate::{
     memory::{Memory, VecMem},
     ops,
@@ -129,7 +129,7 @@ impl X86 {
 pub struct BasicBlock {
     pub len: u32,
     pub instrs: Vec<iced_x86::Instruction>,
-    pub uops: Vec<UOp>,
+    pub uops: Vec<uops::UOp>,
 }
 impl Default for BasicBlock {
     fn default() -> Self {

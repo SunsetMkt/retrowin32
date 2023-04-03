@@ -94,6 +94,15 @@ impl Registers {
         }
     }
 
+    pub unsafe fn ptr32(&mut self, reg: iced_x86::Register) -> *mut u32 {
+        // XXX move comments from get32 here and rename once everything moved.
+        let idx = reg as usize - iced_x86::Register::EAX as usize;
+        if idx >= 8 {
+            unreachable!("{reg:?}");
+        }
+        (self as *mut Registers as *mut u32).add(idx)
+    }
+
     pub fn get32_mut(&mut self, reg: iced_x86::Register) -> &mut u32 {
         // XXX move comments from get32 here and rename once everything moved.
         let idx = reg as usize - iced_x86::Register::EAX as usize;
