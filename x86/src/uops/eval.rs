@@ -63,6 +63,7 @@ pub unsafe fn eval(x86: &mut X86, ops: &[UOp]) {
             &Deref(X) => x = *x as *mut u32,
             &Deref(Y) => y = *y as *mut u32,
             &Add => *x += *y,
+            &And => todo!(),
             &Sub => *x -= *y,
             &Mov => *x = *y,
             &Call => todo!(),

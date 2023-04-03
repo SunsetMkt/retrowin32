@@ -81,6 +81,7 @@ pub enum UOp {
     GetMem(Arg, MemRef),
     Deref(Arg),
     Add,
+    And,
     Sub,
     Mov,
     Call,
@@ -101,7 +102,26 @@ impl std::fmt::Display for MemRef {
         if let Some(seg) = self.seg {
             f.write_fmt(format_args!("{}:", seg))?;
         }
-        f.write_fmt(format_args!("[{:#x}]", self.displacement))
+        f.write_str("[")?;
+        let mut wrote = false;
+        if let Some(base) = self.base {
+            base.fmt(f)?;
+            wrote = true;
+        }
+        if let Some(index) = self.index {
+            if wrote {
+                f.write_str("+")?;
+            }
+            f.write_fmt(format_args!("{}*{}", index, self.displacement))?;
+            wrote = true;
+        }
+        if self.displacement > 0 {
+            if wrote {
+                f.write_str("+")?;
+            }
+            f.write_fmt(format_args!("{:#x}", self.displacement))?;
+        }
+        f.write_str("]")
     }
 }
 
@@ -109,11 +129,12 @@ impl std::fmt::Display for UOp {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             UOp::Comment(str) => f.write_fmt(format_args!("; {}", str)),
-            UOp::Const(arg, c) => f.write_fmt(format_args!("{} <- {:#x}", arg, c)),
-            UOp::GetReg(arg, reg) => f.write_fmt(format_args!("{} <- {}", arg, reg)),
-            UOp::GetMem(arg, mem) => f.write_fmt(format_args!("{} <- {}", arg, mem)),
-            UOp::Deref(arg) => f.write_fmt(format_args!("{} <- *{}", arg, arg)),
+            UOp::Const(arg, c) => f.write_fmt(format_args!("{} -> {:#x}", arg, c)),
+            UOp::GetReg(arg, reg) => f.write_fmt(format_args!("{} -> {}", arg, reg)),
+            UOp::GetMem(arg, mem) => f.write_fmt(format_args!("{} -> {}", arg, mem)),
+            UOp::Deref(arg) => f.write_fmt(format_args!("{} -> *{}", arg, arg)),
             UOp::Add => f.write_str("add"),
+            UOp::And => f.write_str("and"),
             UOp::Sub => f.write_str("sub"),
             UOp::Mov => f.write_str("mov"),
             UOp::Call => f.write_str("call"),
@@ -143,7 +164,7 @@ impl Assembler {
             iced_x86::Mnemonic::Cmp => mnemonic::todo,
             iced_x86::Mnemonic::Je => mnemonic::todo,
             iced_x86::Mnemonic::Sub => mnemonic::todo,
-            iced_x86::Mnemonic::And => mnemonic::todo,
+            iced_x86::Mnemonic::And => mnemonic::and,
             iced_x86::Mnemonic::Lea => mnemonic::todo,
             m => unimplemented!("mnemonic {m:?}"),
         };
@@ -171,6 +192,9 @@ impl Assembler {
                 self.op(UOp::GetMem(arg, mem))
             }
             iced_x86::OpKind::Immediate32 => self.op(UOp::Const(arg, instr.immediate32())),
+            iced_x86::OpKind::Immediate8to32 => {
+                self.op(UOp::Const(arg, instr.immediate8to32() as u32))
+            }
             k => unimplemented!("{:?}", k),
         }
     }
@@ -217,6 +241,15 @@ mod mnemonic {
         asm.operand(instr, X, 0);
         asm.operand(instr, Y, 1);
         asm.op(UOp::Mov)
+    }
+
+    pub fn and(asm: &mut Assembler, instr: &iced_x86::Instruction) {
+        use Arg::*;
+        assert!(instr.op_count() == 2);
+        // instr.memory_size() => size of and
+        asm.operand(instr, X, 0);
+        asm.operand(instr, Y, 1);
+        asm.op(UOp::And)
     }
 
     pub fn push(asm: &mut Assembler, instr: &iced_x86::Instruction) {
