@@ -1,9 +1,13 @@
 #[derive(Copy, Clone, Debug)]
 pub enum Reg {
+    EAX,
     ECX,
+    EDX,
+    EBX,
     ESI,
     EDI,
     ESP,
+    EBP,
     EIP,
 }
 
@@ -11,10 +15,14 @@ impl Reg {
     fn from_iced(r: iced_x86::Register) -> Option<Self> {
         Some(match r {
             iced_x86::Register::None => return None,
+            iced_x86::Register::EAX => Reg::EAX,
             iced_x86::Register::ECX => Reg::ECX,
+            iced_x86::Register::EDX => Reg::EDX,
+            iced_x86::Register::EBX => Reg::EBX,
             iced_x86::Register::ESI => Reg::ESI,
             iced_x86::Register::EDI => Reg::EDI,
             iced_x86::Register::ESP => Reg::ESP,
+            iced_x86::Register::EBP => Reg::EBP,
             iced_x86::Register::EIP => Reg::EIP,
             _ => unimplemented!("{:?}", r),
         })
@@ -22,10 +30,14 @@ impl Reg {
 
     pub fn to_iced(&self) -> iced_x86::Register {
         match self {
+            Reg::EAX => iced_x86::Register::EAX,
             Reg::ECX => iced_x86::Register::ECX,
+            Reg::EDX => iced_x86::Register::EDX,
+            Reg::EBX => iced_x86::Register::EBX,
             Reg::ESI => iced_x86::Register::ESI,
             Reg::EDI => iced_x86::Register::EDI,
             Reg::ESP => iced_x86::Register::ESP,
+            Reg::EBP => iced_x86::Register::EBP,
             Reg::EIP => iced_x86::Register::EIP,
         }
     }
@@ -34,10 +46,14 @@ impl Reg {
 impl std::fmt::Display for Reg {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
+            Reg::EAX => f.write_str("eax"),
             Reg::ECX => f.write_str("ecx"),
+            Reg::EDX => f.write_str("edx"),
+            Reg::EBX => f.write_str("ebx"),
             Reg::ESI => f.write_str("esi"),
             Reg::EDI => f.write_str("edi"),
             Reg::ESP => f.write_str("esp"),
+            Reg::EBP => f.write_str("ebp"),
             Reg::EIP => f.write_str("eip"),
         }
     }
