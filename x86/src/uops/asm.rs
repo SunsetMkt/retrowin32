@@ -1,14 +1,42 @@
 #[derive(Copy, Clone, Debug)]
 pub enum Reg {
     ECX,
+    ESI,
+    EDI,
     ESP,
     EIP,
+}
+
+impl Reg {
+    fn from_iced(r: iced_x86::Register) -> Option<Self> {
+        Some(match r {
+            iced_x86::Register::None => return None,
+            iced_x86::Register::ECX => Reg::ECX,
+            iced_x86::Register::ESI => Reg::ESI,
+            iced_x86::Register::EDI => Reg::EDI,
+            iced_x86::Register::ESP => Reg::ESP,
+            iced_x86::Register::EIP => Reg::EIP,
+            _ => unimplemented!("{:?}", r),
+        })
+    }
+
+    pub fn to_iced(&self) -> iced_x86::Register {
+        match self {
+            Reg::ECX => iced_x86::Register::ECX,
+            Reg::ESI => iced_x86::Register::ESI,
+            Reg::EDI => iced_x86::Register::EDI,
+            Reg::ESP => iced_x86::Register::ESP,
+            Reg::EIP => iced_x86::Register::EIP,
+        }
+    }
 }
 
 impl std::fmt::Display for Reg {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Reg::ECX => f.write_str("ecx"),
+            Reg::ESI => f.write_str("esi"),
+            Reg::EDI => f.write_str("edi"),
             Reg::ESP => f.write_str("esp"),
             Reg::EIP => f.write_str("eip"),
         }
@@ -34,7 +62,7 @@ pub enum UOp {
     Comment(Box<str>),
     Const(Arg, u32),
     GetReg(Arg, Reg),
-    GetMem(Arg),
+    GetMem(Arg, MemRef),
     Deref(Arg),
     Add,
     Sub,
@@ -43,13 +71,31 @@ pub enum UOp {
     Cmp,
 }
 
+#[derive(Debug)]
+pub struct MemRef {
+    pub seg: Option<Reg>,
+    pub base: Option<Reg>,
+    pub index: Option<Reg>,
+    pub scale: u8,
+    pub displacement: u32,
+}
+
+impl std::fmt::Display for MemRef {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        if let Some(seg) = self.seg {
+            f.write_fmt(format_args!("{}:", seg))?;
+        }
+        f.write_fmt(format_args!("[{:#x}]", self.displacement))
+    }
+}
+
 impl std::fmt::Display for UOp {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             UOp::Comment(str) => f.write_fmt(format_args!("; {}", str)),
             UOp::Const(arg, c) => f.write_fmt(format_args!("{} <- {:#x}", arg, c)),
             UOp::GetReg(arg, reg) => f.write_fmt(format_args!("{} <- {}", arg, reg)),
-            UOp::GetMem(arg) => f.write_fmt(format_args!("{} <- mem", arg)),
+            UOp::GetMem(arg, mem) => f.write_fmt(format_args!("{} <- {}", arg, mem)),
             UOp::Deref(arg) => f.write_fmt(format_args!("{} <- *{}", arg, arg)),
             UOp::Add => f.write_str("add"),
             UOp::Sub => f.write_str("sub"),
@@ -94,8 +140,20 @@ impl Assembler {
 
     fn operand(&mut self, instr: &iced_x86::Instruction, arg: Arg, idx: u32) {
         match instr.op_kind(idx) {
-            iced_x86::OpKind::Register => self.op(UOp::GetReg(arg, Reg::ESP)),
-            iced_x86::OpKind::Memory => self.op(UOp::GetMem(arg)),
+            iced_x86::OpKind::Register => self.op(UOp::GetReg(
+                arg,
+                Reg::from_iced(instr.op_register(idx)).unwrap(),
+            )),
+            iced_x86::OpKind::Memory => {
+                let mem = MemRef {
+                    seg: Reg::from_iced(instr.segment_prefix()),
+                    base: Reg::from_iced(instr.memory_base()),
+                    index: Reg::from_iced(instr.memory_index()),
+                    scale: instr.memory_index_scale() as u8,
+                    displacement: instr.memory_displacement32(),
+                };
+                self.op(UOp::GetMem(arg, mem))
+            }
             iced_x86::OpKind::Immediate32 => self.op(UOp::Const(arg, instr.immediate32())),
             k => unimplemented!("{:?}", k),
         }
