@@ -66,7 +66,6 @@ pub unsafe fn eval(x86: &mut X86, ops: &[UOp]) {
             &And(_size) => todo!(),
             &Sub(_size) => *x -= *y,
             &Mov(_size) => *x = *y,
-            &Call => todo!(),
             &Jmp => todo!(),
             &Cmp(_size) => {
                 let _ = *x - *y;

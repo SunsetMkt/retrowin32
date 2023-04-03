@@ -84,7 +84,6 @@ pub enum UOp {
     GetReg(Arg, Reg),
     GetMem(Arg, MemRef),
     Deref(Arg),
-    Call,
     Jmp,
     Add(u8),
     And(u8),
@@ -142,7 +141,6 @@ impl std::fmt::Display for UOp {
             UOp::And(size) => f.write_fmt(format_args!("and{size}")),
             UOp::Sub(size) => f.write_fmt(format_args!("sub{size}")),
             UOp::Mov(size) => f.write_fmt(format_args!("mov{size}")),
-            UOp::Call => f.write_fmt(format_args!("call")),
             UOp::Jmp => f.write_fmt(format_args!("jmp")),
             UOp::Cmp(size) => f.write_fmt(format_args!("cmp{size}")),
         }
@@ -239,6 +237,8 @@ mod mnemonic {
     pub fn call(asm: &mut Assembler, instr: &iced_x86::Instruction) {
         use {Arg::*, Reg::*, UOp::*};
         assert!(instr.op_count() == 1);
+
+        // push eip
         asm.op(GetReg(X, ESP));
         asm.op(Const(Y, 4));
         asm.op(Sub(4));
@@ -250,7 +250,9 @@ mod mnemonic {
             iced_x86::OpKind::Memory => asm.operand(instr, X, 0),
             k => unimplemented!("{:?}", k),
         };
-        asm.op(Call);
+
+        // jmp
+        asm.op(Jmp);
     }
 
     pub fn mov(asm: &mut Assembler, instr: &iced_x86::Instruction) {
