@@ -1,14 +1,26 @@
 #[derive(Copy, Clone, Debug)]
 pub enum Reg {
+    AL,
+    CL,
+    DL,
+    BL,
+
+    AH,
+    CH,
+    DH,
+    BH,
+
     EAX,
     ECX,
     EDX,
     EBX,
+
     ESI,
     EDI,
     ESP,
     EBP,
     EIP,
+
     FS,
 }
 
@@ -16,6 +28,14 @@ impl Reg {
     fn from_iced(r: iced_x86::Register) -> Option<Self> {
         Some(match r {
             iced_x86::Register::None => return None,
+            iced_x86::Register::AL => Reg::AL,
+            iced_x86::Register::CL => Reg::CL,
+            iced_x86::Register::DL => Reg::DL,
+            iced_x86::Register::BL => Reg::BL,
+            iced_x86::Register::AH => Reg::AH,
+            iced_x86::Register::CH => Reg::CH,
+            iced_x86::Register::DH => Reg::DH,
+            iced_x86::Register::BH => Reg::BH,
             iced_x86::Register::EAX => Reg::EAX,
             iced_x86::Register::ECX => Reg::ECX,
             iced_x86::Register::EDX => Reg::EDX,
@@ -32,6 +52,16 @@ impl Reg {
 
     pub fn to_iced(&self) -> iced_x86::Register {
         match self {
+            Reg::AL => iced_x86::Register::AL,
+            Reg::CL => iced_x86::Register::CL,
+            Reg::DL => iced_x86::Register::DL,
+            Reg::BL => iced_x86::Register::BL,
+
+            Reg::AH => iced_x86::Register::AH,
+            Reg::CH => iced_x86::Register::CH,
+            Reg::DH => iced_x86::Register::DH,
+            Reg::BH => iced_x86::Register::BH,
+
             Reg::EAX => iced_x86::Register::EAX,
             Reg::ECX => iced_x86::Register::ECX,
             Reg::EDX => iced_x86::Register::EDX,
@@ -49,6 +79,15 @@ impl Reg {
 impl std::fmt::Display for Reg {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
+            Reg::AL => f.write_str("al"),
+            Reg::CL => f.write_str("cl"),
+            Reg::DL => f.write_str("dl"),
+            Reg::BL => f.write_str("bl"),
+            Reg::AH => f.write_str("ah"),
+            Reg::CH => f.write_str("ch"),
+            Reg::DH => f.write_str("dh"),
+            Reg::BH => f.write_str("bh"),
+
             Reg::EAX => f.write_str("eax"),
             Reg::ECX => f.write_str("ecx"),
             Reg::EDX => f.write_str("edx"),
@@ -208,6 +247,7 @@ impl Assembler {
                 };
                 self.op(UOp::GetMem(arg, mem))
             }
+            iced_x86::OpKind::Immediate8 => self.op(UOp::Const(arg, instr.immediate8() as u32)),
             iced_x86::OpKind::Immediate32 => self.op(UOp::Const(arg, instr.immediate32())),
             iced_x86::OpKind::Immediate8to32 => {
                 self.op(UOp::Const(arg, instr.immediate8to32() as u32))
@@ -248,6 +288,7 @@ mod mnemonic {
         match instr.op0_kind() {
             iced_x86::OpKind::NearBranch32 => asm.op(Const(X, instr.near_branch32())),
             iced_x86::OpKind::Memory => asm.operand(instr, X, 0),
+            iced_x86::OpKind::Register => asm.operand(instr, X, 0),
             k => unimplemented!("{:?}", k),
         };
 
