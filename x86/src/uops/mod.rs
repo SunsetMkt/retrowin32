@@ -73,9 +73,9 @@ impl Assembler {
         log::warn!("{} {:?}", instr, instr.op0_kind());
         self.add(UOp::Comment(format!("{}", instr)));
         let f = match instr.mnemonic() {
-            iced_x86::Mnemonic::Call => call,
-            iced_x86::Mnemonic::Mov => mov,
-            iced_x86::Mnemonic::Push => push,
+            iced_x86::Mnemonic::Call => mnemonic::call,
+            iced_x86::Mnemonic::Mov => mnemonic::mov,
+            iced_x86::Mnemonic::Push => mnemonic::push,
             m => unimplemented!("mnemonic {m:?}"),
         };
         f(self, instr);
@@ -103,36 +103,40 @@ impl Assembler {
     }
 }
 
-fn call(asm: &mut Assembler, instr: &iced_x86::Instruction) {
-    use {Arg::*, UOp::*, X86Reg::*};
-    assert!(instr.op_count() == 1);
-    asm.add(GetReg(X, ESP));
-    // XXX write eip
-    asm.add(Const(Y, 4));
-    asm.add(Sub);
-    match instr.op0_kind() {
-        iced_x86::OpKind::NearBranch32 => asm.add(Const(X, instr.near_branch32())),
-        _ => unimplemented!(),
-    };
-    asm.add(Call);
-}
+mod mnemonic {
+    use super::*;
 
-fn mov(asm: &mut Assembler, instr: &iced_x86::Instruction) {
-    use Arg::*;
-    assert!(instr.op_count() == 2);
-    // instr.memory_size() => size of mov
-    asm.op(instr, X, 0);
-    asm.op(instr, Y, 1);
-    asm.add(UOp::Mov)
-}
+    pub fn call(asm: &mut Assembler, instr: &iced_x86::Instruction) {
+        use {Arg::*, UOp::*, X86Reg::*};
+        assert!(instr.op_count() == 1);
+        asm.add(GetReg(X, ESP));
+        // XXX write eip
+        asm.add(Const(Y, 4));
+        asm.add(Sub);
+        match instr.op0_kind() {
+            iced_x86::OpKind::NearBranch32 => asm.add(Const(X, instr.near_branch32())),
+            _ => unimplemented!(),
+        };
+        asm.add(Call);
+    }
 
-fn push(asm: &mut Assembler, instr: &iced_x86::Instruction) {
-    use {Arg::*, UOp::*, X86Reg::*};
-    assert!(instr.op_count() == 1);
-    asm.add(GetReg(X, ESP));
-    asm.add(Const(Y, 4));
-    asm.add(Sub);
-    asm.add(Deref(X));
-    asm.op(instr, Y, 0);
-    asm.add(Mov);
+    pub fn mov(asm: &mut Assembler, instr: &iced_x86::Instruction) {
+        use Arg::*;
+        assert!(instr.op_count() == 2);
+        // instr.memory_size() => size of mov
+        asm.op(instr, X, 0);
+        asm.op(instr, Y, 1);
+        asm.add(UOp::Mov)
+    }
+
+    pub fn push(asm: &mut Assembler, instr: &iced_x86::Instruction) {
+        use {Arg::*, UOp::*, X86Reg::*};
+        assert!(instr.op_count() == 1);
+        asm.add(GetReg(X, ESP));
+        asm.add(Const(Y, 4));
+        asm.add(Sub);
+        asm.add(Deref(X));
+        asm.op(instr, Y, 0);
+        asm.add(Mov);
+    }
 }
