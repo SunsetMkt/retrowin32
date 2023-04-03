@@ -166,6 +166,7 @@ impl Assembler {
             iced_x86::Mnemonic::Sub => mnemonic::todo,
             iced_x86::Mnemonic::And => mnemonic::and,
             iced_x86::Mnemonic::Lea => mnemonic::todo,
+            iced_x86::Mnemonic::Xor => mnemonic::todo,
             m => unimplemented!("mnemonic {m:?}"),
         };
         f(self, instr);
