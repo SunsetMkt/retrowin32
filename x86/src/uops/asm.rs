@@ -116,6 +116,37 @@ impl std::fmt::Display for Arg {
     }
 }
 
+#[derive(Copy, Clone, Debug)]
+pub enum MemorySize {
+    U8,
+    U16,
+    U32,
+    U64,
+}
+
+impl MemorySize {
+    fn from_iced(size: iced_x86::MemorySize) -> Self {
+        match size {
+            iced_x86::MemorySize::UInt8 => MemorySize::U8,
+            iced_x86::MemorySize::UInt16 => MemorySize::U16,
+            iced_x86::MemorySize::UInt32 => MemorySize::U32,
+            iced_x86::MemorySize::UInt64 => MemorySize::U64,
+            _ => MemorySize::U8, //unimplemented!("{:?}", size),
+        }
+    }
+}
+
+impl std::fmt::Display for MemorySize {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            MemorySize::U8 => f.write_str("b"),
+            MemorySize::U16 => f.write_str("w"),
+            MemorySize::U32 => f.write_str("l"),
+            MemorySize::U64 => f.write_str("q"),
+        }
+    }
+}
+
 #[derive(Debug)]
 pub enum UOp {
     Comment(Box<str>),
@@ -124,11 +155,11 @@ pub enum UOp {
     GetMem(Arg, MemRef),
     Deref(Arg),
     Jmp,
-    Add(u8),
-    And(u8),
-    Sub(u8),
-    Mov(u8),
-    Cmp(u8),
+    Add(MemorySize),
+    And(MemorySize),
+    Sub(MemorySize),
+    Mov(MemorySize),
+    Cmp(MemorySize),
 }
 
 #[derive(Debug)]
@@ -198,7 +229,9 @@ impl Assembler {
     }
 
     pub fn add_instr(&mut self, instr: &iced_x86::Instruction) {
-        self.op(UOp::Comment(format!("{}", instr).into_boxed_str()));
+        let as_str = format!("{}", instr).into_boxed_str();
+        log::warn!("{}", as_str);
+        self.op(UOp::Comment(as_str));
         let f = match instr.mnemonic() {
             iced_x86::Mnemonic::Call => mnemonic::call,
             iced_x86::Mnemonic::Jmp => mnemonic::call,
@@ -275,16 +308,16 @@ mod mnemonic {
     }
 
     pub fn call(asm: &mut Assembler, instr: &iced_x86::Instruction) {
-        use {Arg::*, Reg::*, UOp::*};
+        use {Arg::*, MemorySize::*, Reg::*, UOp::*};
         assert!(instr.op_count() == 1);
 
         // push eip
         asm.op(GetReg(X, ESP));
         asm.op(Const(Y, 4));
-        asm.op(Sub(4));
+        asm.op(Sub(U32));
         asm.op(GetReg(Y, EIP));
         asm.op(Deref(X));
-        asm.op(Mov(4));
+        asm.op(Mov(U32));
         match instr.op0_kind() {
             iced_x86::OpKind::NearBranch32 => asm.op(Const(X, instr.near_branch32())),
             iced_x86::OpKind::Memory => asm.operand(instr, X, 0),
@@ -299,9 +332,16 @@ mod mnemonic {
     pub fn mov(asm: &mut Assembler, instr: &iced_x86::Instruction) {
         use Arg::*;
         assert!(instr.op_count() == 2);
+        log::info!(
+            "{} / {:?} {} {}",
+            instr,
+            instr.memory_size(),
+            instr.op_code().operand_size(),
+            instr.op_code().address_size()
+        );
         asm.operand(instr, X, 0);
         asm.operand(instr, Y, 1);
-        asm.op(UOp::Mov(instr.memory_size() as u8))
+        asm.op(UOp::Mov(MemorySize::from_iced(instr.memory_size())))
     }
 
     pub fn and(asm: &mut Assembler, instr: &iced_x86::Instruction) {
@@ -309,17 +349,17 @@ mod mnemonic {
         assert!(instr.op_count() == 2);
         asm.operand(instr, X, 0);
         asm.operand(instr, Y, 1);
-        asm.op(UOp::And(instr.memory_size() as u8))
+        asm.op(UOp::And(MemorySize::from_iced(instr.memory_size())))
     }
 
     pub fn push(asm: &mut Assembler, instr: &iced_x86::Instruction) {
-        use {Arg::*, Reg::*, UOp::*};
+        use {Arg::*, MemorySize::*, Reg::*, UOp::*};
         assert!(instr.op_count() == 1);
         asm.op(GetReg(X, ESP));
         asm.op(Const(Y, 4));
-        asm.op(Sub(4));
+        asm.op(Sub(U32));
         asm.op(Deref(X));
         asm.operand(instr, Y, 0);
-        asm.op(Mov(4));
+        asm.op(Mov(U32));
     }
 }
