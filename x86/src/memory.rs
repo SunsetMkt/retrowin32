@@ -159,6 +159,10 @@ impl Memory for Mem {
 pub struct VecMem(#[serde(with = "serde_bytes")] Vec<u8>);
 
 impl VecMem {
+    pub fn as_mut_ptr(&mut self) -> *mut u8 {
+        self.0.as_mut_ptr()
+    }
+
     pub fn resize(&mut self, size: u32, value: u8) {
         self.0.resize(size as usize, value);
     }
