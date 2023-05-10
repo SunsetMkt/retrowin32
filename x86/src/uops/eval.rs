@@ -1,4 +1,7 @@
-use super::{asm::MemRef, UOp};
+use super::{
+    asm::{MemRef, MemorySize},
+    UOp,
+};
 use crate::X86;
 
 /// Compute the address found in instructions that reference memory, e.g.
@@ -42,32 +45,35 @@ pub unsafe fn eval(x86: &mut X86, ops: &[UOp]) {
     let mut yc = 0u32;
     let mut y: *mut u32 = &mut yc;
     for op in ops {
-        match op {
-            &Comment(_) => {}
-            &Const(X, c) => {
+        match *op {
+            Comment(_) => {}
+            Const(X, c) => {
                 x = &mut xc;
                 *x = c
             }
-            &Const(Y, c) => {
+            Const(Y, c) => {
                 y = &mut yc;
                 *y = c
             }
-            &GetReg(X, reg) => x = x86.regs.ptr32(reg.to_iced()),
-            &GetReg(Y, reg) => y = x86.regs.ptr32(reg.to_iced()),
-            &GetMem(X, ref mem) => {
+            GetReg(X, reg) => x = x86.regs.ptr32(reg.to_iced()),
+            GetReg(Y, reg) => y = x86.regs.ptr32(reg.to_iced()),
+            GetMem(X, ref mem) => {
                 x = x86.mem.as_mut_ptr().offset(x86_addr(x86, mem) as isize) as *mut u32
             }
-            &GetMem(Y, ref mem) => {
+            GetMem(Y, ref mem) => {
                 y = x86.mem.as_mut_ptr().offset(x86_addr(x86, mem) as isize) as *mut u32
             }
-            &Deref(X) => x = *x as *mut u32,
-            &Deref(Y) => y = *y as *mut u32,
-            &Add(_size) => *x += *y,
-            &And(_size) => todo!(),
-            &Sub(_size) => *x -= *y,
-            &Mov(_size) => *x = *y,
-            &Jmp => todo!(),
-            &Cmp(_size) => {
+            Deref(X) => x = x86.mem.as_mut_ptr().offset(*x as isize) as *mut u32,
+            Deref(Y) => y = x86.mem.as_mut_ptr().offset(*y as isize) as *mut u32,
+            Add(_size) => *x += *y,
+            And(_size) => todo!(),
+            Sub(_size) => *x -= *y,
+            Mov(MemorySize::U8) => todo!(),
+            Mov(MemorySize::U16) => todo!(),
+            Mov(MemorySize::U32) => *x = *y,
+            Mov(MemorySize::U64) => todo!(),
+            Jmp => todo!(),
+            Cmp(_size) => {
                 let _ = *x - *y;
             }
         }

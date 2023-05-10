@@ -186,7 +186,7 @@ impl std::fmt::Display for MemRef {
             if wrote {
                 f.write_str("+")?;
             }
-            f.write_fmt(format_args!("{}*{}", index, self.displacement))?;
+            f.write_fmt(format_args!("{}*{}", index, self.scale))?;
             wrote = true;
         }
         if self.displacement > 0 {
@@ -203,7 +203,7 @@ impl std::fmt::Display for UOp {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             UOp::Comment(str) => f.write_fmt(format_args!("; {}", str)),
-            UOp::Const(arg, c) => f.write_fmt(format_args!("{} -> {:#x}", arg, c)),
+            UOp::Const(arg, c) => f.write_fmt(format_args!("{} -> &{:#x}", arg, c)),
             UOp::GetReg(arg, reg) => f.write_fmt(format_args!("{} -> {}", arg, reg)),
             UOp::GetMem(arg, mem) => f.write_fmt(format_args!("{} -> {}", arg, mem)),
             UOp::Deref(arg) => f.write_fmt(format_args!("{} -> *{}", arg, arg)),

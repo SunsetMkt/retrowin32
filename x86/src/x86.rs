@@ -247,7 +247,7 @@ impl InstrCache {
     /// Executes the current basic block, updating eip.
     /// Returns the number of instructions executed.
     pub fn execute_block(&mut self, x86: &mut X86) -> StepResult<usize> {
-        let mut ip = x86.regs.eip;
+        let ip = x86.regs.eip;
         let block = match self.blocks.get(&ip) {
             Some(b) => b,
             None => {
@@ -255,6 +255,12 @@ impl InstrCache {
                 self.blocks.get(&ip).unwrap()
             }
         };
+
+        unsafe {
+            x86.regs.eip += block.len; // XXX uops
+            uops::eval(x86, &block.uops);
+        }
+        /*
         for instr in block.instrs.iter() {
             x86.regs.eip = instr.next_ip() as u32;
             match x86.run(instr) {
@@ -267,6 +273,7 @@ impl InstrCache {
             }
             ip = x86.regs.eip;
         }
+        */
         Ok(block.instrs.len())
     }
 
