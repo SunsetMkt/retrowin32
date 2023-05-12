@@ -2,7 +2,7 @@ use super::{
     asm::{MemRef, MemorySize, Reg},
     UOp,
 };
-use crate::{Memory, X86};
+use crate::{registers::Flags, Memory, X86};
 
 /// Compute the address found in instructions that reference memory, e.g.
 ///   mov [eax+03h],...
@@ -40,6 +40,13 @@ fn x86_addr(x86: &X86, mem: &MemRef) -> u32 {
 }
 
 #[allow(dead_code)]
+fn dump_stack(x86: &X86) {
+    for i in 0..8 {
+        let addr = x86.regs.esp + (i * 4);
+        log::info!("{:x} {:x}", addr, x86.mem.read_u32(addr));
+    }
+}
+
 pub unsafe fn eval(x86: &mut X86, ops: &[UOp]) {
     use crate::uops::asm::Arg::*;
     use UOp::*;
@@ -76,16 +83,28 @@ pub unsafe fn eval(x86: &mut X86, ops: &[UOp]) {
             Sub(MemorySize::U32) => *x -= *y,
             Mov(MemorySize::U8) => *(x as *mut u8) = *(y as *mut u8),
             Mov(MemorySize::U32) => *x = *y,
-            Jmp => {
-                for i in 0..8 {
-                    let addr = x86.regs.esp + (i * 4);
-                    log::info!("{:x} {:x}", addr, x86.mem.read_u32(addr));
+            Xor(MemorySize::U32) => *x ^= *y,
+
+            Jmp => x86.regs.eip = *x,
+            Jb => {
+                if x86.flags.contains(Flags::CF) {
+                    x86.regs.eip = *x;
                 }
-                x86.regs.eip = *x;
+            }
+            Je => {
+                if x86.flags.contains(Flags::ZF) {
+                    x86.regs.eip = *x;
+                }
+            }
+            Jne => {
+                if !x86.flags.contains(Flags::ZF) {
+                    x86.regs.eip = *x;
+                }
             }
 
             Cmp(_size) => {
-                let _ = *x - *y;
+                let _ = x.wrapping_sub(*y as usize);
+                // XXX flags
             }
             _ => todo!("op {:?}", op),
         }

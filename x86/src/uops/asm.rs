@@ -155,11 +155,15 @@ pub enum UOp {
     GetMem(Arg, MemRef),
     Deref(Arg),
     Jmp,
+    Jb,
+    Je,
+    Jne,
     Add(MemorySize),
     And(MemorySize),
     Sub(MemorySize),
     Mov(MemorySize),
     Cmp(MemorySize),
+    Xor(MemorySize),
 }
 
 #[derive(Debug)]
@@ -210,8 +214,12 @@ impl std::fmt::Display for UOp {
             UOp::Add(size) => f.write_fmt(format_args!("add{size}")),
             UOp::And(size) => f.write_fmt(format_args!("and{size}")),
             UOp::Sub(size) => f.write_fmt(format_args!("sub{size}")),
+            UOp::Xor(size) => f.write_fmt(format_args!("xor{size}")),
             UOp::Mov(size) => f.write_fmt(format_args!("mov{size}")),
             UOp::Jmp => f.write_fmt(format_args!("jmp")),
+            UOp::Jb => f.write_fmt(format_args!("jb")),
+            UOp::Je => f.write_fmt(format_args!("je")),
+            UOp::Jne => f.write_fmt(format_args!("jne")),
             UOp::Cmp(size) => f.write_fmt(format_args!("cmp{size}")),
         }
     }
@@ -237,16 +245,16 @@ impl Assembler {
             iced_x86::Mnemonic::Jmp => mnemonic::jmp,
             iced_x86::Mnemonic::Mov => mnemonic::mov,
             iced_x86::Mnemonic::Push => mnemonic::push,
-            iced_x86::Mnemonic::Pop => mnemonic::todo,
-            iced_x86::Mnemonic::Cmp => mnemonic::todo,
-            iced_x86::Mnemonic::Je => mnemonic::todo,
-            iced_x86::Mnemonic::Jb => mnemonic::todo,
-            iced_x86::Mnemonic::Jne => mnemonic::todo,
+            iced_x86::Mnemonic::Pop => mnemonic::pop,
+            iced_x86::Mnemonic::Cmp => mnemonic::cmp,
+            iced_x86::Mnemonic::Je => mnemonic::je,
+            iced_x86::Mnemonic::Jb => mnemonic::jb,
+            iced_x86::Mnemonic::Jne => mnemonic::jne,
             iced_x86::Mnemonic::Add => mnemonic::todo,
-            iced_x86::Mnemonic::Sub => mnemonic::todo,
+            iced_x86::Mnemonic::Sub => mnemonic::sub,
             iced_x86::Mnemonic::And => mnemonic::and,
             iced_x86::Mnemonic::Lea => mnemonic::todo,
-            iced_x86::Mnemonic::Xor => mnemonic::todo,
+            iced_x86::Mnemonic::Xor => mnemonic::xor,
             iced_x86::Mnemonic::Or => mnemonic::todo,
             iced_x86::Mnemonic::Leave => mnemonic::todo,
             iced_x86::Mnemonic::Ret => mnemonic::todo,
@@ -335,6 +343,24 @@ mod mnemonic {
         asm.op(Jmp);
     }
 
+    pub fn jb(asm: &mut Assembler, instr: &iced_x86::Instruction) {
+        use {Arg::*, UOp::*};
+        asm.op(Const(X, instr.near_branch32()));
+        asm.op(Jb);
+    }
+
+    pub fn je(asm: &mut Assembler, instr: &iced_x86::Instruction) {
+        use {Arg::*, UOp::*};
+        asm.op(Const(X, instr.near_branch32()));
+        asm.op(Je);
+    }
+
+    pub fn jne(asm: &mut Assembler, instr: &iced_x86::Instruction) {
+        use {Arg::*, UOp::*};
+        asm.op(Const(X, instr.near_branch32()));
+        asm.op(Jne);
+    }
+
     pub fn mov(asm: &mut Assembler, instr: &iced_x86::Instruction) {
         use Arg::*;
         assert!(instr.op_count() == 2);
@@ -358,6 +384,30 @@ mod mnemonic {
         asm.op(UOp::And(MemorySize::from_iced(instr.memory_size())))
     }
 
+    pub fn sub(asm: &mut Assembler, instr: &iced_x86::Instruction) {
+        use Arg::*;
+        assert!(instr.op_count() == 2);
+        asm.operand(instr, X, 0);
+        asm.operand(instr, Y, 1);
+        asm.op(UOp::Sub(MemorySize::from_iced(instr.memory_size())))
+    }
+
+    pub fn cmp(asm: &mut Assembler, instr: &iced_x86::Instruction) {
+        use Arg::*;
+        assert!(instr.op_count() == 2);
+        asm.operand(instr, X, 0);
+        asm.operand(instr, Y, 1);
+        asm.op(UOp::Cmp(MemorySize::from_iced(instr.memory_size())))
+    }
+
+    pub fn xor(asm: &mut Assembler, instr: &iced_x86::Instruction) {
+        use Arg::*;
+        assert!(instr.op_count() == 2);
+        asm.operand(instr, X, 0);
+        asm.operand(instr, Y, 1);
+        asm.op(UOp::Xor(MemorySize::from_iced(instr.memory_size())))
+    }
+
     pub fn push(asm: &mut Assembler, instr: &iced_x86::Instruction) {
         use {Arg::*, MemorySize::*, Reg::*, UOp::*};
         assert!(instr.op_count() == 1);
@@ -367,5 +417,21 @@ mod mnemonic {
         asm.op(Deref(X));
         asm.operand(instr, Y, 0);
         asm.op(Mov(U32));
+    }
+
+    pub fn pop(asm: &mut Assembler, instr: &iced_x86::Instruction) {
+        use {Arg::*, MemorySize::*, Reg::*, UOp::*};
+        assert!(instr.op_count() == 1);
+
+        // arg = *esp
+        asm.op(GetReg(Y, ESP));
+        asm.op(Deref(Y));
+        asm.operand(instr, X, 0);
+        asm.op(Mov(U32));
+
+        // esp += 4
+        asm.op(GetReg(X, ESP));
+        asm.op(Const(Y, 4));
+        asm.op(Add(U32));
     }
 }
