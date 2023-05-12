@@ -234,7 +234,7 @@ impl Assembler {
         self.op(UOp::Comment(as_str));
         let f = match instr.mnemonic() {
             iced_x86::Mnemonic::Call => mnemonic::call,
-            iced_x86::Mnemonic::Jmp => mnemonic::call,
+            iced_x86::Mnemonic::Jmp => mnemonic::jmp,
             iced_x86::Mnemonic::Mov => mnemonic::mov,
             iced_x86::Mnemonic::Push => mnemonic::push,
             iced_x86::Mnemonic::Pop => mnemonic::todo,
@@ -305,6 +305,7 @@ mod mnemonic {
 
     pub fn todo(asm: &mut Assembler, _instr: &iced_x86::Instruction) {
         asm.op(UOp::Comment("todo".into()));
+        todo!();
     }
 
     pub fn call(asm: &mut Assembler, instr: &iced_x86::Instruction) {
@@ -318,14 +319,19 @@ mod mnemonic {
         asm.op(GetReg(Y, EIP));
         asm.op(Deref(X));
         asm.op(Mov(U32));
+
+        jmp(asm, instr);
+    }
+
+    pub fn jmp(asm: &mut Assembler, instr: &iced_x86::Instruction) {
+        use {Arg::*, UOp::*};
+        assert!(instr.op_count() == 1);
         match instr.op0_kind() {
             iced_x86::OpKind::NearBranch32 => asm.op(Const(X, instr.near_branch32())),
             iced_x86::OpKind::Memory => asm.operand(instr, X, 0),
             iced_x86::OpKind::Register => asm.operand(instr, X, 0),
             k => unimplemented!("{:?}", k),
         };
-
-        // jmp
         asm.op(Jmp);
     }
 

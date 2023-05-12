@@ -1,15 +1,18 @@
 use super::{
-    asm::{MemRef, MemorySize},
+    asm::{MemRef, MemorySize, Reg},
     UOp,
 };
-use crate::X86;
+use crate::{Memory, X86};
 
 /// Compute the address found in instructions that reference memory, e.g.
 ///   mov [eax+03h],...
 fn x86_addr(x86: &X86, mem: &MemRef) -> u32 {
     // TODO: see comments on regs.fs_addr.
     let seg = if let Some(seg) = mem.seg {
-        todo!("seg {:?}", seg);
+        match seg {
+            Reg::FS => x86.regs.fs_addr,
+            _ => 0u32,
+        }
     } else {
         0u32
     };
@@ -45,8 +48,11 @@ pub unsafe fn eval(x86: &mut X86, ops: &[UOp]) {
     let mut yc = 0u32;
     let mut y: *mut u32 = &mut yc;
     for op in ops {
+        log::info!("eval: {}", op);
         match *op {
-            Comment(_) => {}
+            Comment(ref text) => {
+                log::info!("; {}", text);
+            }
             Const(X, c) => {
                 x = &mut xc;
                 *x = c
@@ -65,17 +71,23 @@ pub unsafe fn eval(x86: &mut X86, ops: &[UOp]) {
             }
             Deref(X) => x = x86.mem.as_mut_ptr().offset(*x as isize) as *mut u32,
             Deref(Y) => y = x86.mem.as_mut_ptr().offset(*y as isize) as *mut u32,
-            Add(_size) => *x += *y,
-            And(_size) => todo!(),
-            Sub(_size) => *x -= *y,
-            Mov(MemorySize::U8) => todo!(),
-            Mov(MemorySize::U16) => todo!(),
+            Add(MemorySize::U32) => *x += *y,
+            And(MemorySize::U32) => *x &= *y,
+            Sub(MemorySize::U32) => *x -= *y,
+            Mov(MemorySize::U8) => *(x as *mut u8) = *(y as *mut u8),
             Mov(MemorySize::U32) => *x = *y,
-            Mov(MemorySize::U64) => todo!(),
-            Jmp => todo!(),
+            Jmp => {
+                for i in 0..8 {
+                    let addr = x86.regs.esp + (i * 4);
+                    log::info!("{:x} {:x}", addr, x86.mem.read_u32(addr));
+                }
+                x86.regs.eip = *x;
+            }
+
             Cmp(_size) => {
                 let _ = *x - *y;
             }
+            _ => todo!("op {:?}", op),
         }
     }
 }

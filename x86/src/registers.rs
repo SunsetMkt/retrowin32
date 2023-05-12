@@ -98,7 +98,10 @@ impl Registers {
         // XXX move comments from get32 here and rename once everything moved.
         let idx = reg as usize - iced_x86::Register::EAX as usize;
         if idx >= 8 {
-            unreachable!("{reg:?}");
+            match reg {
+                iced_x86::Register::EIP => return &mut self.eip,
+                _ => unreachable!("{reg:?}"),
+            }
         }
         (self as *mut Registers as *mut u32).add(idx)
     }
