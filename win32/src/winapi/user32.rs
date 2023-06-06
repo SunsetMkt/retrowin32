@@ -4,13 +4,13 @@ use super::{
     stack_args::ToX86,
     types::{DWORD, HWND, WORD},
 };
-use crate::{host, machine::Machine, pe, winapi::gdi32};
+use crate::{host, machine::Machine, pe, reader::Reader, winapi::gdi32};
 use anyhow::bail;
 use bitflags::bitflags;
 use num_traits::FromPrimitive;
 use std::collections::VecDeque;
 use std::rc::Rc;
-use x86::{Mem, Memory};
+use x86::Mem;
 
 const TRACE_CONTEXT: &'static str = "user32";
 
@@ -45,7 +45,7 @@ struct WndClass {
 }
 
 pub struct State {
-    pub resources_base: u32,
+    pub resources: pe::IMAGE_DATA_DIRECTORY,
     wndclasses: Vec<Rc<WndClass>>,
     windows: Vec<Window>,
     messages: VecDeque<MSG>,
@@ -58,7 +58,7 @@ impl State {
 impl Default for State {
     fn default() -> Self {
         State {
-            resources_base: 0,
+            resources: pe::IMAGE_DATA_DIRECTORY::default(),
             wndclasses: Vec::new(),
             windows: Vec::new(),
             messages: VecDeque::new(),
@@ -131,9 +131,10 @@ pub fn RegisterClassExA(machine: &mut Machine, lpWndClassEx: Option<&WNDCLASSEXA
     let atom = machine.state.user32.wndclasses.len() as u32 + 1;
     let name = machine
         .x86
-        .mem
-        .slice(lpWndClassEx.lpszClassName..)
-        .read_strz()
+        .mem()
+        .slicez(lpWndClassEx.lpszClassName)
+        .unwrap()
+        .to_ascii()
         .to_string();
     let wndclass = WndClass {
         // atom,
@@ -209,7 +210,8 @@ pub async fn CreateWindowExA(
     if lpClassName < 1 << 16 {
         todo!("numeric wndclass reference");
     }
-    let class_name = machine.x86.mem.slice(lpClassName..).read_strz();
+    let mem = machine.x86.mem();
+    let class_name = mem.slicez(lpClassName).unwrap().to_ascii();
     let wndclass = machine
         .state
         .user32
@@ -545,8 +547,9 @@ impl std::fmt::Debug for Bitmap {
     }
 }
 
-fn parse_bitmap(buf: &Mem) -> anyhow::Result<Bitmap> {
-    let header = buf.view::<BITMAPINFOHEADER>(0);
+fn parse_bitmap(buf: Mem) -> anyhow::Result<Bitmap> {
+    let mut r = Reader::new(buf);
+    let header = r.read::<BITMAPINFOHEADER>();
     let header_size = std::mem::size_of::<BITMAPINFOHEADER>() as u32;
     if header.biSize != header_size {
         bail!("bad bitmap header");
@@ -559,18 +562,17 @@ fn parse_bitmap(buf: &Mem) -> anyhow::Result<Bitmap> {
         },
         _ => unimplemented!(),
     };
-    let palette_buf = buf.slice(header_size..).slice(..palette_count * 4);
+    let palette_buf = r.read_n::<u32>(palette_count)?;
     let palette = unsafe {
         std::slice::from_raw_parts(
-            palette_buf.as_slice_todo().as_ptr() as *const [u8; 4],
+            palette_buf.as_ptr() as *const [u8; 4],
             palette_count as usize,
         )
     };
-    let pixels = buf.slice(header_size + (palette_count * 4)..);
-
     let width = header.width();
     let height = header.height();
-    assert!(pixels.len() as u32 == width * height);
+    let pixels = r.read_n::<u8>(width * height)?;
+    assert!(r.done());
 
     // Bitmap pixel data is tricky.
     // - Likely bottom-up (first row of data is bottom row of pixels)
@@ -586,20 +588,11 @@ fn parse_bitmap(buf: &Mem) -> anyhow::Result<Bitmap> {
     }
 
     let pixels = if header.is_top_down() {
-        pixels
-            .as_slice_todo()
-            .iter()
-            .map(|&p| get_pixel(palette, p))
-            .collect()
+        pixels.iter().map(|&p| get_pixel(palette, p)).collect()
     } else {
         let mut v = Vec::with_capacity(pixels.len() as usize);
         for y in (0..height).rev() {
-            for &p in pixels
-                .slice(y * width..)
-                .slice(..width)
-                .as_slice_todo()
-                .iter()
-            {
+            for &p in pixels[(y * width) as usize..][..width as usize].iter() {
                 v.push(get_pixel(palette, p));
             }
         }
@@ -619,8 +612,8 @@ pub fn LoadImageA(
     hInstance: u32,
     name: u32,
     typ: u32,
-    _cx: u32,
-    _cy: u32,
+    cx: u32,
+    cy: u32,
     fuLoad: u32,
 ) -> u32 {
     assert!(hInstance == machine.state.kernel32.image_base);
@@ -639,13 +632,9 @@ pub fn LoadImageA(
     const IMAGE_BITMAP: u32 = 0;
     match typ {
         IMAGE_BITMAP => {
-            let buf = pe::get_resource(
-                &machine.x86.mem.slice(machine.state.kernel32.image_base..),
-                machine.state.user32.resources_base,
-                pe::RT_BITMAP,
-                name,
-            )
-            .unwrap();
+            let mem = machine.x86.mem().slice(machine.state.kernel32.image_base..);
+            let buf = pe::get_resource(&mem, &machine.state.user32.resources, pe::RT_BITMAP, name)
+                .unwrap();
             let bmp = parse_bitmap(buf).unwrap();
             machine.state.gdi32.objects.push(gdi32::Object::Bitmap(bmp));
             machine.state.gdi32.objects.len() as u32

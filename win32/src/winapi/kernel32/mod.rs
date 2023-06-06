@@ -15,9 +15,7 @@ use super::{
 use crate::machine::Machine;
 use num_traits::FromPrimitive;
 use std::{collections::HashMap, io::Write};
-use x86::{
-    Mem, Pod, {Memory, VecMem},
-};
+use x86::{Mem, Pod, VecMem};
 
 pub use dll::*;
 pub use file::*;
@@ -73,9 +71,9 @@ impl State {
         self.arena = ArenaInfo::new(mapping.addr, mapping.size);
 
         let env = "\0\0".as_bytes();
-        let env_addr = self.arena.get(mem).alloc(env.len() as u32);
-        mem.slice_mut(env_addr..)
-            .slice_mut(..env.len() as u32)
+        let env_addr = self.arena.get(&mut mem.mem()).alloc(env.len() as u32);
+        mem.mem()
+            .sub(env_addr, env.len() as u32)
             .as_mut_slice_todo()
             .copy_from_slice(env);
         self.env = env_addr;
@@ -88,8 +86,7 @@ impl State {
         cmdline.push(0 as char); // nul terminator
 
         self.cmdline = self.arena.get(mem).alloc(cmdline.len() as u32);
-        mem.slice_mut(self.cmdline..)
-            .slice_mut(..cmdline.len() as u32)
+        mem.sub(self.cmdline, cmdline.len() as u32)
             .as_mut_slice_todo()
             .copy_from_slice(cmdline.as_bytes());
 
@@ -97,8 +94,7 @@ impl State {
         self.cmdline16 = self.arena.get(mem).alloc(cmdline16.byte_size() as u32);
         let mem16: &mut [u16] = unsafe {
             std::mem::transmute(
-                mem.slice_mut(self.cmdline16..)
-                    .slice_mut(..cmdline16.0.len() as u32)
+                mem.sub(self.cmdline16, cmdline16.0.len() as u32)
                     .as_mut_slice_todo(),
             )
         };
@@ -118,9 +114,9 @@ impl State {
             0x100,
         ));
         let params = mem.view_mut::<RTL_USER_PROCESS_PARAMETERS>(params_addr);
-        // x86.write_u32(params_addr + 0x10, console_handle);
-        // x86.write_u32(params_addr + 0x14, console_flags);
-        // x86.write_u32(params_addr + 0x18, stdin);
+        // x86.put::<u32>(params_addr + 0x10, console_handle);
+        // x86.put::<u32>(params_addr + 0x14, console_flags);
+        // x86.put::<u32>(params_addr + 0x18, stdin);
         params.hStdOutput = STDOUT_HFILE;
         params.hStdError = STDERR_HFILE;
         params.ImagePathName.clear();
@@ -165,7 +161,7 @@ impl State {
 
     pub fn new_private_heap(&mut self, mem: &mut VecMem, size: usize, desc: String) -> HeapInfo {
         let mapping = self.mappings.alloc(size as u32, desc, mem);
-        HeapInfo::new(mem, mapping.addr, mapping.size)
+        HeapInfo::new(&mut mem.mem(), mapping.addr, mapping.size)
     }
 
     pub fn new_heap(&mut self, mem: &mut VecMem, size: usize, desc: String) -> u32 {
@@ -175,7 +171,7 @@ impl State {
         addr
     }
 
-    pub fn get_heap<'a>(&'a mut self, mem: &'a mut Mem, addr: u32) -> Option<Heap<'a>> {
+    pub fn get_heap<'a>(&'a mut self, mem: &'a mut Mem<'a>, addr: u32) -> Option<Heap<'a>> {
         self.heaps
             .get_mut(&addr)
             .map(|h| h.get_heap(mem, &mut self.mappings))
@@ -183,14 +179,17 @@ impl State {
 }
 
 fn teb(machine: &Machine) -> &TEB {
-    machine.x86.mem.view::<TEB>(machine.state.kernel32.teb)
+    machine.x86.mem().view::<TEB>(machine.state.kernel32.teb)
 }
 fn teb_mut(machine: &mut Machine) -> &mut TEB {
-    machine.x86.mem.view_mut::<TEB>(machine.state.kernel32.teb)
+    machine
+        .x86
+        .mem()
+        .view_mut::<TEB>(machine.state.kernel32.teb)
 }
 fn peb_mut(machine: &mut Machine) -> &mut PEB {
     let peb_addr = teb(machine).Peb;
-    machine.x86.mem.view_mut::<PEB>(peb_addr)
+    machine.x86.mem().view_mut::<PEB>(peb_addr)
 }
 
 #[repr(C)]
@@ -313,7 +312,7 @@ pub fn ExitProcess(machine: &mut Machine, uExitCode: u32) -> u32 {
     machine.host.exit(uExitCode);
     // TODO: this is unsatisfying.
     // Maybe better is to generate a hlt instruction somewhere and jump to it?
-    machine.x86.stop();
+    machine.x86.cpu.stop();
     0
 }
 
@@ -500,13 +499,27 @@ pub fn GetTickCount(machine: &mut Machine) -> u32 {
 // is to say a count is 0.1us.
 const QUERY_PERFORMANCE_FREQ: u32 = 10_000_000;
 
+// In principle we could just use an i64 here, but when Windows passes one of these via
+// the stack it may align it on a 4-byte address when Rust requires 8-byte alignment for
+// 64-bit addresses.  So instead we more closely match the Windows behavior.
+#[repr(C)]
+#[derive(Debug)]
+pub struct LARGE_INTEGER {
+    LowPart: u32,
+    HighPart: i32,
+}
+unsafe impl Pod for LARGE_INTEGER {}
+
 #[win32_derive::dllexport]
 pub fn QueryPerformanceCounter(
     machine: &mut Machine,
-    lpPerformanceCount: Option<&mut u64>,
+    lpPerformanceCount: Option<&mut LARGE_INTEGER>,
 ) -> bool {
+    let counter = lpPerformanceCount.unwrap();
     let ms = machine.host.time();
-    *lpPerformanceCount.unwrap() = ms as u64 * (QUERY_PERFORMANCE_FREQ as u64 / 1000);
+    let counts = ms as u64 * (QUERY_PERFORMANCE_FREQ as u64 / 1000);
+    counter.LowPart = counts as u32;
+    counter.HighPart = (counts >> 32) as u32 as i32;
     true // success
 }
 
@@ -515,9 +528,9 @@ pub fn QueryPerformanceFrequency(machine: &mut Machine, lpFrequency: u32) -> boo
     // 64-bit write
     machine
         .x86
-        .mem
-        .write_u32(lpFrequency, QUERY_PERFORMANCE_FREQ);
-    machine.x86.mem.write_u32(lpFrequency + 4, 0);
+        .mem()
+        .put::<u32>(lpFrequency, QUERY_PERFORMANCE_FREQ);
+    machine.x86.mem().put::<u32>(lpFrequency + 4, 0);
     true
 }
 
@@ -576,10 +589,11 @@ pub fn GetProcessHeap(machine: &mut Machine) -> u32 {
         return heap;
     }
     let size = 1 << 20;
-    let heap = machine
-        .state
-        .kernel32
-        .new_heap(&mut machine.x86.mem, size, "process heap".into());
+    let heap =
+        machine
+            .state
+            .kernel32
+            .new_heap(&mut machine.x86.memory, size, "process heap".into());
     peb_mut(machine).ProcessHeap = heap;
     heap
 }
@@ -661,7 +675,7 @@ const CP_ACP: u32 = 0;
 pub fn MultiByteToWideChar(
     machine: &mut Machine,
     CodePage: u32,
-    _dwFlags: u32,
+    dwFlags: u32,
     lpMultiByteStr: u32,
     cbMultiByte: i32,
     mut lpWideCharStr: Option<&mut [u16]>,
@@ -671,18 +685,10 @@ pub fn MultiByteToWideChar(
     }
     // TODO: dwFlags
 
-    let input = match cbMultiByte {
+    let input_len = match cbMultiByte {
         0 => return 0, // TODO: invalid param
-        -1 => machine.x86.mem.slice(lpMultiByteStr..).read_strz_with_nul(),
-        len => std::str::from_utf8(
-            &machine
-                .x86
-                .mem
-                .slice(lpMultiByteStr..)
-                .slice(..len as u32)
-                .as_slice_todo(),
-        )
-        .unwrap(),
+        -1 => machine.x86.mem().slicez(lpMultiByteStr).unwrap().len() + 1, // include nul
+        len => len as u32,
     };
 
     match lpWideCharStr {
@@ -691,10 +697,11 @@ pub fn MultiByteToWideChar(
     };
 
     match lpWideCharStr {
-        None => input.len() as u32,
+        None => input_len,
         Some(buf) => {
+            let input = machine.x86.mem().sub(lpMultiByteStr, input_len);
             let mut len = 0;
-            for (c_in, c_out) in std::iter::zip(input.bytes(), buf) {
+            for (&c_in, c_out) in std::iter::zip(input.as_slice_todo(), buf) {
                 if c_in > 0x7f {
                     unimplemented!("unicode");
                 }

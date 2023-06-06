@@ -2,10 +2,10 @@
 
 use iced_x86::Instruction;
 
-use crate::{ops, x86::X86, StepError, StepResult};
+use crate::{memory::Mem, ops, x86::CPU};
 
 /// The type of all operations defined in the ops module.
-type Op = fn(&mut X86, &Instruction) -> StepResult<()>;
+type Op = fn(&mut CPU, &mut Mem, &Instruction);
 
 // This table is constant and ideally would be initialized at compile time,
 // but it's too fiddly to do with const fns, so we'd likely need to codegen it.
@@ -78,6 +78,7 @@ pub unsafe fn init_op_tab() {
     OP_TAB[iced_x86::Code::Mov_r16_rm16 as usize] = Some(ops::mov_r16_rm16);
     OP_TAB[iced_x86::Code::Mov_rm16_r16 as usize] = Some(ops::mov_rm16_r16);
     OP_TAB[iced_x86::Code::Mov_rm16_imm16 as usize] = Some(ops::mov_rm16_imm16);
+    OP_TAB[iced_x86::Code::Mov_r16_imm16 as usize] = Some(ops::mov_rm16_imm16);
     OP_TAB[iced_x86::Code::Mov_r8_rm8 as usize] = Some(ops::mov_r8_rm8);
     OP_TAB[iced_x86::Code::Mov_AL_moffs8 as usize] = Some(ops::mov_r8_rm8);
     OP_TAB[iced_x86::Code::Mov_rm8_r8 as usize] = Some(ops::mov_rm8_r8);
@@ -94,6 +95,9 @@ pub unsafe fn init_op_tab() {
     OP_TAB[iced_x86::Code::Movzx_r32_rm16 as usize] = Some(ops::movzx_r32_rm16);
     OP_TAB[iced_x86::Code::Movzx_r32_rm8 as usize] = Some(ops::movzx_r32_rm8);
     OP_TAB[iced_x86::Code::Movzx_r16_rm8 as usize] = Some(ops::movzx_r16_rm8);
+
+    OP_TAB[iced_x86::Code::Cmovb_r32_rm32 as usize] = Some(ops::cmovb_r32_rm32);
+    OP_TAB[iced_x86::Code::Cmovne_r32_rm32 as usize] = Some(ops::cmovne_r32_rm32);
 
     OP_TAB[iced_x86::Code::Xchg_rm32_r32 as usize] = Some(ops::xchg_rm32_r32);
     OP_TAB[iced_x86::Code::Xchg_r32_EAX as usize] = Some(ops::xchg_rm32_r32);
@@ -196,7 +200,8 @@ pub unsafe fn init_op_tab() {
     OP_TAB[iced_x86::Code::Sub_rm32_imm32 as usize] = Some(ops::sub_rm32_imm32);
     OP_TAB[iced_x86::Code::Sub_rm32_r32 as usize] = Some(ops::sub_rm32_r32);
     OP_TAB[iced_x86::Code::Sub_r32_rm32 as usize] = Some(ops::sub_r32_rm32);
-    OP_TAB[iced_x86::Code::Sub_r8_rm8 as usize] = Some(ops::sub_r8_rm8);
+    OP_TAB[iced_x86::Code::Sub_r8_rm8 as usize] = Some(ops::sub_rm8_rm8);
+    OP_TAB[iced_x86::Code::Sub_rm8_r8 as usize] = Some(ops::sub_rm8_rm8);
     OP_TAB[iced_x86::Code::Sub_rm8_imm8 as usize] = Some(ops::sub_rm8_imm8);
     OP_TAB[iced_x86::Code::Sub_AL_imm8 as usize] = Some(ops::sub_rm8_imm8);
     OP_TAB[iced_x86::Code::Sbb_r32_rm32 as usize] = Some(ops::sbb_r32_rm32);
@@ -252,8 +257,10 @@ pub unsafe fn init_op_tab() {
     OP_TAB[iced_x86::Code::Bt_rm32_r32 as usize] = Some(ops::bt_rm32_r32);
     OP_TAB[iced_x86::Code::Bt_rm32_imm8 as usize] = Some(ops::bt_rm32_imm8);
     OP_TAB[iced_x86::Code::Btr_rm32_imm8 as usize] = Some(ops::btr_rm32_imm8);
+    OP_TAB[iced_x86::Code::Bsr_r32_rm32 as usize] = Some(ops::bsr_r32_rm32);
 
     OP_TAB[iced_x86::Code::Seta_rm8 as usize] = Some(ops::seta_rm8);
+    OP_TAB[iced_x86::Code::Setb_rm8 as usize] = Some(ops::setb_rm8);
     OP_TAB[iced_x86::Code::Sete_rm8 as usize] = Some(ops::sete_rm8);
     OP_TAB[iced_x86::Code::Setne_rm8 as usize] = Some(ops::setne_rm8);
     OP_TAB[iced_x86::Code::Setge_rm8 as usize] = Some(ops::setge_rm8);
@@ -350,14 +357,9 @@ pub unsafe fn init_op_tab() {
     // log::info!("highest op at {}", last.unwrap());
 }
 
-pub fn execute(x86: &mut X86, instr: &Instruction) -> StepResult<()> {
+pub fn execute(cpu: &mut CPU, mem: &mut Mem, instr: &Instruction) {
     match unsafe { OP_TAB[instr.code() as usize] } {
-        Some(f) => f(x86, instr),
-        None => {
-            return Err(StepError::Error(format!(
-                "no dispatch for: {:?}",
-                instr.code()
-            )))
-        }
+        Some(f) => f(cpu, mem, instr),
+        None => cpu.state = Err(format!("no dispatch for: {:?}", instr.code())),
     }
 }

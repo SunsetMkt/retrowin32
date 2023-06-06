@@ -1,5 +1,5 @@
 use super::kernel32;
-use x86::{Mem, Memory};
+use x86::Mem;
 
 pub trait Alloc {
     fn alloc(&mut self, size: u32) -> u32;
@@ -21,19 +21,23 @@ impl ArenaInfo {
             next: 0,
         }
     }
-    pub fn get<'a>(&'a mut self, mem: &'a mut Mem) -> Arena<'a> {
+    pub fn get<'a, 'm>(&'a mut self, mem: &'a mut Mem<'m>) -> Arena<'a, 'm> {
         Arena { info: self, mem }
     }
 }
 
-pub struct Arena<'a> {
+pub struct Arena<'a, 'm> {
     info: &'a mut ArenaInfo,
-    mem: &'a mut Mem,
+    mem: &'a mut Mem<'m>,
 }
 
-impl<'a> Alloc for Arena<'a> {
+fn align32(n: u32) -> u32 {
+    (n + 3) & !3
+}
+
+impl<'a, 'm> Alloc for Arena<'a, 'm> {
     fn alloc(&mut self, size: u32) -> u32 {
-        let alloc_size = size + 4; // TODO: align?
+        let alloc_size = align32(size + 4);
         if self.info.next + alloc_size > self.info.size {
             log::error!(
                 "Arena::alloc cannot allocate {:x}, using {:x}/{:x}",
@@ -44,14 +48,14 @@ impl<'a> Alloc for Arena<'a> {
             return 0;
         }
         let addr = self.info.addr + self.info.next;
-        self.mem.write_u32(addr, size);
+        self.mem.put::<u32>(addr, size);
         self.info.next += alloc_size;
         addr + 4
     }
 
     fn size(&self, addr: u32) -> u32 {
         assert!(addr >= self.info.addr + 4 && addr < self.info.addr + self.info.size);
-        self.mem.read_u32(addr - 4)
+        self.mem.get::<u32>(addr - 4)
     }
 
     fn free(&mut self, _addr: u32) {
@@ -95,7 +99,7 @@ impl HeapInfo {
 
     pub fn get_heap<'a>(
         &'a mut self,
-        mem: &'a mut Mem,
+        mem: &'a mut Mem<'a>,
         mappings: &'a mut kernel32::Mappings,
     ) -> Heap<'a> {
         Heap {
@@ -108,7 +112,7 @@ impl HeapInfo {
 
 pub struct Heap<'a> {
     info: &'a mut HeapInfo,
-    mem: &'a mut Mem,
+    mem: &'a mut Mem<'a>,
     mappings: &'a mut kernel32::Mappings,
 }
 
@@ -121,14 +125,14 @@ struct FreeNode {
 }
 unsafe impl x86::Pod for FreeNode {}
 impl FreeNode {
-    fn get(mem: &mut Mem, addr: u32) -> &mut Self {
+    fn get<'a>(mem: &'a mut Mem, addr: u32) -> &'a mut Self {
         mem.view_mut::<FreeNode>(addr)
     }
 }
 
 impl<'a> Alloc for Heap<'a> {
     fn alloc(&mut self, size: u32) -> u32 {
-        let alloc_size = size + 4;
+        let alloc_size = align32(size + 4);
 
         // Find a FreeNode large enough to accommodate alloc_size.
         // To use it, update the previous node to point past it.
@@ -179,12 +183,12 @@ impl<'a> Alloc for Heap<'a> {
             FreeNode::get(self.mem, prev).next = next;
         }
 
-        self.mem.write_u32(cur, size);
+        self.mem.put::<u32>(cur, size);
         cur + 4
     }
 
     fn size(&self, addr: u32) -> u32 {
-        self.mem.read_u32(addr - 4)
+        self.mem.get::<u32>(addr - 4)
     }
 
     fn free(&mut self, addr: u32) {

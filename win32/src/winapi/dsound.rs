@@ -5,7 +5,6 @@ use super::alloc::Alloc;
 use super::types::DWORD;
 use crate::machine::Machine;
 use crate::winapi::vtable;
-use x86::Memory;
 
 const TRACE_CONTEXT: &'static str = "dsound";
 
@@ -24,11 +23,11 @@ pub struct State {
 impl State {
     pub fn new_init(machine: &mut Machine) -> Self {
         let mut dsound = State::default();
-        dsound.hheap =
-            machine
-                .state
-                .kernel32
-                .new_heap(&mut machine.x86.mem, 0x1000, "dsound.dll heap".into());
+        dsound.hheap = machine.state.kernel32.new_heap(
+            &mut machine.x86.memory,
+            0x1000,
+            "dsound.dll heap".into(),
+        );
 
         dsound.vtable_IDirectSound = IDirectSound::vtable(&mut dsound, machine);
         dsound.vtable_IDirectSoundBuffer = IDirectSoundBuffer::vtable(&mut dsound, machine);
@@ -58,7 +57,10 @@ mod IDirectSound {
         _pUnkOuter: u32,
     ) -> u32 {
         let x86_buffer = IDirectSoundBuffer::new(machine);
-        machine.x86.mem.write_u32(lplpDirectSoundBuffer, x86_buffer);
+        machine
+            .x86
+            .mem()
+            .put::<u32>(lplpDirectSoundBuffer, x86_buffer);
         DS_OK
     }
 
@@ -95,11 +97,11 @@ mod IDirectSoundBuffer {
         let lpDirectSoundBuffer = machine
             .state
             .kernel32
-            .get_heap(&mut machine.x86.mem, dsound.hheap)
+            .get_heap(&mut machine.x86.mem(), dsound.hheap)
             .unwrap()
             .alloc(4);
         let vtable = dsound.vtable_IDirectSoundBuffer;
-        machine.x86.mem.write_u32(lpDirectSoundBuffer, vtable);
+        machine.x86.mem().put::<u32>(lpDirectSoundBuffer, vtable);
         lpDirectSoundBuffer
     }
 
@@ -177,11 +179,11 @@ pub fn DirectSoundCreate(machine: &mut Machine, _lpGuid: u32, ppDS: u32, _pUnkOu
     let lpDirectSound = machine
         .state
         .kernel32
-        .get_heap(&mut machine.x86.mem, dsound.hheap)
+        .get_heap(&mut machine.x86.mem(), dsound.hheap)
         .unwrap()
         .alloc(4);
     let vtable = dsound.vtable_IDirectSound;
-    machine.x86.write_u32(lpDirectSound, vtable);
-    machine.x86.write_u32(ppDS, lpDirectSound);
+    machine.x86.mem().put::<u32>(lpDirectSound, vtable);
+    machine.x86.mem().put::<u32>(ppDS, lpDirectSound);
     DS_OK
 }

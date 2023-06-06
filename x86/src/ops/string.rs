@@ -1,84 +1,82 @@
 use super::math::sub;
 use iced_x86::Instruction;
 
-use crate::{memory::Memory, registers::Flags, x86::X86, StepError, StepResult};
+use crate::{memory::Mem, registers::Flags, x86::CPU};
 
-pub fn cmps(x86: &mut X86, instr: &Instruction) -> StepResult<()> {
-    assert!(x86.flags.contains(Flags::DF)); // TODO
-    let p1 = x86.regs.esi;
-    let p2 = x86.regs.edi;
-    let count = x86.regs.ecx;
+pub fn cmps(cpu: &mut CPU, mem: &mut Mem, instr: &Instruction) {
+    assert!(cpu.flags.contains(Flags::DF)); // TODO
+    let p1 = cpu.regs.esi;
+    let p2 = cpu.regs.edi;
+    let count = cpu.regs.ecx;
     if instr.has_repe_prefix() {
-        let pos = x86
-            .mem
-            .slice(p1..)
-            .slice(..count)
+        let pos = mem
+            .sub(p1, count)
             .as_slice_todo()
             .iter()
-            .zip(x86.mem.slice(p2..).slice(..count).as_slice_todo().iter())
+            .zip(mem.sub(p2, count).as_slice_todo().iter())
             .position(|(&x, &y)| x == y)
             .map(|pos| pos as u32)
             .unwrap_or(count);
-        x86.regs.esi += pos;
-        x86.regs.edi += pos;
-        x86.regs.ecx -= pos;
-        let x = x86.read_u8(x86.regs.esi);
-        let y = x86.read_u8(x86.regs.edi);
-        sub(x, y, &mut x86.flags);
+        cpu.regs.esi += pos;
+        cpu.regs.edi += pos;
+        cpu.regs.ecx -= pos;
+        let x = mem.get::<u8>(cpu.regs.esi);
+        let y = mem.get::<u8>(cpu.regs.edi);
+        sub(x, y, &mut cpu.flags);
     } else {
-        return Err(StepError::Error("unimpl".into()));
+        cpu.state = Err("unimpl".into());
+        return;
     }
-    Ok(())
 }
 
-fn movs(x86: &mut X86, instr: &Instruction, size: u32) -> StepResult<()> {
-    let reverse = x86.flags.contains(Flags::DF);
+fn movs(cpu: &mut CPU, mem: &mut Mem, instr: &Instruction, size: u32) {
+    let reverse = cpu.flags.contains(Flags::DF);
     let step = if reverse { -(size as i32) as u32 } else { size };
     let mut c = 1u32; // 1 step if no rep prefix
     let counter = if instr.has_rep_prefix() || instr.has_repe_prefix() || instr.has_repne_prefix() {
-        &mut x86.regs.ecx
+        &mut cpu.regs.ecx
     } else {
         &mut c
     };
     while *counter > 0 {
         *counter -= 1;
 
-        if x86.regs.edi >= x86.mem.len() - 8 {
-            return Err(StepError::Error("movs overflow".into()));
+        if cpu.regs.edi >= mem.len() - 8 {
+            cpu.state = Err("movs overflow".into());
+            return;
         }
 
-        x86.mem.as_mut_slice_todo().copy_within(
-            x86.regs.esi as usize..(x86.regs.esi + size) as usize,
-            x86.regs.edi as usize,
+        mem.as_mut_slice_todo().copy_within(
+            cpu.regs.esi as usize..(cpu.regs.esi + size) as usize,
+            cpu.regs.edi as usize,
         );
-        x86.regs.esi = x86.regs.esi.wrapping_add(step);
-        x86.regs.edi = x86.regs.edi.wrapping_add(step);
+        cpu.regs.esi = cpu.regs.esi.wrapping_add(step);
+        cpu.regs.edi = cpu.regs.edi.wrapping_add(step);
         if instr.has_repe_prefix() || instr.has_repne_prefix() {
             // https://stackoverflow.com/questions/40219519/why-do-repe-and-repne-do-the-same-before-movsb
             // return Err(StepError::Error("movs: unimplemented prefix".into()));
         }
     }
-    Ok(())
 }
 
-pub fn movsd(x86: &mut X86, instr: &Instruction) -> StepResult<()> {
-    movs(x86, instr, 4)
+pub fn movsd(cpu: &mut CPU, mem: &mut Mem, instr: &Instruction) {
+    movs(cpu, mem, instr, 4)
 }
 
-pub fn movsw(x86: &mut X86, instr: &Instruction) -> StepResult<()> {
-    movs(x86, instr, 2)
+pub fn movsw(cpu: &mut CPU, mem: &mut Mem, instr: &Instruction) {
+    movs(cpu, mem, instr, 2)
 }
 
-pub fn movsb(x86: &mut X86, instr: &Instruction) -> StepResult<()> {
-    movs(x86, instr, 1)
+pub fn movsb(cpu: &mut CPU, mem: &mut Mem, instr: &Instruction) {
+    movs(cpu, mem, instr, 1)
 }
 
-fn scas(x86: &mut X86, instr: &Instruction, size: u32) -> StepResult<()> {
-    assert!(!x86.flags.contains(Flags::DF)); // TODO
+fn scas(cpu: &mut CPU, mem: &Mem, instr: &Instruction, size: u32) {
+    assert!(!cpu.flags.contains(Flags::DF)); // TODO
 
     let mut c = 1u32; // 1 step if no rep prefix
     let counter = if instr.has_rep_prefix() || instr.has_repe_prefix() || instr.has_repne_prefix() {
-        &mut x86.regs.ecx
+        &mut cpu.regs.ecx
     } else {
         &mut c
     };
@@ -86,109 +84,106 @@ fn scas(x86: &mut X86, instr: &Instruction, size: u32) -> StepResult<()> {
     while *counter > 0 {
         match size {
             4 => {
-                let src = *x86.mem.view::<u32>(x86.regs.edi);
-                sub(x86.regs.eax, src, &mut x86.flags);
+                let src = mem.get::<u32>(cpu.regs.edi);
+                sub(cpu.regs.eax, src, &mut cpu.flags);
             }
             2 => {
-                let src = *x86.mem.view::<u16>(x86.regs.edi);
-                sub(x86.regs.eax as u16, src, &mut x86.flags);
+                let src = mem.get::<u16>(cpu.regs.edi);
+                sub(cpu.regs.eax as u16, src, &mut cpu.flags);
             }
             1 => {
-                let src = *x86.mem.view::<u8>(x86.regs.edi);
-                sub(x86.regs.eax as u8, src, &mut x86.flags);
+                let src = mem.get::<u8>(cpu.regs.edi);
+                sub(cpu.regs.eax as u8, src, &mut cpu.flags);
             }
             _ => unimplemented!(),
         }
-        x86.regs.edi = x86.regs.edi.wrapping_add(size);
+        cpu.regs.edi = cpu.regs.edi.wrapping_add(size);
         *counter = counter.wrapping_sub(1);
-        if instr.has_repne_prefix() && x86.flags.contains(Flags::ZF) {
+        if instr.has_repne_prefix() && cpu.flags.contains(Flags::ZF) {
             break;
-        } else if instr.has_repe_prefix() && !x86.flags.contains(Flags::ZF) {
+        } else if instr.has_repe_prefix() && !cpu.flags.contains(Flags::ZF) {
             break;
         }
     }
-
-    Ok(())
 }
 
-pub fn scasd(x86: &mut X86, instr: &Instruction) -> StepResult<()> {
-    scas(x86, instr, 4)
+pub fn scasd(cpu: &mut CPU, mem: &mut Mem, instr: &Instruction) {
+    scas(cpu, mem, instr, 4)
 }
-pub fn scasw(x86: &mut X86, instr: &Instruction) -> StepResult<()> {
-    scas(x86, instr, 2)
+pub fn scasw(cpu: &mut CPU, mem: &mut Mem, instr: &Instruction) {
+    scas(cpu, mem, instr, 2)
 }
-pub fn scasb(x86: &mut X86, instr: &Instruction) -> StepResult<()> {
-    scas(x86, instr, 1)
+pub fn scasb(cpu: &mut CPU, mem: &mut Mem, instr: &Instruction) {
+    scas(cpu, mem, instr, 1)
 }
 
-pub fn stos(x86: &mut X86, instr: &Instruction, size: u32) -> StepResult<()> {
-    assert!(!x86.flags.contains(Flags::DF)); // TODO
+pub fn stos(cpu: &mut CPU, mem: &mut Mem, instr: &Instruction, size: u32) {
+    assert!(!cpu.flags.contains(Flags::DF)); // TODO
 
     let mut c = 1u32; // 1 step if no rep prefix
     let counter = if instr.has_rep_prefix() || instr.has_repe_prefix() || instr.has_repne_prefix() {
-        &mut x86.regs.ecx
+        &mut cpu.regs.ecx
     } else {
         &mut c
     };
 
     while *counter > 0 {
         match size {
-            1 => *x86.mem.view_mut::<u8>(x86.regs.edi) = x86.regs.eax as u8,
-            2 => *x86.mem.view_mut::<u16>(x86.regs.edi) = x86.regs.eax as u16,
-            4 => *x86.mem.view_mut::<u32>(x86.regs.edi) = x86.regs.eax,
+            1 => mem.put::<u8>(cpu.regs.edi, cpu.regs.eax as u8),
+            2 => mem.put::<u16>(cpu.regs.edi, cpu.regs.eax as u16),
+            4 => mem.put::<u32>(cpu.regs.edi, cpu.regs.eax),
             _ => unimplemented!(),
         }
-        x86.regs.edi += size;
+        cpu.regs.edi += size;
         *counter -= 1;
     }
     // TODO: does this modify esi?  Sources disagree (!?)
-    Ok(())
 }
 
-pub fn stosd(x86: &mut X86, instr: &Instruction) -> StepResult<()> {
-    stos(x86, instr, 4)
+pub fn stosd(cpu: &mut CPU, mem: &mut Mem, instr: &Instruction) {
+    stos(cpu, mem, instr, 4)
 }
 
-pub fn stosw(x86: &mut X86, instr: &Instruction) -> StepResult<()> {
-    stos(x86, instr, 2)
+pub fn stosw(cpu: &mut CPU, mem: &mut Mem, instr: &Instruction) {
+    stos(cpu, mem, instr, 2)
 }
 
-pub fn stosb(x86: &mut X86, instr: &Instruction) -> StepResult<()> {
-    stos(x86, instr, 1)
+pub fn stosb(cpu: &mut CPU, mem: &mut Mem, instr: &Instruction) {
+    stos(cpu, mem, instr, 1)
 }
 
-pub fn lods(x86: &mut X86, instr: &Instruction, size: usize) -> StepResult<()> {
-    if x86.flags.contains(Flags::DF) {
-        return Err(StepError::Error("TODO DF".into()));
+pub fn lods(cpu: &mut CPU, mem: &Mem, instr: &Instruction, size: usize) {
+    if cpu.flags.contains(Flags::DF) {
+        cpu.state = Err("TODO DF".into());
+        return;
     }
 
     assert!(!instr.has_rep_prefix() && !instr.has_repe_prefix() && !instr.has_repne_prefix());
     match size {
         4 => {
-            x86.regs.eax = x86.read_u32(x86.regs.esi);
+            cpu.regs.eax = mem.get::<u32>(cpu.regs.esi);
         }
         2 => {
-            let value = x86.read_u16(x86.regs.esi);
-            x86.regs.set16(iced_x86::Register::AX, value);
+            let value = mem.get::<u16>(cpu.regs.esi);
+            cpu.regs.set16(iced_x86::Register::AX, value);
         }
         1 => {
-            let value = x86.read_u8(x86.regs.esi);
-            x86.regs.set8(iced_x86::Register::AL, value);
+            let value = mem.get::<u8>(cpu.regs.esi);
+            cpu.regs.set8(iced_x86::Register::AL, value);
         }
         _ => unimplemented!("lods size {}", size),
     }
-    x86.regs.esi += size as u32;
-    Ok(())
+    cpu.regs.esi += size as u32;
 }
 
-pub fn lodsd(x86: &mut X86, instr: &Instruction) -> StepResult<()> {
-    lods(x86, instr, 4)
+pub fn lodsd(cpu: &mut CPU, mem: &mut Mem, instr: &Instruction) {
+    lods(cpu, mem, instr, 4)
 }
 
-pub fn lodsw(x86: &mut X86, instr: &Instruction) -> StepResult<()> {
-    lods(x86, instr, 2)
+pub fn lodsw(cpu: &mut CPU, mem: &mut Mem, instr: &Instruction) {
+    lods(cpu, mem, instr, 2)
 }
 
-pub fn lodsb(x86: &mut X86, instr: &Instruction) -> StepResult<()> {
-    lods(x86, instr, 1)
+pub fn lodsb(cpu: &mut CPU, mem: &mut Mem, instr: &Instruction) {
+    lods(cpu, mem, instr, 1)
 }

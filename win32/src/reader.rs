@@ -1,15 +1,15 @@
 use std::mem::size_of;
 
-use anyhow::{anyhow, bail};
-use x86::{Mem, Memory};
+use anyhow::bail;
+use x86::Mem;
 
-pub struct Reader<'a> {
-    pub buf: &'a Mem,
+pub struct Reader<'m> {
+    pub buf: Mem<'m>,
     pub pos: u32,
 }
 
-impl<'a> Reader<'a> {
-    pub fn new(buf: &'a Mem) -> Self {
+impl<'m> Reader<'m> {
+    pub fn new(buf: Mem<'m>) -> Self {
         Reader { buf, pos: 0 }
     }
 
@@ -34,28 +34,34 @@ impl<'a> Reader<'a> {
         self.check_eof()
     }
 
-    fn peek(&self, n: u32) -> Option<&'a [u8]> {
-        self.buf.0.get(self.pos as usize..(self.pos + n) as usize)
-    }
-
     pub fn expect(&mut self, s: &str) -> anyhow::Result<()> {
-        let p = self.peek(s.len() as u32).ok_or(anyhow!("EOF"))?;
-        if p != s.as_bytes() {
-            bail!("expected {:?}, got {:?}", s, p);
+        let got = self.read_n::<u8>(s.len() as u32)?;
+        if got != s.as_bytes() {
+            bail!("expected {:?}, got {:?}", s, got);
         }
-        self.pos += s.len() as u32;
         Ok(())
     }
 
-    pub fn read<T: x86::Pod>(&mut self) -> &'a T {
+    // TODO: Result<> here.
+    pub fn read<T: x86::Pod>(&mut self) -> &'m T {
         let t = self.buf.view::<T>(self.pos as u32);
         self.pos += size_of::<T>() as u32;
         t
     }
 
-    pub fn read_n<T: x86::Pod>(&mut self, count: u32) -> &'a [T] {
+    pub fn read_unaligned<T: x86::Pod + Clone>(&mut self) -> T {
+        let t = self.buf.get::<T>(self.pos as u32);
+        self.pos += size_of::<T>() as u32;
+        t
+    }
+
+    pub fn read_n<T: x86::Pod>(&mut self, count: u32) -> anyhow::Result<&'m [T]> {
+        let len = size_of::<T>() as u32 * count;
+        if self.pos + len > self.buf.len() {
+            bail!("EOF");
+        }
         let slice = self.buf.view_n::<T>(self.pos as u32, count as u32);
-        self.pos += size_of::<T>() as u32 * count;
-        slice
+        self.pos += len;
+        Ok(slice)
     }
 }

@@ -1,7 +1,7 @@
 //! Functions to unsafely grab winapi function arguments from an x86 stack.
 
 use super::types::Str16;
-use x86::{Mem, Memory};
+use x86::Mem;
 
 unsafe fn extend_lifetime<'a, T: ?Sized>(x: &T) -> &'a T {
     std::mem::transmute(x)
@@ -15,7 +15,7 @@ pub trait FromX86: Sized {
         unimplemented!()
     }
     unsafe fn from_stack(mem: &mut Mem, sp: u32) -> Self {
-        Self::from_raw(*mem.view::<u32>(sp))
+        Self::from_raw(mem.get::<u32>(sp))
     }
     fn stack_consumed() -> u32 {
         4
@@ -48,7 +48,7 @@ impl<T: TryFrom<u32>> FromX86 for Result<T, T::Error> {
 
 impl<T: x86::Pod> FromX86 for Option<&T> {
     unsafe fn from_stack(mem: &mut Mem, sp: u32) -> Self {
-        let addr = mem.read_u32(sp);
+        let addr = mem.get::<u32>(sp);
         if addr == 0 {
             None
         } else {
@@ -59,7 +59,7 @@ impl<T: x86::Pod> FromX86 for Option<&T> {
 
 impl<T: x86::Pod> FromX86 for Option<&mut T> {
     unsafe fn from_stack(mem: &mut Mem, sp: u32) -> Self {
-        let addr = mem.read_u32(sp);
+        let addr = mem.get::<u32>(sp);
         if addr == 0 {
             None
         } else {
@@ -70,14 +70,12 @@ impl<T: x86::Pod> FromX86 for Option<&mut T> {
 
 impl FromX86 for Option<&[u8]> {
     unsafe fn from_stack(mem: &mut Mem, sp: u32) -> Self {
-        let addr = mem.read_u32(sp);
-        let len = mem.read_u32(sp + 4);
+        let addr = mem.get::<u32>(sp);
+        let len = mem.get::<u32>(sp + 4);
         if addr == 0 {
             return None;
         }
-        Some(extend_lifetime(
-            &mem.slice(addr..).slice(..len).as_slice_todo(),
-        ))
+        Some(extend_lifetime(&mem.sub(addr, len).as_slice_todo()))
     }
     fn stack_consumed() -> u32 {
         8
@@ -86,14 +84,12 @@ impl FromX86 for Option<&[u8]> {
 
 impl FromX86 for Option<&mut [u8]> {
     unsafe fn from_stack(mem: &mut Mem, sp: u32) -> Self {
-        let addr = mem.read_u32(sp);
-        let len = mem.read_u32(sp + 4);
+        let addr = mem.get::<u32>(sp);
+        let len = mem.get::<u32>(sp + 4);
         if addr == 0 {
             return None;
         }
-        Some(extend_lifetime_mut(
-            mem.slice_mut(addr..).slice_mut(..len).as_mut_slice_todo(),
-        ))
+        Some(extend_lifetime_mut(mem.sub(addr, len).as_mut_slice_todo()))
     }
     fn stack_consumed() -> u32 {
         8
@@ -102,12 +98,12 @@ impl FromX86 for Option<&mut [u8]> {
 
 impl FromX86 for Option<&[u16]> {
     unsafe fn from_stack(mem: &mut Mem, sp: u32) -> Self {
-        let addr = mem.read_u32(sp);
-        let len = mem.read_u32(sp + 4);
+        let addr = mem.get::<u32>(sp);
+        let len = mem.get::<u32>(sp + 4);
         if addr == 0 {
             return None;
         }
-        std::mem::transmute(mem.slice(addr..).slice(..len).as_slice_todo())
+        std::mem::transmute(mem.sub(addr, len).as_slice_todo())
     }
     fn stack_consumed() -> u32 {
         8
@@ -116,12 +112,12 @@ impl FromX86 for Option<&[u16]> {
 
 impl FromX86 for Option<&mut [u16]> {
     unsafe fn from_stack(mem: &mut Mem, sp: u32) -> Self {
-        let addr = mem.read_u32(sp);
-        let len = mem.read_u32(sp + 4);
+        let addr = mem.get::<u32>(sp);
+        let len = mem.get::<u32>(sp + 4);
         if addr == 0 {
             return None;
         }
-        std::mem::transmute(mem.slice(addr..).slice(..len).as_slice_todo())
+        std::mem::transmute(mem.sub(addr, len).as_slice_todo())
     }
     fn stack_consumed() -> u32 {
         8
@@ -130,18 +126,18 @@ impl FromX86 for Option<&mut [u16]> {
 
 impl FromX86 for Option<&str> {
     unsafe fn from_stack(mem: &mut Mem, sp: u32) -> Self {
-        let addr = mem.read_u32(sp);
+        let addr = mem.get::<u32>(sp);
         if addr == 0 {
             return None;
         }
-        let strz = mem.slice(addr..).read_strz();
+        let strz = mem.slicez(addr).unwrap().to_ascii();
         Some(extend_lifetime(strz))
     }
 }
 
 impl<'a> FromX86 for Option<Str16<'a>> {
     unsafe fn from_stack(mem: &mut Mem, sp: u32) -> Self {
-        let addr = mem.read_u32(sp);
+        let addr = mem.get::<u32>(sp);
         if addr == 0 {
             return None;
         }

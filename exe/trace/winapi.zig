@@ -46,12 +46,32 @@ pub const OUTPUT_DEBUG_STRING_INFO = extern struct {
     nDebugStringLength: u16,
 };
 
+pub const EXCEPTION_CODE = enum(DWORD) {
+    EXCEPTION_BREAKPOINT = 0x80000003,
+    EXCEPTION_SINGLE_STEP = 0x80000004,
+    _,
+};
+
+pub const EXCEPTION_RECORD = extern struct {
+    ExceptionCode: EXCEPTION_CODE,
+    ExceptionFlags: u32,
+    ExceptionRecord: u32,
+    ExceptionAddress: u32,
+    NumberParameters: u32,
+    ExceptionInformation: [15]u32,
+};
+
+pub const EXCEPTION_DEBUG_INFO = extern struct {
+    ExceptionRecord: EXCEPTION_RECORD,
+    dwFirstChance: u32,
+};
+
 pub const DEBUG_EVENT = extern struct {
     dwDebugEventCode: DEBUG_EVENT_CODE,
     dwProcessId: DWORD,
     dwThreadId: DWORD,
     u: extern union {
-        // EXCEPTION_DEBUG_INFO      Exception;
+        Exception: EXCEPTION_DEBUG_INFO,
         // CREATE_THREAD_DEBUG_INFO  CreateThread;
         CreateProcessInfo: CREATE_PROCESS_DEBUG_INFO,
         // CREATE_PROCESS_DEBUG_INFO CreateProcessInfo;
@@ -109,7 +129,7 @@ pub const STARTUPINFOA = extern struct {
 
 pub const PROCESS_INFORMATION = extern struct {
     hProcess: HANDLE,
-    hThread: ?HANDLE,
+    hThread: HANDLE,
     dwProcessId: u32,
     dwThreadId: u32,
 };
@@ -133,4 +153,63 @@ pub extern "kernel32" fn ReadProcessMemory(
     lpBuffer: [*]u8,
     nSize: u32,
     lpNumberOfBytesRead: ?*u32,
+) callconv(windows.WINAPI) BOOL;
+
+pub extern "kernel32" fn WriteProcessMemory(
+    hProcess: HANDLE,
+    lpBaseAddress: u32,
+    lpBuffer: [*]const u8,
+    nSize: u32,
+    lpNumberOfBytesWritten: ?*u32,
+) callconv(windows.WINAPI) BOOL;
+
+pub extern "kernel32" fn FlushInstructionCache(
+    hProcess: HANDLE,
+    lpBaseAddress: u32,
+    dwSize: u32,
+) callconv(windows.WINAPI) BOOL;
+
+pub const CONTEXT_i386: u32 = 0x00010000;
+pub const CONTEXT_CONTROL = CONTEXT_i386 | 0x0001;
+pub const CONTEXT_INTEGER = CONTEXT_i386 | 0x0002;
+pub const CONTEXT_SEGMENTS = CONTEXT_i386 | 0x0004;
+pub const CONTEXT_FLOATING_POINT = CONTEXT_i386 | 0x0008;
+pub const CONTEXT_DEBUG_REGISTERS = CONTEXT_i386 | 0x0010;
+pub const CONTEXT_FULL = CONTEXT_CONTROL | CONTEXT_INTEGER | CONTEXT_SEGMENTS;
+
+pub const CONTEXT = extern struct {
+    ContextFlags: u32,
+    Dr0: u32,
+    Dr1: u32,
+    Dr2: u32,
+    Dr3: u32,
+    Dr6: u32,
+    Dr7: u32,
+    FloatSave: [112]u8, // XXX FLOATING_SAVE_AREA
+    SegGs: u32,
+    SegFs: u32,
+    SegEs: u32,
+    SegDs: u32,
+    Edi: u32,
+    Esi: u32,
+    Ebx: u32,
+    Edx: u32,
+    Ecx: u32,
+    Eax: u32,
+    Ebp: u32,
+    Eip: u32,
+    SegCs: u32,
+    EFlags: u32,
+    Esp: u32,
+    SegSs: u32,
+};
+
+pub extern "kernel32" fn GetThreadContext(
+    hThread: HANDLE,
+    lpContext: *CONTEXT,
+) callconv(windows.WINAPI) BOOL;
+
+pub extern "kernel32" fn SetThreadContext(
+    hThread: HANDLE,
+    lpContext: *CONTEXT,
 ) callconv(windows.WINAPI) BOOL;
