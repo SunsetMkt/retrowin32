@@ -1,0 +1,8 @@
+[package]
+name = "rosetta"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies.win32]
+path = "../win32"
+default-features = false

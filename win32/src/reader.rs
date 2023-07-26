@@ -1,7 +1,6 @@
-use std::mem::size_of;
-
 use anyhow::bail;
-use x86::Mem;
+use memory::Mem;
+use std::mem::size_of;
 
 pub struct Reader<'m> {
     pub buf: Mem<'m>,

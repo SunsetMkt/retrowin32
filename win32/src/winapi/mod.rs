@@ -3,6 +3,7 @@ use crate::machine::Machine;
 mod alloc;
 mod bass;
 pub mod ddraw;
+#[cfg(feature = "cpuemu")]
 mod dll;
 pub mod dsound;
 pub mod gdi32;

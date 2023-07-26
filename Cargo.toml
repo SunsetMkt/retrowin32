@@ -2,6 +2,7 @@
 members = [
   "cli",
   "memory",
+  "rosetta",
   "web/glue",
   "win32",
   "win32/derive",

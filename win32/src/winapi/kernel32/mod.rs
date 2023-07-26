@@ -13,10 +13,10 @@ use super::{
     types::*,
 };
 use crate::machine::Machine;
-use ::memory::Pod;
+use ::memory::{Mem, Pod};
 use num_traits::FromPrimitive;
 use std::{collections::HashMap, io::Write};
-use x86::{Mem, VecMem};
+use x86::VecMem;
 
 pub use self::memory::*;
 pub use dll::*;
