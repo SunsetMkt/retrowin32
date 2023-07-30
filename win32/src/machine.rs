@@ -3,9 +3,10 @@ use crate::{
     shims::{Shims, SHIM_BASE},
     winapi,
 };
-use memory::Mem;
+use memory::{Mem, VecMem};
 use std::collections::HashMap;
-use x86::{Mem, VecMem, X86};
+#[cfg(feature = "cpuemu")]
+use x86::X86;
 
 /// Integrates the X86 CPU emulator with the Windows OS support.
 pub struct Machine {
