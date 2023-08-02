@@ -4,6 +4,7 @@
 use super::{alloc::Alloc, types::*};
 use crate::{host, machine::Machine, winapi::vtable};
 use bitflags::bitflags;
+#[cfg(feature = "cpuemu")]
 use memory::Pod;
 use std::collections::HashMap;
 
@@ -582,6 +583,7 @@ mod IDirectDraw7 {
         DD_OK
     }
 
+    #[cfg(feature = "cpuemu")] // TODO
     #[win32_derive::dllexport]
     async fn EnumDisplayModes(
         machine: &mut Machine,

@@ -1,8 +1,4 @@
-use crate::{
-    host, pe,
-    shims::{Shims, SHIM_BASE},
-    winapi,
-};
+use crate::{host, pe, shims::Shims, winapi};
 use memory::{Mem, VecMem};
 use std::collections::HashMap;
 #[cfg(feature = "cpuemu")]
@@ -27,7 +23,7 @@ impl Machine {
             memory: VecMem::default(),
             host,
             state: winapi::State::new(),
-            shims: Shims::new(),
+            shims: Shims::default(),
             labels: HashMap::new(),
         }
     }

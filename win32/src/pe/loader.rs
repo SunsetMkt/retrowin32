@@ -188,6 +188,7 @@ fn load_pe(
     Ok(base)
 }
 
+#[cfg(feature = "cpueemu")]
 pub fn load_exe(
     machine: &mut Machine,
     buf: &[u8],
@@ -268,6 +269,16 @@ pub fn load_exe(
     };
 
     Ok(())
+}
+
+#[cfg(not(feature = "cpuemu"))]
+pub fn load_exe(
+    machine: &mut Machine,
+    buf: &[u8],
+    cmdline: String,
+    relocate: bool,
+) -> anyhow::Result<()> {
+    todo!()
 }
 
 #[derive(Debug)]

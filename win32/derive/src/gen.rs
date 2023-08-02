@@ -10,6 +10,7 @@ use quote::quote;
 ///
 /// This macro generates shim wrappers of functions, taking their
 /// input args off the stack and forwarding their return values via eax.
+#[cfg(feature = "cpuemu")]
 pub fn fn_wrapper(module: TokenStream, func: &syn::ItemFn) -> TokenStream {
     let mut args = Vec::new();
     let mut tys = Vec::new();
@@ -70,6 +71,14 @@ pub fn fn_wrapper(module: TokenStream, func: &syn::ItemFn) -> TokenStream {
 
     quote!(pub fn #name(machine: &mut Machine) {
         #body
+    })
+}
+
+#[cfg(not(feature = "cpuemu"))]
+pub fn fn_wrapper(_module: TokenStream, func: &syn::ItemFn) -> TokenStream {
+    let name = &func.sig.ident;
+    quote!(pub fn #name(machine: &mut Machine) {
+        todo!()
     })
 }
 

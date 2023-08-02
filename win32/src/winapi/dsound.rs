@@ -85,7 +85,7 @@ mod IDirectSound {
     ];
 }
 
-#[cfg_attr(feature = "cpuemu", win32_derive::shims_from_x86)]
+#[win32_derive::shims_from_x86]
 mod IDirectSoundBuffer {
     use super::*;
 
