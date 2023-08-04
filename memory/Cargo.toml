@@ -10,3 +10,7 @@ serde_bytes = "0.11.7"
 [lib]
 name = "memory"
 path = "memory.rs"
+
+[dependencies.libc]
+version = "0.2"
+optional = true

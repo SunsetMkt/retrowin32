@@ -9,6 +9,11 @@ argh = "0.1.10"
 iced-x86 = "1.17.0"
 log = "0.4.17"
 
+[features]
+default = ["cpuemu", "sdl"]
+sdl = ["dep:sdl2"]
+cpuemu = []
+
 [dependencies.sdl2]
 version = "0.35.2"
 features = ["unsafe_textures"]
@@ -16,7 +21,3 @@ optional = true
 
 [dependencies.win32]
 path = "../win32"
-
-[features]
-default = ["sdl"]
-sdl = ["dep:sdl2"]

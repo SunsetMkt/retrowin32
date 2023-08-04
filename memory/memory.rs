@@ -150,3 +150,27 @@ impl VecMem {
         Mem::from_slice(&self.0)
     }
 }
+#[cfg(feature = "cpuemu")]
+pub type MemImpl = VecMem;
+
+pub struct RawMem {}
+impl Default for RawMem {
+    fn default() -> Self {
+        Self {}
+    }
+}
+impl RawMem {
+    pub fn mem(&self) -> Mem {
+        let s = unsafe { std::slice::from_raw_parts(0 as *const u8, 1 << 20) };
+        Mem::from_slice(s)
+    }
+    pub fn len(&self) -> u32 {
+        0xFFFF_FFFF
+    }
+    pub fn resize(&mut self, _size: u32, _value: u8) {
+        unreachable!()
+    }
+}
+
+#[cfg(not(feature = "cpuemu"))]
+pub type MemImpl = RawMem;

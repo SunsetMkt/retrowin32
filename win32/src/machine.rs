@@ -1,5 +1,5 @@
 use crate::{host, pe, shims::Shims, winapi};
-use memory::{Mem, VecMem};
+use memory::{Mem, MemImpl};
 use std::collections::HashMap;
 #[cfg(feature = "cpuemu")]
 use x86::X86;
@@ -8,7 +8,7 @@ use x86::X86;
 pub struct Machine {
     #[cfg(feature = "cpuemu")]
     pub x86: x86::X86,
-    pub memory: VecMem,
+    pub memory: MemImpl,
     pub host: Box<dyn host::Host>,
     pub state: winapi::State,
     pub shims: Shims,
@@ -20,7 +20,7 @@ impl Machine {
         Machine {
             #[cfg(feature = "cpuemu")]
             x86: x86::X86::new(),
-            memory: VecMem::default(),
+            memory: MemImpl::default(),
             host,
             state: winapi::State::new(),
             shims: Shims::default(),

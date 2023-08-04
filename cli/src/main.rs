@@ -154,6 +154,17 @@ fn main() -> anyhow::Result<()> {
     let cwd = Path::parent(Path::new(&args.exe)).unwrap();
     let host = EnvRef(Rc::new(RefCell::new(Env::new(cwd.to_owned()))));
     let mut machine = win32::Machine::new(Box::new(host.clone()));
+
+    let mp: *const win32::Machine = &machine;
+    println!("machine at {:x}", mp as u64);
+
+    let hr = Box::new(3);
+    let hp: *const i32 = hr.as_ref();
+    println!("heap at {:x}", hp as u64);
+
+    let mut sbuf = String::new();
+    std::io::stdin().read_line(&mut sbuf).unwrap();
+
     machine
         .load_exe(&buf, cmdline.clone(), false)
         .map_err(|err| anyhow!("loading {}: {}", args.exe, err))?;
