@@ -10,6 +10,12 @@ unsafe fn extend_lifetime_mut<'a, T: ?Sized>(x: &mut T) -> &'a mut T {
     std::mem::transmute(x)
 }
 
+pub const fn test() -> u32 {
+    let mut x = 3;
+    x += 4;
+    x
+}
+
 pub trait FromX86: Sized {
     fn from_raw(_raw: u32) -> Self {
         unimplemented!()

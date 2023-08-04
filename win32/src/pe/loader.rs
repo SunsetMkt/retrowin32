@@ -91,7 +91,7 @@ fn patch_iat(machine: &mut Machine, base: u32, imports_data: &IMAGE_DATA_DIRECTO
     // the relevant DLLs shims.
     let mut patches = Vec::new();
 
-    let image = machine.mem().slice(base..);
+    let image = unsafe { std::mem::transmute(machine.mem().slice(base..)) };
     for dll_imports in pe::read_imports(imports_data.as_mem(image)) {
         let dll_name = dll_imports.image_name(image).to_ascii_lowercase();
         let hmodule = winapi::kernel32::LoadLibraryA(machine, Some(&dll_name));

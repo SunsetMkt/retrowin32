@@ -74,16 +74,16 @@ pub struct BuiltinDLL {
     resolve: fn(&ImportSymbol) -> Option<fn(&mut Machine)>,
 }
 
-pub const DLLS: [BuiltinDLL; 9] = [
-    dll::bass::DLL,
-    dll::ddraw::DLL,
-    dll::dsound::DLL,
-    dll::gdi32::DLL,
-    dll::kernel32::DLL,
-    dll::ole32::DLL,
-    dll::oleaut32::DLL,
-    dll::user32::DLL,
-    dll::winmm::DLL,
+pub const DLLS: [BuiltinDLL; 0] = [
+    // dll::bass::DLL,
+    // dll::ddraw::DLL,
+    // dll::dsound::DLL,
+    // dll::gdi32::DLL,
+    // dll::kernel32::DLL,
+    // dll::ole32::DLL,
+    // dll::oleaut32::DLL,
+    // dll::user32::DLL,
+    // dll::winmm::DLL,
 ];
 
 #[derive(serde::Serialize, serde::Deserialize)]
