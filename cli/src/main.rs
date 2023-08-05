@@ -19,6 +19,11 @@ mod headless;
 #[cfg(not(feature = "sdl"))]
 use headless::GUI;
 
+// 0x1_0000_0000 (size of 32 bit region) - 0x4000 (size of pagezero) = 0xfffc000
+#[no_mangle]
+#[link_section = "XYZ,XYZ"]
+pub static VAR1: [u8; 0xfffc000] = [0; 0xfffc000];
+
 #[cfg(feature = "cpuemu")]
 fn dump_asm(machine: &win32::Machine) {
     let instrs = win32::disassemble(machine.mem(), machine.x86.cpu.regs.eip);
@@ -155,15 +160,19 @@ fn main() -> anyhow::Result<()> {
     let host = EnvRef(Rc::new(RefCell::new(Env::new(cwd.to_owned()))));
     let mut machine = win32::Machine::new(Box::new(host.clone()));
 
+    println!("rust main fn at {:x}", main as u64);
+
     let mp: *const win32::Machine = &machine;
-    println!("machine at {:x}", mp as u64);
+    println!("rust stack var at {:x}", mp as u64);
 
     let hr = Box::new(3);
     let hp: *const i32 = hr.as_ref();
-    println!("heap at {:x}", hp as u64);
+    println!("rust heap var at {:x}", hp as u64);
 
     let mut sbuf = String::new();
     std::io::stdin().read_line(&mut sbuf).unwrap();
+
+    println!("{}", VAR1[0]);
 
     machine
         .load_exe(&buf, cmdline.clone(), false)

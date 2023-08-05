@@ -153,15 +153,46 @@ impl VecMem {
 #[cfg(feature = "cpuemu")]
 pub type MemImpl = VecMem;
 
+const PAGEZERO_SIZE: libc::size_t = 0x4000;
+const MAP_32BIT: i32 = 0x8000;
+
 pub struct RawMem {}
 impl Default for RawMem {
     fn default() -> Self {
+        unsafe {
+            let ptr = libc::munmap(PAGEZERO_SIZE as *mut libc::c_void, 0xfffc000);
+            if ptr < 0 {
+                println!(
+                    "munmap: {:?} {}",
+                    std::io::Error::last_os_error(),
+                    *libc::__error()
+                );
+            }
+
+            let ptr = libc::mmap(
+                PAGEZERO_SIZE as *mut libc::c_void,
+                0xfffc000,
+                libc::PROT_READ | libc::PROT_WRITE | libc::PROT_EXEC,
+                libc::MAP_PRIVATE | libc::MAP_ANON | MAP_32BIT,
+                -1,
+                0,
+            );
+            if (ptr as i64) < 0 {
+                println!(
+                    "mmap: {:?} {}",
+                    std::io::Error::last_os_error(),
+                    *libc::__error()
+                );
+            }
+
+            println!("mmap at {:x}", ptr as u64);
+        }
         Self {}
     }
 }
 impl RawMem {
     pub fn mem(&self) -> Mem {
-        let s = unsafe { std::slice::from_raw_parts(0 as *const u8, 1 << 20) };
+        let s = unsafe { std::slice::from_raw_parts(0 as *const u8, 1 << 30) };
         Mem::from_slice(s)
     }
     pub fn len(&self) -> u32 {

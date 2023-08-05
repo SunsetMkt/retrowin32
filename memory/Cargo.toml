@@ -13,4 +13,4 @@ path = "memory.rs"
 
 [dependencies.libc]
 version = "0.2"
-optional = true
+#optional = true

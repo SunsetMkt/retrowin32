@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [features]
-#default = ["cpuemu"]
+# default = ["cpuemu"]
 cpuemu = ["dep:x86"]
 
 [dependencies]
