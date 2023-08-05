@@ -153,15 +153,14 @@ impl VecMem {
 #[cfg(feature = "cpuemu")]
 pub type MemImpl = VecMem;
 
-const PAGEZERO_SIZE: libc::size_t = 0x1000;
-const MAP_32BIT: i32 = 0x8000;
+const PAGEZERO_END: libc::size_t = 0x1000;
+const RESV32_SIZE: libc::size_t = 0x7f000000 - PAGEZERO_END;
 
 pub struct RawMem {}
 impl Default for RawMem {
     fn default() -> Self {
         unsafe {
-            println!("munmap");
-            let ptr = libc::munmap(PAGEZERO_SIZE as *mut libc::c_void, 0xfffc000);
+            let ptr = libc::munmap(PAGEZERO_END as *mut libc::c_void, RESV32_SIZE);
             if ptr < 0 {
                 println!(
                     "munmap: {:?} {}",
@@ -169,14 +168,12 @@ impl Default for RawMem {
                     *libc::__error()
                 );
             }
-            println!("munmap ok");
 
-            println!("mmap");
             let ptr = libc::mmap(
-                PAGEZERO_SIZE as *mut libc::c_void,
-                0xfffc000,
+                PAGEZERO_END as *mut libc::c_void,
+                RESV32_SIZE,
                 libc::PROT_READ | libc::PROT_WRITE | libc::PROT_EXEC,
-                libc::MAP_PRIVATE | libc::MAP_ANON, // | MAP_32BIT,
+                libc::MAP_PRIVATE | libc::MAP_ANON,
                 -1,
                 0,
             );
@@ -186,6 +183,9 @@ impl Default for RawMem {
                     std::io::Error::last_os_error(),
                     *libc::__error()
                 );
+            }
+            if ptr as usize != PAGEZERO_END {
+                panic!("unable to mmap at {:x?}", ptr as usize);
             }
             println!("mmap at {:x}", ptr as u64);
         }

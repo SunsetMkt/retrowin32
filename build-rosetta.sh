@@ -20,6 +20,7 @@ for arg in $linker_args; do
     link_flag="$link_flag,$arg"
 done
 
-export RUSTFLAGS="--print link-args -C relocation-model=dynamic-no-pic -C link_arg=$link_flag"
+# --print link-args
+export RUSTFLAGS="-C relocation-model=dynamic-no-pic -C link_arg=$link_flag"
 
-exec cargo build --target x86_64-apple-darwin -p retrowin32 --no-default-features -v
+exec cargo build --target x86_64-apple-darwin -p retrowin32 --no-default-features
