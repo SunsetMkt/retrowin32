@@ -153,13 +153,14 @@ impl VecMem {
 #[cfg(feature = "cpuemu")]
 pub type MemImpl = VecMem;
 
-const PAGEZERO_SIZE: libc::size_t = 0x4000;
+const PAGEZERO_SIZE: libc::size_t = 0x1000;
 const MAP_32BIT: i32 = 0x8000;
 
 pub struct RawMem {}
 impl Default for RawMem {
     fn default() -> Self {
         unsafe {
+            println!("munmap");
             let ptr = libc::munmap(PAGEZERO_SIZE as *mut libc::c_void, 0xfffc000);
             if ptr < 0 {
                 println!(
@@ -168,12 +169,14 @@ impl Default for RawMem {
                     *libc::__error()
                 );
             }
+            println!("munmap ok");
 
+            println!("mmap");
             let ptr = libc::mmap(
                 PAGEZERO_SIZE as *mut libc::c_void,
                 0xfffc000,
                 libc::PROT_READ | libc::PROT_WRITE | libc::PROT_EXEC,
-                libc::MAP_PRIVATE | libc::MAP_ANON | MAP_32BIT,
+                libc::MAP_PRIVATE | libc::MAP_ANON, // | MAP_32BIT,
                 -1,
                 0,
             );
@@ -184,7 +187,6 @@ impl Default for RawMem {
                     *libc::__error()
                 );
             }
-
             println!("mmap at {:x}", ptr as u64);
         }
         Self {}

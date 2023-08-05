@@ -1,13 +1,25 @@
 #!/bin/sh
 
-#  
+# Arguments passed through to the underlying linker.
+# - Shrink pagezero from 4gb to 4kb so we can use lower 32 bits of memory:
+#     -segalign 0x1000 -pagezero_size 0x1000
+# - Put all our own content above 4gb:
+#     -image_base 0x100000000
+# - Disable PIE, required for moving image base:
+#     -no_pie -no_fixup_chains
+# - Put our RESV32 section at 0x1000 to ensure nothing like malloc claims
+#   the now available lower memory:
+#     -segaddr RESV32 0x1000
+linker_args="-segalign 0x1000 -pagezero_size 0x1000 -image_base 0x100000000 -no_pie -no_fixup_chains -segaddr RESV32 0x1000"
 
-export RUSTFLAGS='--print link-args -C relocation-model=dynamic-no-pic '
-
-for link_arg in -Wl,-no_fixup_chains -Wl,-no_pie -pagezero_size 0x4000 -image_base 0x10000000 -segaddr XYZ 0x4000; do
-    RUSTFLAGS="$RUSTFLAGS -C link_arg=$link_arg"
+# To pass the linker args through all the intermediate build layers,
+# we want to end up with a RUSTFLAGS like
+#   -C link_arg=-Wl,-segalign,0x1000,etc
+link_flag="-Wl"
+for arg in $linker_args; do
+    link_flag="$link_flag,$arg"
 done
 
-# -C relocation-model=dynamic-no-pic -C link_arg=-Wl,-no_fixup_chains -C link-arg=-Wl,-no_pie -C link-arg=-pagezero_size -C link-arg=0x4000 -C link-arg=-image_base -C link-arg=0x10000000 -C link-arg=-segaddr -C link-arg=XYZ -C link-arg=0x4000'
-# -C link-arg=-seg_page_size -C link-arg=WINE_4GB_RESERVE -C link-arg=0x100000'
+export RUSTFLAGS="--print link-args -C relocation-model=dynamic-no-pic -C link_arg=$link_flag"
+
 exec cargo build --target x86_64-apple-darwin -p retrowin32 --no-default-features -v

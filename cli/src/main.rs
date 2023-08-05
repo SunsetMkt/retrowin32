@@ -19,10 +19,14 @@ mod headless;
 #[cfg(not(feature = "sdl"))]
 use headless::GUI;
 
-// 0x1_0000_0000 (size of 32 bit region) - 0x4000 (size of pagezero) = 0xfffc000
-#[no_mangle]
-#[link_section = "XYZ,XYZ"]
-pub static VAR1: [u8; 0xfffc000] = [0; 0xfffc000];
+// Reserved area: pagezero is 0x1000, we want to reserve 4gb-0x1000,
+// but experimentally if I use constants larger than the below the resulting macho file
+// has a section sized zero, even though wine uses a larger constant in similar code (?!).
+// Possibly related to
+// https://github.com/llvm/llvm-project/commit/b822063669641570ab5edae72956d18a5bcde8c4
+// somehow?
+std::arch::global_asm!(".zerofill RESV32,RESV32,__retrowin32_reserve,0x7f000000-0x1000");
+std::arch::global_asm!(".no_dead_strip __retrowin32_reserve");
 
 #[cfg(feature = "cpuemu")]
 fn dump_asm(machine: &win32::Machine) {
@@ -172,7 +176,7 @@ fn main() -> anyhow::Result<()> {
     let mut sbuf = String::new();
     std::io::stdin().read_line(&mut sbuf).unwrap();
 
-    println!("{}", VAR1[0]);
+    // println!("{}", VAR1[0]);
 
     machine
         .load_exe(&buf, cmdline.clone(), false)
