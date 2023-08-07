@@ -178,9 +178,26 @@ fn main() -> anyhow::Result<()> {
 
     // println!("{}", VAR1[0]);
 
-    machine
+    let entry_point = machine
         .load_exe(&buf, cmdline.clone(), false)
         .map_err(|err| anyhow!("loading {}: {}", args.exe, err))?;
+    #[cfg(not(feature = "cpuemu"))]
+    {
+        let seg: u32 = (32 << 3) | 0b111;
+        let m1632: u64 = ((seg as u64) << 32) | entry_point as u64;
+        println!("entry point at {:x}, about to jump", entry_point);
+        //let go: extern "C" fn() = unsafe { std::mem::transmute(entry_point as u64) };
+        std::io::stdin().read_line(&mut sbuf).unwrap();
+        println!("targ {:x}", m1632);
+        println!("targaddr {:x}", &m1632 as *const u64 as u64);
+        //go();
+        unsafe {
+            std::arch::asm!(
+                "lcall [{ep}]",
+                ep = in(reg) &m1632,
+            );
+        }
+    }
 
     #[cfg(feature = "cpuemu")]
     {

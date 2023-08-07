@@ -32,7 +32,7 @@ impl Machine {
         self.memory.mem()
     }
 
-    pub fn load_exe(&mut self, buf: &[u8], cmdline: String, relocate: bool) -> anyhow::Result<()> {
+    pub fn load_exe(&mut self, buf: &[u8], cmdline: String, relocate: bool) -> anyhow::Result<u32> {
         pe::load_exe(self, buf, cmdline, relocate)
     }
 
