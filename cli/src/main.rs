@@ -183,8 +183,9 @@ fn main() -> anyhow::Result<()> {
         .map_err(|err| anyhow!("loading {}: {}", args.exe, err))?;
     #[cfg(not(feature = "cpuemu"))]
     {
-        let seg: u32 = (32 << 3) | 0b111;
-        let m1632: u64 = ((seg as u64) << 32) | entry_point as u64;
+        let seg: u32 = 32;
+        let seg_selector: u32 = (seg << 3) | 0b111;
+        let m1632: u64 = ((seg_selector as u64) << 32) | entry_point as u64;
         println!("entry point at {:x}, about to jump", entry_point);
         //let go: extern "C" fn() = unsafe { std::mem::transmute(entry_point as u64) };
         std::io::stdin().read_line(&mut sbuf).unwrap();
@@ -193,7 +194,9 @@ fn main() -> anyhow::Result<()> {
         //go();
         unsafe {
             std::arch::asm!(
+                //"mov fs,[{teb}]",
                 "lcall [{ep}]",
+                //teb = in(reg) machine.state.kernel32.teb,
                 ep = in(reg) &m1632,
             );
         }
