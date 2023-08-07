@@ -154,7 +154,8 @@ impl VecMem {
 pub type MemImpl = VecMem;
 
 const PAGEZERO_END: libc::size_t = 0x1000;
-const RESV32_SIZE: libc::size_t = 0x7f000000 - PAGEZERO_END;
+//const RESV32_SIZE: libc::size_t = 0x7f000000 - PAGEZERO_END;
+const RESV32_SIZE: libc::size_t = 0x0100_0000 - PAGEZERO_END;
 
 pub struct RawMem {}
 impl Default for RawMem {

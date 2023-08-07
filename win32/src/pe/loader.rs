@@ -188,12 +188,17 @@ fn load_pe(
     Ok(base)
 }
 
+pub struct LoadedAddrs {
+    pub entry_point: u32,
+    pub stack_pointer: u32,
+}
+
 pub fn load_exe(
     machine: &mut Machine,
     buf: &[u8],
     cmdline: String,
     relocate: bool,
-) -> anyhow::Result<u32> {
+) -> anyhow::Result<LoadedAddrs> {
     let file = pe::parse(buf)?;
 
     machine.state.kernel32.init(&mut machine.memory);
@@ -206,13 +211,9 @@ pub fn load_exe(
         .state
         .kernel32
         .init_process(machine.memory.mem(), cmdline);
-    #[cfg(feature = "cpueemu")]
-    {
-        machine.x86.cpu.regs.fs_addr = machine.state.kernel32.teb;
-    }
     #[cfg(not(feature = "cpueemu"))]
     unsafe {
-        setup_ldt();
+        setup_ldt(machine.state.kernel32.teb);
     }
 
     let mut stack_size = file.opt_header.SizeOfStackReserve;
@@ -230,12 +231,6 @@ pub fn load_exe(
             .kernel32
             .mappings
             .alloc(stack_size, "stack".into(), &mut machine.memory);
-    #[cfg(feature = "cpueemu")]
-    {
-        let stack_end = stack.addr + stack.size - 4;
-        machine.x86.cpu.regs.esp = stack_end;
-        machine.x86.cpu.regs.ebp = stack_end;
-    }
 
     if let Some(res_data) = file
         .data_directory
@@ -252,6 +247,20 @@ pub fn load_exe(
     }
 
     let entry_point = base + file.opt_header.AddressOfEntryPoint;
+
+    let addrs = LoadedAddrs {
+        entry_point,
+        stack_pointer: stack.addr + stack.size - 4,
+    };
+
+    #[cfg(feature = "cpueemu")]
+    {
+        machine.x86.cpu.regs.fs_addr = machine.state.kernel32.teb;
+        let stack_end = stack.addr + stack.size - 4;
+        machine.x86.cpu.regs.esp = stack_end;
+        machine.x86.cpu.regs.ebp = stack_end;
+    }
+
     #[cfg(feature = "cpueemu")]
     if dll_mains.is_empty() {
         machine.x86.cpu.regs.eip = entry_point;
@@ -279,7 +288,7 @@ pub fn load_exe(
         );
     };
 
-    Ok(entry_point)
+    Ok(addrs)
 }
 
 #[derive(Debug)]

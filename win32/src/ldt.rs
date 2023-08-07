@@ -51,46 +51,84 @@ extern "C" {
     fn i386_set_ldt(start_sel: c_int, descs: *const LDT_ENTRY, num_sels: c_int) -> c_int;
 }
 
-pub unsafe fn setup_ldt() {
-    let base: u32 = 0;
-    let limit: u32 = 0xFFFF_FFFF;
-    let limit_pages = limit >> 12;
+pub struct LDT {
+    next_index: u16,
+}
 
-    // type bits:
-    // 10EWA
-    //  E: expand-down
-    //  W: writeable
-    //  A: accessed
-    let type_ = 0b11011u8;
-    let dpl = 3u8;
-    let pres = 1u8;
-    let flags1 = (pres << 7) | (dpl << 5) | type_;
-
-    let limit_hi = ((limit_pages >> 16) & 0xF) as u8;
-    let sys = 0u8;
-    let default_big = 1u8;
-    let granularity: u8 = 1u8;
-    let flags2: u8 = (granularity << 7) | (default_big << 6) | (sys << 4) | limit_hi;
-
-    let entry = LDT_ENTRY {
-        BaseLow: base as u16,
-        BaseMid: (base >> 16) as u8,
-        BaseHi: (base >> 24) as u8,
-        LimitLow: limit_pages as u16,
-        Flags1: flags1,
-        Flags2: flags2,
-    };
-    println!("entry: {:x?}", entry);
-    let ret = i386_set_ldt(32, &entry, 1);
-    println!("ldt: {}", ret);
-
-    let mut entries: [LDT_ENTRY; 256] = std::mem::zeroed();
-    let ret = i386_get_ldt(0, &mut entries as *mut LDT_ENTRY, 256);
-    println!("existing: {ret}");
-    for (i, e) in entries.iter().enumerate() {
-        if e.BaseLow == 0 && e.Flags1 == 0 && e.Flags2 == 0 {
-            continue;
-        }
-        println!("{} {:x?}", i, e);
+impl LDT {
+    pub fn new() -> Self {
+        LDT { next_index: 32 }
     }
+
+    pub fn add_entry(&mut self, span: std::ops::Range<u32>, code: bool) -> u16 {
+        let base = span.start;
+        let limit = span.end;
+        let limit_pages = limit >> 12;
+        println!("page limit {:x}", limit_pages);
+
+        // type bits:
+        //  S: 0=system, 1=code/data
+        //   : 0=data, 1=code
+        //  E: expand-down
+        //  W: writeable
+        //  A: accessed
+        let type_ = if code {
+            // code, execute/read, accessed
+            0b11011u8
+        } else {
+            // data, read/write, accessed
+            0b10011u8
+        };
+        let dpl = 3u8;
+        let pres = 1u8;
+        let flags1 = (pres << 7) | (dpl << 5) | type_;
+
+        let limit_hi = ((limit_pages >> 16) & 0xF) as u8;
+        let sys = 0u8;
+        let default_big = 1u8; // 32bit, not 16
+        let granularity: u8 = 1u8;
+        let flags2: u8 = (granularity << 7) | (default_big << 6) | (sys << 4) | limit_hi;
+
+        let entry = LDT_ENTRY {
+            BaseLow: base as u16,
+            BaseMid: (base >> 16) as u8,
+            BaseHi: (base >> 24) as u8,
+            LimitLow: limit_pages as u16,
+            Flags1: flags1,
+            Flags2: flags2,
+        };
+        let index = self.next_index;
+        println!("adding ldt {:x?}", entry);
+        let ret = unsafe { i386_set_ldt(self.next_index as c_int, &entry, 1) };
+        if ret < 0 {
+            panic!("i386_set_ldt: {}", std::io::Error::last_os_error());
+        }
+        self.next_index += 1;
+
+        // index => selector
+        (index << 3) | 0b111
+    }
+
+    unsafe fn dump() {
+        let mut entries: [LDT_ENTRY; 256] = std::mem::zeroed();
+        let ret = i386_get_ldt(0, &mut entries as *mut LDT_ENTRY, 256);
+        println!("existing: {ret}");
+        for (i, e) in entries.iter().enumerate() {
+            if e.BaseLow == 0 && e.Flags1 == 0 && e.Flags2 == 0 {
+                continue;
+            }
+            println!("{} {:x?}", i, e);
+        }
+    }
+}
+
+pub unsafe fn setup_ldt(teb: u32) {
+    let mut ldt = LDT::new();
+    //ldt.add_entry(0..0xFFFF_FFFF, true);
+    let fs_sel = ldt.add_entry(0..0xFFFF, false);
+    // let fs_sel = ldt.add_entry(0..0x1000000, true);
+    // std::arch::asm!(
+    //     "mov fs,{fs_sel:x}",
+    //     fs_sel = in(reg) fs_sel
+    // );
 }

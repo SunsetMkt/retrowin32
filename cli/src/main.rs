@@ -178,15 +178,15 @@ fn main() -> anyhow::Result<()> {
 
     // println!("{}", VAR1[0]);
 
-    let entry_point = machine
+    let addrs = machine
         .load_exe(&buf, cmdline.clone(), false)
         .map_err(|err| anyhow!("loading {}: {}", args.exe, err))?;
     #[cfg(not(feature = "cpuemu"))]
     {
         let seg: u32 = 32;
         let seg_selector: u32 = (seg << 3) | 0b111;
-        let m1632: u64 = ((seg_selector as u64) << 32) | entry_point as u64;
-        println!("entry point at {:x}, about to jump", entry_point);
+        let m1632: u64 = ((seg_selector as u64) << 32) | addrs.entry_point as u64;
+        println!("entry point at {:x}, about to jump", addrs.entry_point);
         //let go: extern "C" fn() = unsafe { std::mem::transmute(entry_point as u64) };
         std::io::stdin().read_line(&mut sbuf).unwrap();
         println!("targ {:x}", m1632);
