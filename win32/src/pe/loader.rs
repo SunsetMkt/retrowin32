@@ -191,6 +191,7 @@ fn load_pe(
 pub struct LoadedAddrs {
     pub entry_point: u32,
     pub stack_pointer: u32,
+    pub code_selector: u16,
 }
 
 pub fn load_exe(
@@ -211,9 +212,10 @@ pub fn load_exe(
         .state
         .kernel32
         .init_process(machine.memory.mem(), cmdline);
+    let code_selector;
     #[cfg(not(feature = "cpueemu"))]
     unsafe {
-        setup_ldt(machine.state.kernel32.teb);
+        code_selector = setup_ldt(machine.state.kernel32.teb);
     }
 
     let mut stack_size = file.opt_header.SizeOfStackReserve;
@@ -251,6 +253,7 @@ pub fn load_exe(
     let addrs = LoadedAddrs {
         entry_point,
         stack_pointer: stack.addr + stack.size - 4,
+        code_selector,
     };
 
     #[cfg(feature = "cpueemu")]

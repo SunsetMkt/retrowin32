@@ -60,11 +60,12 @@ impl LDT {
         LDT { next_index: 32 }
     }
 
-    pub fn add_entry(&mut self, span: std::ops::Range<u32>, code: bool) -> u16 {
-        let base = span.start;
-        let limit = span.end;
-        let limit_pages = limit >> 12;
-        println!("page limit {:x}", limit_pages);
+    pub fn add_entry(&mut self, base: u32, size: u32, code: bool) -> u16 {
+        let (limit, granularity) = if size >= 0x10000 {
+            (size >> 12, 1u8)
+        } else {
+            (size, 0u8)
+        };
 
         // type bits:
         //  S: 0=system, 1=code/data
@@ -83,22 +84,21 @@ impl LDT {
         let pres = 1u8;
         let flags1 = (pres << 7) | (dpl << 5) | type_;
 
-        let limit_hi = ((limit_pages >> 16) & 0xF) as u8;
+        let limit_hi = ((limit >> 16) & 0xF) as u8;
         let sys = 0u8;
         let default_big = 1u8; // 32bit, not 16
-        let granularity: u8 = 1u8;
         let flags2: u8 = (granularity << 7) | (default_big << 6) | (sys << 4) | limit_hi;
 
         let entry = LDT_ENTRY {
             BaseLow: base as u16,
             BaseMid: (base >> 16) as u8,
             BaseHi: (base >> 24) as u8,
-            LimitLow: limit_pages as u16,
+            LimitLow: limit as u16,
             Flags1: flags1,
             Flags2: flags2,
         };
         let index = self.next_index;
-        println!("adding ldt {:x?}", entry);
+        // println!("adding ldt {:x?}", entry);
         let ret = unsafe { i386_set_ldt(self.next_index as c_int, &entry, 1) };
         if ret < 0 {
             panic!("i386_set_ldt: {}", std::io::Error::last_os_error());
@@ -122,13 +122,19 @@ impl LDT {
     }
 }
 
-pub unsafe fn setup_ldt(teb: u32) {
+pub unsafe fn setup_ldt(teb: u32) -> u16 {
     let mut ldt = LDT::new();
-    //ldt.add_entry(0..0xFFFF_FFFF, true);
-    let fs_sel = ldt.add_entry(0..0xFFFF, false);
-    // let fs_sel = ldt.add_entry(0..0x1000000, true);
-    // std::arch::asm!(
-    //     "mov fs,{fs_sel:x}",
-    //     fs_sel = in(reg) fs_sel
-    // );
+
+    // Wine just marks all of memory as code, just in case.
+    let cs = ldt.add_entry(0, 0xFFFF_FFFF, true);
+
+    // NOTE: OSX seems extremely sensitive to the values used here, where like
+    // using a span size that is not exactly 0xFFF causes the entry to be rejected.
+    let fs_sel = ldt.add_entry(teb, 0xFFF, false);
+    std::arch::asm!(
+        "mov fs,{fs_sel:x}",
+        fs_sel = in(reg) fs_sel
+    );
+
+    cs
 }

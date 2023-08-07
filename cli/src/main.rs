@@ -173,31 +173,25 @@ fn main() -> anyhow::Result<()> {
     let hp: *const i32 = hr.as_ref();
     println!("rust heap var at {:x}", hp as u64);
 
-    let mut sbuf = String::new();
-    std::io::stdin().read_line(&mut sbuf).unwrap();
-
-    // println!("{}", VAR1[0]);
-
     let addrs = machine
         .load_exe(&buf, cmdline.clone(), false)
         .map_err(|err| anyhow!("loading {}: {}", args.exe, err))?;
     #[cfg(not(feature = "cpuemu"))]
     {
-        let seg: u32 = 32;
-        let seg_selector: u32 = (seg << 3) | 0b111;
-        let m1632: u64 = ((seg_selector as u64) << 32) | addrs.entry_point as u64;
         println!("entry point at {:x}, about to jump", addrs.entry_point);
-        //let go: extern "C" fn() = unsafe { std::mem::transmute(entry_point as u64) };
-        std::io::stdin().read_line(&mut sbuf).unwrap();
-        println!("targ {:x}", m1632);
-        println!("targaddr {:x}", &m1632 as *const u64 as u64);
-        //go();
+        std::io::stdin().read_line(&mut String::new()).unwrap();
+
+        // https://www.felixcloutier.com/x86/call
+        // We want a "CALL m16:32" to specify the code segment selector.
+        // This needs an address pointing at a 48-bit value cs:entry_point,
+        // and is apparently called "lcall" in Clang assembly, though I could not find it
+        // documented other than by diggging through Clang source:
+        // https://github.com/llvm/llvm-project/blob/ef888bc67c726deb8c74ea32e7c8c9ace756b667/llvm/lib/Target/X86/X86InstrAsmAlias.td#L446
+        let m1632: u64 = ((addrs.code_selector as u64) << 32) | addrs.entry_point as u64;
         unsafe {
             std::arch::asm!(
-                //"mov fs,[{teb}]",
-                "lcall [{ep}]",
-                //teb = in(reg) machine.state.kernel32.teb,
-                ep = in(reg) &m1632,
+                "lcall [{entry_point}]",
+                entry_point = in(reg) &m1632,
             );
         }
     }

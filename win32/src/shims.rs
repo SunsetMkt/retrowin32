@@ -15,7 +15,7 @@ impl Default for Shims {
 }
 impl Shims {
     pub fn add(&mut self, name: String, handler: Option<fn(&mut Machine)>) -> u32 {
-        1
+        0xe1
     }
 }
 
