@@ -16,4 +16,6 @@ tramp64:
 
     addl $0x10, %esp
 
+    # XXX caller came here expecting stdcall, so we need to clean its stack args,
+    # dependent on which function we're trampolining
     retl 20
