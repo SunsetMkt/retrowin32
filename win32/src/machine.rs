@@ -17,12 +17,14 @@ pub struct Machine {
 
 impl Machine {
     pub fn new(host: Box<dyn host::Host>) -> Self {
+        let mut memory = MemImpl::default();
+        let state = winapi::State::new(&mut memory);
         Machine {
             #[cfg(feature = "cpuemu")]
-            x86: x86::X86::new(),
-            memory: MemImpl::default(),
+            x86: X86::new(),
+            memory,
             host,
-            state: winapi::State::new(),
+            state,
             shims: Shims::default(),
             labels: HashMap::new(),
         }
