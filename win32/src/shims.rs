@@ -9,22 +9,66 @@ struct Shim {
     handler: Option<fn(&mut Machine)>,
 }
 
-pub struct Shims {
-    trampolines: &'static mut [u8],
+struct StaticStack {
+    ptr: *mut u8,
+    len: usize,
     ofs: usize,
 }
 
-impl Default for Shims {
+impl Default for StaticStack {
     fn default() -> Self {
-        // unsafe {
-        //     println!("tramp at {:x}", retrowin32_tramp as u64);
-        //     println!("trampe at {:x}", retrowin32_tramp_sz);
-        // }
         Self {
-            trampolines: &mut [],
-            ofs: 16,
+            ptr: std::ptr::null_mut(),
+            len: 0,
+            ofs: 0,
         }
     }
+}
+
+impl StaticStack {
+    fn new(ptr: *mut u8, len: usize) -> Self {
+        StaticStack { ptr, len, ofs: 0 }
+    }
+
+    unsafe fn alloc(&mut self, size: usize) -> *mut u8 {
+        let ptr = self.ptr.add(self.ofs);
+        self.ofs += size;
+        if self.ofs > self.len {
+            panic!("overflow");
+        }
+        ptr
+    }
+    unsafe fn pop(&mut self, size: usize) {
+        self.ofs -= size;
+    }
+
+    fn cur_ptr(&self) -> *mut u8 {
+        unsafe { self.ptr.add(self.ofs) }
+    }
+
+    fn realign(&mut self) {
+        let align = 8;
+        self.ofs = self.ofs + (8 - 1) & !(8 - 1);
+        if self.ofs > self.len {
+            panic!("overflow");
+        }
+    }
+
+    unsafe fn write(&mut self, buf: &[u8]) -> *mut u8 {
+        let ptr = self.cur_ptr();
+        std::ptr::copy_nonoverlapping(buf.as_ptr(), ptr, buf.len());
+        self.ofs += buf.len();
+        if self.ofs > self.len {
+            panic!("overflow");
+        }
+        ptr
+    }
+}
+
+#[derive(Default)]
+pub struct Shims {
+    buf: StaticStack,
+    call64_addr: u32,
 }
 
 fn the_handler() {
@@ -34,54 +78,49 @@ fn the_handler() {
 impl Shims {
     pub fn set_space(&mut self, addr: *mut u8, size: u32) {
         unsafe {
-            self.trampolines = std::slice::from_raw_parts_mut(addr, size as usize);
+            self.buf = StaticStack::new(addr, size as usize);
+
+            // trampoline_x86_64.s:call64:
+            let call64 = self.buf.write(&[0x67, 0xff, 0x54, 0x24, 0x08, 0xcb]);
+            self.buf.realign();
+
+            // 16:32 selector:address of call64, which is written just below:
+            self.call64_addr = self.buf.write(&(call64 as u32).to_le_bytes()) as u32;
+            self.buf.write(&(0x2bu32).to_le_bytes());
+            self.buf.realign();
         }
-
-        let mut out = &mut *self.trampolines;
-        // 16:32 selector:address of call64, which is written just below:
-        out.write(&(addr as u32 + 8).to_le_bytes()).unwrap();
-        out.write(&(0x2bu32).to_le_bytes()).unwrap();
-
-        // trampoline_x86_64.s:call64:
-        out.write(&[0x67, 0xff, 0x54, 0x24, 0x08, 0xcb]).unwrap();
     }
 
     pub fn add(&mut self, name: String, handler: Option<fn(&mut Machine)>) -> u32 {
-        let call64_addr = self.trampolines.as_ptr() as u32;
-        let mut out = &mut self.trampolines[self.ofs..];
-        let tramp_addr = out.as_ptr() as u32;
-        let target: u64 = the_handler as u64; //handler.map(|f| std::mem::transmute(f)).unwrap();
-        println!("handler target {:0x}", target);
+        unsafe {
+            let tramp_addr = self.buf.cur_ptr() as u32;
+            let target: u64 = the_handler as u64; //handler.map(|f| std::mem::transmute(f));
+            println!("tramp {:x} handler target {:0x}", tramp_addr, target);
 
-        // Code from trampoline_x86.s:
+            // Code from trampoline_x86.s:
 
-        // pushl high 32 bits of dest
-        out.write(b"\x68").unwrap();
-        out.write(&((target >> 32) as u32).to_le_bytes()).unwrap();
-        // pushl low 32 bits of dest
-        out.write(b"\x68").unwrap();
-        out.write(&(target as u32).to_le_bytes()).unwrap();
+            // pushl high 32 bits of dest
+            self.buf.write(b"\x68");
+            self.buf.write(&((target >> 32) as u32).to_le_bytes());
+            // pushl low 32 bits of dest
+            self.buf.write(b"\x68");
+            self.buf.write(&(target as u32).to_le_bytes());
 
-        // lcalll *call64_addr
-        out.write(b"\xff\x1d").unwrap();
-        out.write(&call64_addr.to_le_bytes()).unwrap();
+            // lcalll *call64_addr
+            self.buf.write(b"\xff\x1d");
+            self.buf.write(&self.call64_addr.to_le_bytes());
 
-        // addl $0x08, %esp
-        out.write(b"\x83\xc4\x08").unwrap();
+            // addl $0x08, %esp
+            self.buf.write(b"\x83\xc4\x08");
 
-        // retl $20, %esp
-        out.write(b"\xc2\x20\x00").unwrap();
+            // retl $20, %esp
+            self.buf.write(b"\xc2\x20\x00");
+            self.buf.realign();
 
-        println!(
-            "registered {} at {:x} {:x?}",
-            name,
-            tramp_addr,
-            &self.trampolines[self.ofs..self.ofs + 32]
-        );
+            println!("registered {} at {:x}", name, tramp_addr,);
 
-        self.ofs += 0x20;
-        println!("registered {} at {:x}", name, tramp_addr);
-        0x2010
+            0x2010
+        }
     }
 }
 
