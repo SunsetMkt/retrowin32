@@ -205,18 +205,6 @@ pub fn load_exe(
 ) -> anyhow::Result<LoadedAddrs> {
     let file = pe::parse(buf)?;
 
-    #[cfg(not(feature = "cpueemu"))]
-    {
-        let mapping = machine.state.kernel32.mappings.alloc(
-            0x1000,
-            "shims x64 trampoline".into(),
-            &mut machine.memory,
-        );
-        machine
-            .shims
-            .set_space(mapping.addr as u64 as *mut u8, mapping.size);
-    }
-
     println!("{:?}", machine.state.kernel32.mappings.vec());
 
     let base = load_pe(machine, &cmdline, buf, &file, relocate)?;

@@ -1,7 +1,5 @@
 //! "Shims" are my word for the mechanism for x86 -> retrowin32 (and back) calls.
 
-use std::io::Write;
-
 use crate::Machine;
 
 struct Shim {
@@ -65,7 +63,6 @@ impl StaticStack {
     }
 }
 
-#[derive(Default)]
 pub struct Shims {
     buf: StaticStack,
     call64_addr: u32,
@@ -76,18 +73,20 @@ fn the_handler() {
 }
 
 impl Shims {
-    pub fn set_space(&mut self, addr: *mut u8, size: u32) {
+    pub fn new(addr: *mut u8, size: u32) -> Self {
         unsafe {
-            self.buf = StaticStack::new(addr, size as usize);
+            let mut buf = StaticStack::new(addr, size as usize);
 
             // trampoline_x86_64.s:call64:
-            let call64 = self.buf.write(&[0x67, 0xff, 0x54, 0x24, 0x08, 0xcb]);
-            self.buf.realign();
+            let call64 = buf.write(&[0x67, 0xff, 0x54, 0x24, 0x08, 0xcb]);
+            buf.realign();
 
             // 16:32 selector:address of call64, which is written just below:
-            self.call64_addr = self.buf.write(&(call64 as u32).to_le_bytes()) as u32;
-            self.buf.write(&(0x2bu32).to_le_bytes());
-            self.buf.realign();
+            let call64_addr = buf.write(&(call64 as u32).to_le_bytes()) as u32;
+            buf.write(&(0x2bu32).to_le_bytes());
+            buf.realign();
+
+            Shims { buf, call64_addr }
         }
     }
 
