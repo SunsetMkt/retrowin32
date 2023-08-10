@@ -6,10 +6,11 @@ tramp64:
     pushl $0x99999999 # hi 4 bytes of 64bit target
     pushl $0x11111111 # lo 4 bytes of 64bit target
 
-    lcalll *0xaaaaaaaa # 16:32 of call64
+    lcall *0xaaaaaaaa # 16:32 of call64
 
-    addl $0x8, %esp
+    # stack contents are now:
+    #   8 bytes of 64bit target
+    #   4 bytes return addr in exe
+    #   N bytes arguments passed via stdcall
 
-    # XXX caller came here expecting stdcall, so we need to clean its stack args,
-    # dependent on which function we're trampolining
-    retl $0x20
+    retw $20  # clean stdcall args
