@@ -10,8 +10,11 @@ use quote::quote;
 ///
 /// This macro generates shim wrappers of functions, taking their
 /// input args off the stack and forwarding their return values via eax.
-#[cfg(feature = "cpuemu")]
-pub fn fn_wrapper(module: TokenStream, func: &syn::ItemFn) -> TokenStream {
+pub fn fn_wrapper(
+    module: TokenStream,
+    ordinal: Option<usize>,
+    func: &syn::ItemFn,
+) -> (TokenStream, TokenStream) {
     let mut args = Vec::new();
     let mut tys = Vec::new();
 
@@ -30,6 +33,7 @@ pub fn fn_wrapper(module: TokenStream, func: &syn::ItemFn) -> TokenStream {
     }
 
     let name = &func.sig.ident;
+    let name_str = name.to_string();
 
     let fetch_args = quote! {
         // We expect all the stack_offset math to be inlined by the compiler into plain constants.
@@ -47,6 +51,7 @@ pub fn fn_wrapper(module: TokenStream, func: &syn::ItemFn) -> TokenStream {
     };
 
     // If the function is async, we need to handle the return value a bit differently.
+    #[cfg(feature = "cpuemu")]
     let body = if func.sig.asyncness.is_some() {
         quote! {
             #fetch_args
@@ -68,18 +73,24 @@ pub fn fn_wrapper(module: TokenStream, func: &syn::ItemFn) -> TokenStream {
             #ret
         }
     };
+    #[cfg(not(feature = "cpuemu"))]
+    let body = quote!(todo!());
 
-    quote!(pub fn #name(machine: &mut Machine) {
-        #body
-    })
-}
+    let ordinal_tok = match ordinal {
+        None => quote!(None),
+        Some(o) => quote!(Some(#o)),
+    };
 
-#[cfg(not(feature = "cpuemu"))]
-pub fn fn_wrapper(_module: TokenStream, func: &syn::ItemFn) -> TokenStream {
-    let name = &func.sig.ident;
-    quote!(pub fn #name(machine: &mut Machine) {
-        todo!()
-    })
+    let stack_consumed = if tys.is_empty() {
+        quote!(0)
+    } else {
+        quote!(#(<#tys>::stack_consumed())+*)
+    };
+
+    (
+        quote!(pub fn #name(machine: &mut Machine) { #body }),
+        quote!(Symbol { name: #name_str, ordinal: #ordinal_tok, func: #name, stack_consumed: || { #stack_consumed } }),
+    )
 }
 
 // TODO: this fn is used by main.rs, but not lib.rs.
