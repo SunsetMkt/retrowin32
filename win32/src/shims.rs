@@ -1,6 +1,6 @@
 //! "Shims" are my word for the mechanism for x86 -> retrowin32 (and back) calls.
 
-use crate::Machine;
+use crate::{winapi::builtin, Machine};
 
 struct Shim {
     name: String,
@@ -65,6 +65,7 @@ impl StaticStack {
 
 pub struct Shims {
     buf: StaticStack,
+    machine_ptr: *mut u8,
     call64_addr: u32,
 }
 
@@ -78,7 +79,15 @@ impl Shims {
             let mut buf = StaticStack::new(addr, size as usize);
 
             // trampoline_x86_64.s:call64:
-            let call64 = buf.write(b"\x67\xff\x54\x24\x08\xca\x08\x00");
+            let call64 = buf.write(b"\x57\x56");
+            buf.write(b"\x48\xbf");
+            let machine_ptr = buf.write(&0u64.to_le_bytes());
+            buf.write(
+                b"\x48\x8d\x74\x24\x20\
+                \xff\x54\x24\x18\
+                \x5e\x5f\
+                \xca\x08\x00",
+            );
             buf.realign();
 
             // 16:32 selector:address of call64
@@ -86,19 +95,23 @@ impl Shims {
             buf.write(&(0x2bu32).to_le_bytes());
             buf.realign();
 
-            println!(
-                "call64 at {:x}, m16:32 at {:x}",
-                call64 as u32, call64_addr as u32
-            );
-
-            Shims { buf, call64_addr }
+            Shims {
+                buf,
+                machine_ptr,
+                call64_addr,
+            }
         }
     }
 
-    pub fn add(&mut self, name: String, handler: Option<fn(&mut Machine)>) -> u32 {
-        let handler = handler.unwrap();
+    pub unsafe fn set_machine(&mut self, machine: *const Machine) {
+        let addr = machine as u64;
+        std::ptr::copy_nonoverlapping(&addr, self.machine_ptr as *mut u64, 1);
+    }
+
+    pub fn add(&mut self, name: String, builtin: Option<&builtin::Symbol>) -> u32 {
+        let builtin = builtin.unwrap();
         unsafe {
-            let target: u64 = handler as u64;
+            let target: u64 = builtin.func as u64;
 
             // Code from trampoline_x86.s:
 
@@ -115,11 +128,11 @@ impl Shims {
 
             // retl <16-bit bytes to pop>
             self.buf.write(b"\xc2");
-            let stack_consumed = 0x14u16;
-            self.buf.write(&(stack_consumed + 8).to_le_bytes());
+            let stack_consumed: u16 = (builtin.stack_consumed)() as u16;
+            self.buf.write(&stack_consumed.to_le_bytes());
             self.buf.realign();
 
-            println!("{name} tramp {:x} handler target {:0x}", tramp_addr, target);
+            // println!("{name} tramp {:x} handler target {:0x}", tramp_addr, target);
 
             tramp_addr
         }
@@ -139,5 +152,12 @@ impl std::future::Future for UnimplFuture {
 }
 
 pub fn async_call(machine: &mut Machine, func: u32, args: Vec<u32>) -> UnimplFuture {
+    todo!()
+}
+
+pub fn become_async(
+    machine: &mut Machine,
+    future: std::pin::Pin<Box<dyn std::future::Future<Output = u32>>>,
+) {
     todo!()
 }

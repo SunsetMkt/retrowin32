@@ -98,6 +98,7 @@ struct EnvRef(Rc<RefCell<Env>>);
 impl win32::Host for EnvRef {
     fn exit(&mut self, code: u32) {
         self.0.borrow_mut().exit_code = Some(code);
+        std::process::exit(code as i32);
     }
 
     fn time(&self) -> u32 {
@@ -163,15 +164,9 @@ fn main() -> anyhow::Result<()> {
     let cwd = Path::parent(Path::new(&args.exe)).unwrap();
     let host = EnvRef(Rc::new(RefCell::new(Env::new(cwd.to_owned()))));
     let mut machine = win32::Machine::new(Box::new(host.clone()));
-
-    println!("rust main fn at {:x}", main as u64);
-
-    let mp: *const win32::Machine = &machine;
-    println!("rust stack var at {:x}", mp as u64);
-
-    let hr = Box::new(3);
-    let hp: *const i32 = hr.as_ref();
-    println!("rust heap var at {:x}", hp as u64);
+    unsafe {
+        machine.shims.set_machine(&machine);
+    }
 
     let addrs = machine
         .load_exe(&buf, cmdline.clone(), false)

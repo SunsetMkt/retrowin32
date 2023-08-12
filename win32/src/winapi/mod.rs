@@ -2,7 +2,7 @@ use memory::MemImpl;
 
 mod alloc;
 mod bass;
-mod builtin;
+pub mod builtin;
 pub mod ddraw;
 pub mod dsound;
 pub mod gdi32;
@@ -16,13 +16,13 @@ mod winmm;
 
 macro_rules! vtable_entry {
     ($shims:ident $fn:ident ok) => {
-        Some($shims::$fn)
+        None // XXX Some($shims::$fn)
     };
     ($shims:ident $fn:ident todo) => {
         None
     };
     ($shims:ident $fn:ident $impl:tt) => {
-        Some($impl)
+        None // Some($impl)
     };
 }
 pub(crate) use vtable_entry;

@@ -205,8 +205,6 @@ pub fn load_exe(
 ) -> anyhow::Result<LoadedAddrs> {
     let file = pe::parse(buf)?;
 
-    println!("{:?}", machine.state.kernel32.mappings.vec());
-
     let base = load_pe(machine, &cmdline, buf, &file, relocate)?;
     machine.state.kernel32.image_base = base;
 

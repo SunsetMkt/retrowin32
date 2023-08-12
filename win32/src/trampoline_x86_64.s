@@ -6,14 +6,27 @@
 # calling it from each instance of the trampoline.
 
 call64:
-    # stack contents:
-    #   0   32-bit return address
+    # stack contents on entry:
+    #   0   32-bit trampoline return address
     #   4   32-bit segment selector
-    #   8   64-bit target addr (8 bytes)
+    #   8   64-bit shim target addr (8 bytes)
     #   16  exe return address
     #   20... argn passed from exe
 
-    callq *8(%esp)
+    # we're calling an 'extern "C"' Rust function like
+    #   pub extern "C" fn WriteFile(machine: &mut Machine, esp: u32) {
+    # calling convention args go in
+    #   rdi, rsi, rdx, rcx
+    # 32-bit stdcall: callee may clobber eax/ecx/edx,
+    # 64-bit ccall: callee preserves rbx/rsp/rbp and others
+    # so back up rdi/rsi here
+    pushq %rdi
+    pushq %rsi
+    movq $0x123456789, %rdi   # machine
+    leaq 32(%rsp), %rsi  # esp
+    callq *24(%rsp)
+    popq %rsi
+    popq %rdi
 
     # We want 'far ret', https://www.felixcloutier.com/x86/ret opcode cb
     # It is only available in Clang if we use att syntax(!)

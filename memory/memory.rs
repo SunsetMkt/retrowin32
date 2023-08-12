@@ -163,7 +163,7 @@ impl Default for RawMem {
         unsafe {
             let ptr = libc::munmap(PAGEZERO_END as *mut libc::c_void, RESV32_SIZE);
             if ptr < 0 {
-                println!(
+                eprintln!(
                     "munmap: {:?} {}",
                     std::io::Error::last_os_error(),
                     *libc::__error()
@@ -179,7 +179,7 @@ impl Default for RawMem {
                 0,
             );
             if (ptr as i64) < 0 {
-                println!(
+                eprintln!(
                     "mmap: {:?} {}",
                     std::io::Error::last_os_error(),
                     *libc::__error()
@@ -188,7 +188,6 @@ impl Default for RawMem {
             if ptr as usize != PAGEZERO_END {
                 panic!("unable to mmap at {:x?}", ptr as usize);
             }
-            println!("mmap at {:x}", ptr as u64);
         }
         Self {}
     }

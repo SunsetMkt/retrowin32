@@ -9,7 +9,7 @@ use crate::{
 pub struct Symbol {
     pub name: &'static str,
     pub ordinal: Option<usize>,
-    pub func: fn(&mut Machine),
+    pub func: extern "C" fn(&mut Machine, u32) -> u32,
     pub stack_consumed: fn() -> u32,
 }
 pub struct BuiltinDLL {
@@ -19,20 +19,52 @@ pub struct BuiltinDLL {
 pub mod bass {
     use super::*;
     use winapi::bass::*;
-    pub fn BASS_Init(machine: &mut Machine) {
-        todo!()
+    pub extern "C" fn BASS_Init(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let arg1 = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let arg2 = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let arg3 = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let arg4 = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let result = winapi::bass::BASS_Init(machine, arg1, arg2, arg3, arg4);
+        result.to_raw()
     }
-    pub fn BASS_MusicLoad(machine: &mut Machine) {
-        todo!()
+    pub extern "C" fn BASS_MusicLoad(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let arg1 = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let arg2 = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let arg3 = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let arg4 = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let arg5 = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let result = winapi::bass::BASS_MusicLoad(machine, arg1, arg2, arg3, arg4, arg5);
+        result.to_raw()
     }
-    pub fn BASS_Start(machine: &mut Machine) {
-        todo!()
+    pub extern "C" fn BASS_Start(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let result = winapi::bass::BASS_Start(machine);
+        result.to_raw()
     }
-    pub fn BASS_MusicPlay(machine: &mut Machine) {
-        todo!()
+    pub extern "C" fn BASS_MusicPlay(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let arg1 = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let result = winapi::bass::BASS_MusicPlay(machine, arg1);
+        result.to_raw()
     }
-    pub fn BASS_ChannelGetPosition(machine: &mut Machine) {
-        todo!()
+    pub extern "C" fn BASS_ChannelGetPosition(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let arg1 = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let result = winapi::bass::BASS_ChannelGetPosition(machine, arg1);
+        result.to_raw()
     }
     const EXPORTS: [Symbol; 5usize] = [
         Symbol {
@@ -85,11 +117,29 @@ pub mod bass {
 pub mod ddraw {
     use super::*;
     use winapi::ddraw::*;
-    pub fn DirectDrawCreate(machine: &mut Machine) {
-        todo!()
+    pub extern "C" fn DirectDrawCreate(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let lpGuid = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let lplpDD = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let pUnkOuter = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let result = winapi::ddraw::DirectDrawCreate(machine, lpGuid, lplpDD, pUnkOuter);
+        result.to_raw()
     }
-    pub fn DirectDrawCreateEx(machine: &mut Machine) {
-        todo!()
+    pub extern "C" fn DirectDrawCreateEx(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let lpGuid = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let lplpDD = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let iid = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let pUnkOuter = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let result = winapi::ddraw::DirectDrawCreateEx(machine, lpGuid, lplpDD, iid, pUnkOuter);
+        result.to_raw()
     }
     const EXPORTS: [Symbol; 2usize] = [
         Symbol {
@@ -120,8 +170,16 @@ pub mod ddraw {
 pub mod dsound {
     use super::*;
     use winapi::dsound::*;
-    pub fn DirectSoundCreate(machine: &mut Machine) {
-        todo!()
+    pub extern "C" fn DirectSoundCreate(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let _lpGuid = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let ppDS = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let _pUnkOuter = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let result = winapi::dsound::DirectSoundCreate(machine, _lpGuid, ppDS, _pUnkOuter);
+        result.to_raw()
     }
     const EXPORTS: [Symbol; 1usize] = [Symbol {
         name: "DirectSoundCreate",
@@ -139,26 +197,98 @@ pub mod dsound {
 pub mod gdi32 {
     use super::*;
     use winapi::gdi32::*;
-    pub fn GetStockObject(machine: &mut Machine) {
-        todo!()
+    pub extern "C" fn GetStockObject(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let _i = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let result = winapi::gdi32::GetStockObject(machine, _i);
+        result.to_raw()
     }
-    pub fn SelectObject(machine: &mut Machine) {
-        todo!()
+    pub extern "C" fn SelectObject(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let hdc = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let hGdiObj = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let result = winapi::gdi32::SelectObject(machine, hdc, hGdiObj);
+        result.to_raw()
     }
-    pub fn GetObjectA(machine: &mut Machine) {
-        todo!()
+    pub extern "C" fn GetObjectA(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let handle = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let _bytes = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let _out = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let result = winapi::gdi32::GetObjectA(machine, handle, _bytes, _out);
+        result.to_raw()
     }
-    pub fn CreateCompatibleDC(machine: &mut Machine) {
-        todo!()
+    pub extern "C" fn CreateCompatibleDC(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let hdc = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let result = winapi::gdi32::CreateCompatibleDC(machine, hdc);
+        result.to_raw()
     }
-    pub fn DeleteDC(machine: &mut Machine) {
-        todo!()
+    pub extern "C" fn DeleteDC(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let hdc = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let result = winapi::gdi32::DeleteDC(machine, hdc);
+        result.to_raw()
     }
-    pub fn BitBlt(machine: &mut Machine) {
-        todo!()
+    pub extern "C" fn BitBlt(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let hdc = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let x = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let y = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let cx = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let cy = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let hdcSrc = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let x1 = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let y1 = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let rop = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let result = winapi::gdi32::BitBlt(machine, hdc, x, y, cx, cy, hdcSrc, x1, y1, rop);
+        result.to_raw()
     }
-    pub fn StretchBlt(machine: &mut Machine) {
-        todo!()
+    pub extern "C" fn StretchBlt(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let hdcDest = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let xDest = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let yDest = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let wDest = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let hDest = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let hdcSrc = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let xSrc = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let ySrc = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let wSrc = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let hSrc = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let rop = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let result = winapi::gdi32::StretchBlt(
+            machine, hdcDest, xDest, yDest, wDest, hDest, hdcSrc, xSrc, ySrc, wSrc, hSrc, rop,
+        );
+        result.to_raw()
     }
     const EXPORTS: [Symbol; 7usize] = [
         Symbol {
@@ -236,212 +366,678 @@ pub mod gdi32 {
 pub mod kernel32 {
     use super::*;
     use winapi::kernel32::*;
-    pub fn GetModuleHandleA(machine: &mut Machine) {
-        todo!()
-    }
-    pub fn GetModuleHandleW(machine: &mut Machine) {
-        todo!()
-    }
-    pub fn GetModuleHandleExW(machine: &mut Machine) {
-        todo!()
-    }
-    pub fn LoadLibraryA(machine: &mut Machine) {
-        todo!()
-    }
-    pub fn LoadLibraryExW(machine: &mut Machine) {
-        todo!()
-    }
-    pub fn GetProcAddress(machine: &mut Machine) {
-        todo!()
-    }
-    pub fn GetStdHandle(machine: &mut Machine) {
-        todo!()
-    }
-    pub fn CreateFileA(machine: &mut Machine) {
-        todo!()
-    }
-    pub fn CreateFileW(machine: &mut Machine) {
-        todo!()
-    }
-    pub fn GetFileType(machine: &mut Machine) {
-        todo!()
-    }
-    pub fn SetFilePointer(machine: &mut Machine) {
-        todo!()
-    }
-    pub fn ReadFile(machine: &mut Machine) {
-        todo!()
-    }
-    pub fn WriteFile(machine: &mut Machine) {
-        todo!()
-    }
-    pub fn HeapAlloc(machine: &mut Machine) {
-        todo!()
-    }
-    pub fn HeapFree(machine: &mut Machine) {
-        todo!()
-    }
-    pub fn HeapSize(machine: &mut Machine) {
-        todo!()
-    }
-    pub fn HeapReAlloc(machine: &mut Machine) {
-        todo!()
-    }
-    pub fn HeapCreate(machine: &mut Machine) {
-        todo!()
-    }
-    pub fn HeapDestroy(machine: &mut Machine) {
-        todo!()
-    }
-    pub fn VirtualAlloc(machine: &mut Machine) {
-        todo!()
-    }
-    pub fn VirtualFree(machine: &mut Machine) {
-        todo!()
-    }
-    pub fn IsBadReadPtr(machine: &mut Machine) {
-        todo!()
-    }
-    pub fn IsBadWritePtr(machine: &mut Machine) {
-        todo!()
-    }
-    pub fn SetLastError(machine: &mut Machine) {
-        todo!()
-    }
-    pub fn GetLastError(machine: &mut Machine) {
-        todo!()
-    }
-    pub fn ExitProcess(machine: &mut Machine) {
-        todo!()
-    }
-    pub fn GetACP(machine: &mut Machine) {
-        todo!()
-    }
-    pub fn IsValidCodePage(machine: &mut Machine) {
-        todo!()
-    }
-    pub fn GetCPInfo(machine: &mut Machine) {
-        todo!()
-    }
-    pub fn GetCommandLineA(machine: &mut Machine) {
-        todo!()
-    }
-    pub fn GetCommandLineW(machine: &mut Machine) {
-        todo!()
-    }
-    pub fn GetEnvironmentStrings(machine: &mut Machine) {
-        todo!()
-    }
-    pub fn FreeEnvironmentStringsA(machine: &mut Machine) {
-        todo!()
-    }
-    pub fn GetEnvironmentStringsW(machine: &mut Machine) {
-        todo!()
-    }
-    pub fn GetEnvironmentVariableA(machine: &mut Machine) {
-        todo!()
-    }
-    pub fn GetModuleFileNameA(machine: &mut Machine) {
-        todo!()
-    }
-    pub fn GetModuleFileNameW(machine: &mut Machine) {
-        todo!()
-    }
-    pub fn GetStartupInfoA(machine: &mut Machine) {
-        todo!()
-    }
-    pub fn GetStartupInfoW(machine: &mut Machine) {
-        todo!()
-    }
-    pub fn IsProcessorFeaturePresent(machine: &mut Machine) {
-        todo!()
-    }
-    pub fn IsDebuggerPresent(machine: &mut Machine) {
-        todo!()
-    }
-    pub fn GetCurrentProcessId(machine: &mut Machine) {
-        todo!()
-    }
-    pub fn GetTickCount(machine: &mut Machine) {
-        todo!()
-    }
-    pub fn QueryPerformanceCounter(machine: &mut Machine) {
-        todo!()
-    }
-    pub fn QueryPerformanceFrequency(machine: &mut Machine) {
-        todo!()
-    }
-    pub fn GetSystemTimeAsFileTime(machine: &mut Machine) {
-        todo!()
-    }
-    pub fn GetVersion(machine: &mut Machine) {
-        todo!()
-    }
-    pub fn GetVersionExA(machine: &mut Machine) {
-        todo!()
-    }
-    pub fn GetProcessHeap(machine: &mut Machine) {
-        todo!()
-    }
-    pub fn SetHandleCount(machine: &mut Machine) {
-        todo!()
-    }
-    pub fn OutputDebugStringA(machine: &mut Machine) {
-        todo!()
-    }
-    pub fn InitializeCriticalSectionAndSpinCount(machine: &mut Machine) {
-        todo!()
-    }
-    pub fn DeleteCriticalSection(machine: &mut Machine) {
-        todo!()
-    }
-    pub fn EnterCriticalSection(machine: &mut Machine) {
-        todo!()
-    }
-    pub fn LeaveCriticalSection(machine: &mut Machine) {
-        todo!()
-    }
-    pub fn SetUnhandledExceptionFilter(machine: &mut Machine) {
-        todo!()
-    }
-    pub fn UnhandledExceptionFilter(machine: &mut Machine) {
-        todo!()
-    }
-    pub fn NtCurrentTeb(machine: &mut Machine) {
-        todo!()
-    }
-    pub fn InitializeSListHead(machine: &mut Machine) {
-        todo!()
-    }
-    pub fn MultiByteToWideChar(machine: &mut Machine) {
-        todo!()
-    }
-    pub fn WriteConsoleW(machine: &mut Machine) {
-        todo!()
-    }
-    pub fn GetCurrentThreadId(machine: &mut Machine) {
-        todo!()
-    }
-    pub fn TlsAlloc(machine: &mut Machine) {
-        todo!()
-    }
-    pub fn TlsFree(machine: &mut Machine) {
-        todo!()
-    }
-    pub fn TlsSetValue(machine: &mut Machine) {
-        todo!()
-    }
-    pub fn TlsGetValue(machine: &mut Machine) {
-        todo!()
-    }
-    pub fn CreateThread(machine: &mut Machine) {
-        todo!()
-    }
-    pub fn SetThreadPriority(machine: &mut Machine) {
-        todo!()
-    }
-    pub fn InterlockedIncrement(machine: &mut Machine) {
-        todo!()
+    pub extern "C" fn GetModuleHandleA(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let lpModuleName = unsafe { <Option<&str>>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <Option<&str>>::stack_consumed();
+        let result = winapi::kernel32::GetModuleHandleA(machine, lpModuleName);
+        result.to_raw()
+    }
+    pub extern "C" fn GetModuleHandleW(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let lpModuleName =
+            unsafe { <Option<Str16>>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <Option<Str16>>::stack_consumed();
+        let result = winapi::kernel32::GetModuleHandleW(machine, lpModuleName);
+        result.to_raw()
+    }
+    pub extern "C" fn GetModuleHandleExW(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let dwFlags = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let lpModuleName =
+            unsafe { <Option<Str16>>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <Option<Str16>>::stack_consumed();
+        let hModule =
+            unsafe { <Option<&mut HMODULE>>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <Option<&mut HMODULE>>::stack_consumed();
+        let result = winapi::kernel32::GetModuleHandleExW(machine, dwFlags, lpModuleName, hModule);
+        result.to_raw()
+    }
+    pub extern "C" fn LoadLibraryA(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let filename = unsafe { <Option<&str>>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <Option<&str>>::stack_consumed();
+        let result = winapi::kernel32::LoadLibraryA(machine, filename);
+        result.to_raw()
+    }
+    pub extern "C" fn LoadLibraryExW(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let lpLibFileName =
+            unsafe { <Option<Str16>>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <Option<Str16>>::stack_consumed();
+        let hFile = unsafe { <HFILE>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <HFILE>::stack_consumed();
+        let dwFlags = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let result = winapi::kernel32::LoadLibraryExW(machine, lpLibFileName, hFile, dwFlags);
+        result.to_raw()
+    }
+    pub extern "C" fn GetProcAddress(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let hModule = unsafe { <HMODULE>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <HMODULE>::stack_consumed();
+        let lpProcName = unsafe { <Option<&str>>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <Option<&str>>::stack_consumed();
+        let result = winapi::kernel32::GetProcAddress(machine, hModule, lpProcName);
+        result.to_raw()
+    }
+    pub extern "C" fn GetStdHandle(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let nStdHandle = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let result = winapi::kernel32::GetStdHandle(machine, nStdHandle);
+        result.to_raw()
+    }
+    pub extern "C" fn CreateFileA(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let lpFileName = unsafe { <Option<&str>>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <Option<&str>>::stack_consumed();
+        let dwDesiredAccess = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let dwShareMode = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let lpSecurityAttributes = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let dwCreationDisposition = unsafe {
+            <Result<CreationDisposition, u32>>::from_stack(machine.mem(), esp + stack_offset)
+        };
+        stack_offset += <Result<CreationDisposition, u32>>::stack_consumed();
+        let dwFlagsAndAttributes = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let hTemplateFile = unsafe { <HFILE>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <HFILE>::stack_consumed();
+        let result = winapi::kernel32::CreateFileA(
+            machine,
+            lpFileName,
+            dwDesiredAccess,
+            dwShareMode,
+            lpSecurityAttributes,
+            dwCreationDisposition,
+            dwFlagsAndAttributes,
+            hTemplateFile,
+        );
+        result.to_raw()
+    }
+    pub extern "C" fn CreateFileW(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let lpFileName = unsafe { <Option<Str16>>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <Option<Str16>>::stack_consumed();
+        let dwDesiredAccess = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let dwShareMode = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let lpSecurityAttributes = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let dwCreationDisposition = unsafe {
+            <Result<CreationDisposition, u32>>::from_stack(machine.mem(), esp + stack_offset)
+        };
+        stack_offset += <Result<CreationDisposition, u32>>::stack_consumed();
+        let dwFlagsAndAttributes = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let hTemplateFile = unsafe { <HFILE>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <HFILE>::stack_consumed();
+        let result = winapi::kernel32::CreateFileW(
+            machine,
+            lpFileName,
+            dwDesiredAccess,
+            dwShareMode,
+            lpSecurityAttributes,
+            dwCreationDisposition,
+            dwFlagsAndAttributes,
+            hTemplateFile,
+        );
+        result.to_raw()
+    }
+    pub extern "C" fn GetFileType(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let hFile = unsafe { <HFILE>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <HFILE>::stack_consumed();
+        let result = winapi::kernel32::GetFileType(machine, hFile);
+        result.to_raw()
+    }
+    pub extern "C" fn SetFilePointer(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let hFile = unsafe { <HFILE>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <HFILE>::stack_consumed();
+        let lDistanceToMove = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let lpDistanceToMoveHigh =
+            unsafe { <Option<&mut u32>>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <Option<&mut u32>>::stack_consumed();
+        let dwMoveMethod = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let result = winapi::kernel32::SetFilePointer(
+            machine,
+            hFile,
+            lDistanceToMove,
+            lpDistanceToMoveHigh,
+            dwMoveMethod,
+        );
+        result.to_raw()
+    }
+    pub extern "C" fn ReadFile(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let hFile = unsafe { <HFILE>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <HFILE>::stack_consumed();
+        let lpBuffer =
+            unsafe { <Option<&mut [u8]>>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <Option<&mut [u8]>>::stack_consumed();
+        let lpNumberOfBytesRead =
+            unsafe { <Option<&mut u32>>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <Option<&mut u32>>::stack_consumed();
+        let lpOverlapped = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let result =
+            winapi::kernel32::ReadFile(machine, hFile, lpBuffer, lpNumberOfBytesRead, lpOverlapped);
+        result.to_raw()
+    }
+    pub extern "C" fn WriteFile(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let hFile = unsafe { <HFILE>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <HFILE>::stack_consumed();
+        let lpBuffer = unsafe { <Option<&[u8]>>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <Option<&[u8]>>::stack_consumed();
+        let lpNumberOfBytesWritten =
+            unsafe { <Option<&mut u32>>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <Option<&mut u32>>::stack_consumed();
+        let lpOverlapped = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let result = winapi::kernel32::WriteFile(
+            machine,
+            hFile,
+            lpBuffer,
+            lpNumberOfBytesWritten,
+            lpOverlapped,
+        );
+        result.to_raw()
+    }
+    pub extern "C" fn HeapAlloc(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let hHeap = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let dwFlags = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let dwBytes = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let result = winapi::kernel32::HeapAlloc(machine, hHeap, dwFlags, dwBytes);
+        result.to_raw()
+    }
+    pub extern "C" fn HeapFree(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let hHeap = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let dwFlags = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let lpMem = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let result = winapi::kernel32::HeapFree(machine, hHeap, dwFlags, lpMem);
+        result.to_raw()
+    }
+    pub extern "C" fn HeapSize(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let hHeap = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let dwFlags = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let lpMem = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let result = winapi::kernel32::HeapSize(machine, hHeap, dwFlags, lpMem);
+        result.to_raw()
+    }
+    pub extern "C" fn HeapReAlloc(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let hHeap = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let dwFlags = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let lpMem = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let dwBytes = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let result = winapi::kernel32::HeapReAlloc(machine, hHeap, dwFlags, lpMem, dwBytes);
+        result.to_raw()
+    }
+    pub extern "C" fn HeapCreate(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let flOptions = unsafe {
+            <Result<HeapCreateFlags, u32>>::from_stack(machine.mem(), esp + stack_offset)
+        };
+        stack_offset += <Result<HeapCreateFlags, u32>>::stack_consumed();
+        let dwInitialSize = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let dwMaximumSize = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let result = winapi::kernel32::HeapCreate(machine, flOptions, dwInitialSize, dwMaximumSize);
+        result.to_raw()
+    }
+    pub extern "C" fn HeapDestroy(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let hHeap = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let result = winapi::kernel32::HeapDestroy(machine, hHeap);
+        result.to_raw()
+    }
+    pub extern "C" fn VirtualAlloc(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let lpAddress = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let dwSize = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let _flAllocationType = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let _flProtec = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let result = winapi::kernel32::VirtualAlloc(
+            machine,
+            lpAddress,
+            dwSize,
+            _flAllocationType,
+            _flProtec,
+        );
+        result.to_raw()
+    }
+    pub extern "C" fn VirtualFree(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let lpAddress = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let dwSize = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let dwFreeType = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let result = winapi::kernel32::VirtualFree(machine, lpAddress, dwSize, dwFreeType);
+        result.to_raw()
+    }
+    pub extern "C" fn IsBadReadPtr(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let lp = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let ucb = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let result = winapi::kernel32::IsBadReadPtr(machine, lp, ucb);
+        result.to_raw()
+    }
+    pub extern "C" fn IsBadWritePtr(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let lp = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let ucb = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let result = winapi::kernel32::IsBadWritePtr(machine, lp, ucb);
+        result.to_raw()
+    }
+    pub extern "C" fn SetLastError(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let dwErrCode = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let result = winapi::kernel32::SetLastError(machine, dwErrCode);
+        result.to_raw()
+    }
+    pub extern "C" fn GetLastError(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let result = winapi::kernel32::GetLastError(machine);
+        result.to_raw()
+    }
+    pub extern "C" fn ExitProcess(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let uExitCode = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let result = winapi::kernel32::ExitProcess(machine, uExitCode);
+        result.to_raw()
+    }
+    pub extern "C" fn GetACP(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let result = winapi::kernel32::GetACP(machine);
+        result.to_raw()
+    }
+    pub extern "C" fn IsValidCodePage(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let CodePage = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let result = winapi::kernel32::IsValidCodePage(machine, CodePage);
+        result.to_raw()
+    }
+    pub extern "C" fn GetCPInfo(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let _CodePage = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let _lpCPInfo = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let result = winapi::kernel32::GetCPInfo(machine, _CodePage, _lpCPInfo);
+        result.to_raw()
+    }
+    pub extern "C" fn GetCommandLineA(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let result = winapi::kernel32::GetCommandLineA(machine);
+        result.to_raw()
+    }
+    pub extern "C" fn GetCommandLineW(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let result = winapi::kernel32::GetCommandLineW(machine);
+        result.to_raw()
+    }
+    pub extern "C" fn GetEnvironmentStrings(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let result = winapi::kernel32::GetEnvironmentStrings(machine);
+        result.to_raw()
+    }
+    pub extern "C" fn FreeEnvironmentStringsA(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let _penv = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let result = winapi::kernel32::FreeEnvironmentStringsA(machine, _penv);
+        result.to_raw()
+    }
+    pub extern "C" fn GetEnvironmentStringsW(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let result = winapi::kernel32::GetEnvironmentStringsW(machine);
+        result.to_raw()
+    }
+    pub extern "C" fn GetEnvironmentVariableA(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let name = unsafe { <Option<&str>>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <Option<&str>>::stack_consumed();
+        let buf = unsafe { <Option<&mut [u8]>>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <Option<&mut [u8]>>::stack_consumed();
+        let result = winapi::kernel32::GetEnvironmentVariableA(machine, name, buf);
+        result.to_raw()
+    }
+    pub extern "C" fn GetModuleFileNameA(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let hModule = unsafe { <HMODULE>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <HMODULE>::stack_consumed();
+        let filename =
+            unsafe { <Option<&mut [u8]>>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <Option<&mut [u8]>>::stack_consumed();
+        let result = winapi::kernel32::GetModuleFileNameA(machine, hModule, filename);
+        result.to_raw()
+    }
+    pub extern "C" fn GetModuleFileNameW(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let hModule = unsafe { <HMODULE>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <HMODULE>::stack_consumed();
+        let _lpFilename = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let _nSize = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let result = winapi::kernel32::GetModuleFileNameW(machine, hModule, _lpFilename, _nSize);
+        result.to_raw()
+    }
+    pub extern "C" fn GetStartupInfoA(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let lpStartupInfo =
+            unsafe { <Option<&mut STARTUPINFOA>>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <Option<&mut STARTUPINFOA>>::stack_consumed();
+        let result = winapi::kernel32::GetStartupInfoA(machine, lpStartupInfo);
+        result.to_raw()
+    }
+    pub extern "C" fn GetStartupInfoW(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let lpStartupInfo =
+            unsafe { <Option<&mut STARTUPINFOA>>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <Option<&mut STARTUPINFOA>>::stack_consumed();
+        let result = winapi::kernel32::GetStartupInfoW(machine, lpStartupInfo);
+        result.to_raw()
+    }
+    pub extern "C" fn IsProcessorFeaturePresent(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let feature = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let result = winapi::kernel32::IsProcessorFeaturePresent(machine, feature);
+        result.to_raw()
+    }
+    pub extern "C" fn IsDebuggerPresent(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let result = winapi::kernel32::IsDebuggerPresent(machine);
+        result.to_raw()
+    }
+    pub extern "C" fn GetCurrentProcessId(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let result = winapi::kernel32::GetCurrentProcessId(machine);
+        result.to_raw()
+    }
+    pub extern "C" fn GetTickCount(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let result = winapi::kernel32::GetTickCount(machine);
+        result.to_raw()
+    }
+    pub extern "C" fn QueryPerformanceCounter(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let lpPerformanceCount =
+            unsafe { <Option<&mut LARGE_INTEGER>>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <Option<&mut LARGE_INTEGER>>::stack_consumed();
+        let result = winapi::kernel32::QueryPerformanceCounter(machine, lpPerformanceCount);
+        result.to_raw()
+    }
+    pub extern "C" fn QueryPerformanceFrequency(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let lpFrequency = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let result = winapi::kernel32::QueryPerformanceFrequency(machine, lpFrequency);
+        result.to_raw()
+    }
+    pub extern "C" fn GetSystemTimeAsFileTime(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let _time =
+            unsafe { <Option<&mut FILETIME>>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <Option<&mut FILETIME>>::stack_consumed();
+        let result = winapi::kernel32::GetSystemTimeAsFileTime(machine, _time);
+        result.to_raw()
+    }
+    pub extern "C" fn GetVersion(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let result = winapi::kernel32::GetVersion(machine);
+        result.to_raw()
+    }
+    pub extern "C" fn GetVersionExA(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let lpVersionInformation =
+            unsafe { <Option<&mut OSVERSIONINFO>>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <Option<&mut OSVERSIONINFO>>::stack_consumed();
+        let result = winapi::kernel32::GetVersionExA(machine, lpVersionInformation);
+        result.to_raw()
+    }
+    pub extern "C" fn GetProcessHeap(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let result = winapi::kernel32::GetProcessHeap(machine);
+        result.to_raw()
+    }
+    pub extern "C" fn SetHandleCount(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let uNumber = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let result = winapi::kernel32::SetHandleCount(machine, uNumber);
+        result.to_raw()
+    }
+    pub extern "C" fn OutputDebugStringA(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let msg = unsafe { <Option<&str>>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <Option<&str>>::stack_consumed();
+        let result = winapi::kernel32::OutputDebugStringA(machine, msg);
+        result.to_raw()
+    }
+    pub extern "C" fn InitializeCriticalSectionAndSpinCount(
+        machine: &mut Machine,
+        esp: u32,
+    ) -> u32 {
+        let mut stack_offset = 4u32;
+        let _lpCriticalSection = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let _dwSpinCount = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let result = winapi::kernel32::InitializeCriticalSectionAndSpinCount(
+            machine,
+            _lpCriticalSection,
+            _dwSpinCount,
+        );
+        result.to_raw()
+    }
+    pub extern "C" fn DeleteCriticalSection(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let _lpCriticalSection = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let result = winapi::kernel32::DeleteCriticalSection(machine, _lpCriticalSection);
+        result.to_raw()
+    }
+    pub extern "C" fn EnterCriticalSection(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let _lpCriticalSection = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let result = winapi::kernel32::EnterCriticalSection(machine, _lpCriticalSection);
+        result.to_raw()
+    }
+    pub extern "C" fn LeaveCriticalSection(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let _lpCriticalSection = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let result = winapi::kernel32::LeaveCriticalSection(machine, _lpCriticalSection);
+        result.to_raw()
+    }
+    pub extern "C" fn SetUnhandledExceptionFilter(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let _lpTopLevelExceptionFilter =
+            unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let result =
+            winapi::kernel32::SetUnhandledExceptionFilter(machine, _lpTopLevelExceptionFilter);
+        result.to_raw()
+    }
+    pub extern "C" fn UnhandledExceptionFilter(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let _exceptionInfo = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let result = winapi::kernel32::UnhandledExceptionFilter(machine, _exceptionInfo);
+        result.to_raw()
+    }
+    pub extern "C" fn NtCurrentTeb(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let result = winapi::kernel32::NtCurrentTeb(machine);
+        result.to_raw()
+    }
+    pub extern "C" fn InitializeSListHead(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let ListHead =
+            unsafe { <Option<&mut SLIST_HEADER>>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <Option<&mut SLIST_HEADER>>::stack_consumed();
+        let result = winapi::kernel32::InitializeSListHead(machine, ListHead);
+        result.to_raw()
+    }
+    pub extern "C" fn MultiByteToWideChar(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let CodePage = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let dwFlags = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let lpMultiByteStr = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let cbMultiByte = unsafe { <i32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <i32>::stack_consumed();
+        let lpWideCharStr =
+            unsafe { <Option<&mut [u16]>>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <Option<&mut [u16]>>::stack_consumed();
+        let result = winapi::kernel32::MultiByteToWideChar(
+            machine,
+            CodePage,
+            dwFlags,
+            lpMultiByteStr,
+            cbMultiByte,
+            lpWideCharStr,
+        );
+        result.to_raw()
+    }
+    pub extern "C" fn WriteConsoleW(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let hConsoleOutput = unsafe { <HFILE>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <HFILE>::stack_consumed();
+        let lpBuffer = unsafe { <Option<&[u16]>>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <Option<&[u16]>>::stack_consumed();
+        let lpNumberOfCharsWritten =
+            unsafe { <Option<&mut u32>>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <Option<&mut u32>>::stack_consumed();
+        let _lpReserved = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let result = winapi::kernel32::WriteConsoleW(
+            machine,
+            hConsoleOutput,
+            lpBuffer,
+            lpNumberOfCharsWritten,
+            _lpReserved,
+        );
+        result.to_raw()
+    }
+    pub extern "C" fn GetCurrentThreadId(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let result = winapi::kernel32::GetCurrentThreadId(machine);
+        result.to_raw()
+    }
+    pub extern "C" fn TlsAlloc(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let result = winapi::kernel32::TlsAlloc(machine);
+        result.to_raw()
+    }
+    pub extern "C" fn TlsFree(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let dwTlsIndex = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let result = winapi::kernel32::TlsFree(machine, dwTlsIndex);
+        result.to_raw()
+    }
+    pub extern "C" fn TlsSetValue(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let dwTlsIndex = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let lpTlsValue = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let result = winapi::kernel32::TlsSetValue(machine, dwTlsIndex, lpTlsValue);
+        result.to_raw()
+    }
+    pub extern "C" fn TlsGetValue(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let dwTlsIndex = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let result = winapi::kernel32::TlsGetValue(machine, dwTlsIndex);
+        result.to_raw()
+    }
+    pub extern "C" fn CreateThread(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let lpThreadAttributes = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let dwStackSize = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let lpStartAddress = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let lpParameter = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let dwCreationFlags = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let lpThreadId = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let result = winapi::kernel32::CreateThread(
+            machine,
+            lpThreadAttributes,
+            dwStackSize,
+            lpStartAddress,
+            lpParameter,
+            dwCreationFlags,
+            lpThreadId,
+        );
+        result.to_raw()
+    }
+    pub extern "C" fn SetThreadPriority(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let _hThread = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let _nPriority = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let result = winapi::kernel32::SetThreadPriority(machine, _hThread, _nPriority);
+        result.to_raw()
+    }
+    pub extern "C" fn InterlockedIncrement(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let addend = unsafe { <Option<&mut u32>>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <Option<&mut u32>>::stack_consumed();
+        let result = winapi::kernel32::InterlockedIncrement(machine, addend);
+        result.to_raw()
     }
     const EXPORTS: [Symbol; 69usize] = [
         Symbol {
@@ -968,74 +1564,276 @@ pub mod oleaut32 {
 pub mod user32 {
     use super::*;
     use winapi::user32::*;
-    pub fn RegisterClassA(machine: &mut Machine) {
-        todo!()
+    pub extern "C" fn RegisterClassA(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let lpWndClass =
+            unsafe { <Option<&WNDCLASSA>>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <Option<&WNDCLASSA>>::stack_consumed();
+        let result = winapi::user32::RegisterClassA(machine, lpWndClass);
+        result.to_raw()
     }
-    pub fn RegisterClassExA(machine: &mut Machine) {
-        todo!()
+    pub extern "C" fn RegisterClassExA(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let lpWndClassEx =
+            unsafe { <Option<&WNDCLASSEXA>>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <Option<&WNDCLASSEXA>>::stack_consumed();
+        let result = winapi::user32::RegisterClassExA(machine, lpWndClassEx);
+        result.to_raw()
     }
-    pub fn CreateWindowExA(machine: &mut Machine) {
-        todo!()
+    pub extern "C" fn CreateWindowExA(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let dwExStyle = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let lpClassName = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let lpWindowName = unsafe { <Option<&str>>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <Option<&str>>::stack_consumed();
+        let dwStyle =
+            unsafe { <Result<WindowStyle, u32>>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <Result<WindowStyle, u32>>::stack_consumed();
+        let X = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let Y = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let nWidth = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let nHeight = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let hWndParent = unsafe { <HWND>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <HWND>::stack_consumed();
+        let hMenu = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let hInstance = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let lpParam = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let m: *mut Machine = machine;
+        let result = async move {
+            let machine = unsafe { &mut *m };
+            let result = winapi::user32::CreateWindowExA(
+                machine,
+                dwExStyle,
+                lpClassName,
+                lpWindowName,
+                dwStyle,
+                X,
+                Y,
+                nWidth,
+                nHeight,
+                hWndParent,
+                hMenu,
+                hInstance,
+                lpParam,
+            )
+            .await;
+            result.to_raw()
+        };
+        crate::shims::become_async(machine, Box::pin(result));
+        0
     }
-    pub fn GetForegroundWindow(machine: &mut Machine) {
-        todo!()
+    pub extern "C" fn GetForegroundWindow(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let result = winapi::user32::GetForegroundWindow(machine);
+        result.to_raw()
     }
-    pub fn GetActiveWindow(machine: &mut Machine) {
-        todo!()
+    pub extern "C" fn GetActiveWindow(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let result = winapi::user32::GetActiveWindow(machine);
+        result.to_raw()
     }
-    pub fn GetLastActivePopup(machine: &mut Machine) {
-        todo!()
+    pub extern "C" fn GetLastActivePopup(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let result = winapi::user32::GetLastActivePopup(machine);
+        result.to_raw()
     }
-    pub fn UpdateWindow(machine: &mut Machine) {
-        todo!()
+    pub extern "C" fn UpdateWindow(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let hWnd = unsafe { <HWND>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <HWND>::stack_consumed();
+        let result = winapi::user32::UpdateWindow(machine, hWnd);
+        result.to_raw()
     }
-    pub fn ShowWindow(machine: &mut Machine) {
-        todo!()
+    pub extern "C" fn ShowWindow(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let hWnd = unsafe { <HWND>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <HWND>::stack_consumed();
+        let _nCmdShow = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let result = winapi::user32::ShowWindow(machine, hWnd, _nCmdShow);
+        result.to_raw()
     }
-    pub fn SetFocus(machine: &mut Machine) {
-        todo!()
+    pub extern "C" fn SetFocus(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let hWnd = unsafe { <HWND>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <HWND>::stack_consumed();
+        let result = winapi::user32::SetFocus(machine, hWnd);
+        result.to_raw()
     }
-    pub fn SetCursor(machine: &mut Machine) {
-        todo!()
+    pub extern "C" fn SetCursor(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let hCursor = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let result = winapi::user32::SetCursor(machine, hCursor);
+        result.to_raw()
     }
-    pub fn MessageBoxA(machine: &mut Machine) {
-        todo!()
+    pub extern "C" fn MessageBoxA(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let hWnd = unsafe { <HWND>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <HWND>::stack_consumed();
+        let lpText = unsafe { <Option<&str>>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <Option<&str>>::stack_consumed();
+        let lpCaption = unsafe { <Option<&str>>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <Option<&str>>::stack_consumed();
+        let uType = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let result = winapi::user32::MessageBoxA(machine, hWnd, lpText, lpCaption, uType);
+        result.to_raw()
     }
-    pub fn DialogBoxParamA(machine: &mut Machine) {
-        todo!()
+    pub extern "C" fn DialogBoxParamA(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let hInstance = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let lpTemplateName = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let hWndParent = unsafe { <HWND>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <HWND>::stack_consumed();
+        let lpDialogFunc = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let dwInitParam = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let result = winapi::user32::DialogBoxParamA(
+            machine,
+            hInstance,
+            lpTemplateName,
+            hWndParent,
+            lpDialogFunc,
+            dwInitParam,
+        );
+        result.to_raw()
     }
-    pub fn PeekMessageA(machine: &mut Machine) {
-        todo!()
+    pub extern "C" fn PeekMessageA(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let lpMsg = unsafe { <Option<&mut MSG>>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <Option<&mut MSG>>::stack_consumed();
+        let hWnd = unsafe { <HWND>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <HWND>::stack_consumed();
+        let wMsgFilterMin = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let wMsgFilterMax = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let wRemoveMsg =
+            unsafe { <Result<RemoveMsg, u32>>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <Result<RemoveMsg, u32>>::stack_consumed();
+        let result = winapi::user32::PeekMessageA(
+            machine,
+            lpMsg,
+            hWnd,
+            wMsgFilterMin,
+            wMsgFilterMax,
+            wRemoveMsg,
+        );
+        result.to_raw()
     }
-    pub fn GetMessageA(machine: &mut Machine) {
-        todo!()
+    pub extern "C" fn GetMessageA(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let lpMsg = unsafe { <Option<&mut MSG>>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <Option<&mut MSG>>::stack_consumed();
+        let hWnd = unsafe { <HWND>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <HWND>::stack_consumed();
+        let wMsgFilterMin = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let wMsgFilterMax = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let result =
+            winapi::user32::GetMessageA(machine, lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax);
+        result.to_raw()
     }
-    pub fn WaitMessage(machine: &mut Machine) {
-        todo!()
+    pub extern "C" fn WaitMessage(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let result = winapi::user32::WaitMessage(machine);
+        result.to_raw()
     }
-    pub fn TranslateMessage(machine: &mut Machine) {
-        todo!()
+    pub extern "C" fn TranslateMessage(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let lpMsg = unsafe { <Option<&MSG>>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <Option<&MSG>>::stack_consumed();
+        let result = winapi::user32::TranslateMessage(machine, lpMsg);
+        result.to_raw()
     }
-    pub fn DispatchMessageA(machine: &mut Machine) {
-        todo!()
+    pub extern "C" fn DispatchMessageA(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let lpMsg = unsafe { <Option<&MSG>>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <Option<&MSG>>::stack_consumed();
+        let m: *mut Machine = machine;
+        let result = async move {
+            let machine = unsafe { &mut *m };
+            let result = winapi::user32::DispatchMessageA(machine, lpMsg).await;
+            result.to_raw()
+        };
+        crate::shims::become_async(machine, Box::pin(result));
+        0
     }
-    pub fn DefWindowProcA(machine: &mut Machine) {
-        todo!()
+    pub extern "C" fn DefWindowProcA(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let hWnd = unsafe { <HWND>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <HWND>::stack_consumed();
+        let msg = unsafe { <Result<WM, u32>>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <Result<WM, u32>>::stack_consumed();
+        let wParam = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let lParam = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let result = winapi::user32::DefWindowProcA(machine, hWnd, msg, wParam, lParam);
+        result.to_raw()
     }
-    pub fn LoadIconA(machine: &mut Machine) {
-        todo!()
+    pub extern "C" fn LoadIconA(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let _hInstance = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let _lpIconName = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let result = winapi::user32::LoadIconA(machine, _hInstance, _lpIconName);
+        result.to_raw()
     }
-    pub fn LoadCursorA(machine: &mut Machine) {
-        todo!()
+    pub extern "C" fn LoadCursorA(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let _hInstance = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let _lpCursorName = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let result = winapi::user32::LoadCursorA(machine, _hInstance, _lpCursorName);
+        result.to_raw()
     }
-    pub fn ShowCursor(machine: &mut Machine) {
-        todo!()
+    pub extern "C" fn ShowCursor(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let _bShow = unsafe { <bool>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <bool>::stack_consumed();
+        let result = winapi::user32::ShowCursor(machine, _bShow);
+        result.to_raw()
     }
-    pub fn LoadImageA(machine: &mut Machine) {
-        todo!()
+    pub extern "C" fn LoadImageA(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let hInstance = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let name = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let typ = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let cx = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let cy = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let fuLoad = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let result = winapi::user32::LoadImageA(machine, hInstance, name, typ, cx, cy, fuLoad);
+        result.to_raw()
     }
-    pub fn GetSystemMetrics(machine: &mut Machine) {
-        todo!()
+    pub extern "C" fn GetSystemMetrics(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let nIndex = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let result = winapi::user32::GetSystemMetrics(machine, nIndex);
+        result.to_raw()
     }
     const EXPORTS: [Symbol; 23usize] = [
         Symbol {
@@ -1232,8 +2030,27 @@ pub mod user32 {
 pub mod winmm {
     use super::*;
     use winapi::winmm::*;
-    pub fn timeSetEvent(machine: &mut Machine) {
-        todo!()
+    pub extern "C" fn timeSetEvent(machine: &mut Machine, esp: u32) -> u32 {
+        let mut stack_offset = 4u32;
+        let _uDelay = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let _uResolution = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let _lpTimeProc = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let _dwUser = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let _fuEvent = unsafe { <u32>::from_stack(machine.mem(), esp + stack_offset) };
+        stack_offset += <u32>::stack_consumed();
+        let result = winapi::winmm::timeSetEvent(
+            machine,
+            _uDelay,
+            _uResolution,
+            _lpTimeProc,
+            _dwUser,
+            _fuEvent,
+        );
+        result.to_raw()
     }
     const EXPORTS: [Symbol; 1usize] = [Symbol {
         name: "timeSetEvent",

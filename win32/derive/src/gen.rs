@@ -40,18 +40,20 @@ pub fn fn_wrapper(
         // TODO: reading the args in reverse would produce fewer bounds checks...
         let mut stack_offset = 4u32;
         #(
-            let #args = unsafe { <#tys>::from_stack(machine.mem(), machine.x86.cpu.regs.esp + stack_offset) };
+            let #args = unsafe { <#tys>::from_stack(machine.mem(), esp + stack_offset) };
             stack_offset += <#tys>::stack_consumed();
         )*
     };
+    #[cfg(feature = "cpuemu")]
     let ret = quote! {
         machine.x86.cpu.regs.eax = result.to_raw();
         machine.x86.cpu.regs.eip = machine.mem().get::<u32>(machine.x86.cpu.regs.esp);
         machine.x86.cpu.regs.esp += stack_offset;
     };
+    #[cfg(not(feature = "cpuemu"))]
+    let ret = quote!(result.to_raw());
 
     // If the function is async, we need to handle the return value a bit differently.
-    #[cfg(feature = "cpuemu")]
     let body = if func.sig.asyncness.is_some() {
         quote! {
             #fetch_args
@@ -65,6 +67,7 @@ pub fn fn_wrapper(
             };
             crate::shims::become_async(machine, Box::pin(result));
             // push_async will set up the stack and eip.
+            0
         }
     } else {
         quote! {
@@ -73,8 +76,6 @@ pub fn fn_wrapper(
             #ret
         }
     };
-    #[cfg(not(feature = "cpuemu"))]
-    let body = quote!(todo!());
 
     let ordinal_tok = match ordinal {
         None => quote!(None),
@@ -88,7 +89,7 @@ pub fn fn_wrapper(
     };
 
     (
-        quote!(pub fn #name(machine: &mut Machine) { #body }),
+        quote!(pub extern "C" fn #name(machine: &mut Machine, esp: u32) -> u32 { #body }),
         quote!(Symbol { name: #name_str, ordinal: #ordinal_tok, func: #name, stack_consumed: || { #stack_consumed } }),
     )
 }

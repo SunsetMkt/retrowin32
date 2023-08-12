@@ -136,7 +136,7 @@ fn process(args: std::env::Args) -> anyhow::Result<TokenStream> {
         pub struct Symbol {
             pub name: &'static str,
             pub ordinal: Option<usize>,
-            pub func: fn(&mut Machine),
+            pub func: extern "C" fn(&mut Machine, u32) -> u32,
             pub stack_consumed: fn() -> u32,
         }
 

@@ -53,12 +53,8 @@ impl DLL {
         };
 
         let export = export.unwrap();
-        println!("sym {} needs {:x}", export.name, (export.stack_consumed)());
 
-        let addr = shims.add(
-            format!("{}!{}", self.name, sym.to_string()),
-            Some(export.func),
-        );
+        let addr = shims.add(format!("{}!{}", self.name, sym.to_string()), Some(export));
 
         match *sym {
             ImportSymbol::Name(name) => {
