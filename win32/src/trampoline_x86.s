@@ -9,8 +9,7 @@ tramp64:
     lcall *0xaaaaaaaa # 16:32 of call64
 
     # stack contents are now:
-    #   8 bytes of 64bit target
     #   4 bytes return addr in exe
     #   N bytes arguments passed via stdcall
 
-    retw $20  # clean stdcall args
+    retl $20  # clean stdcall args

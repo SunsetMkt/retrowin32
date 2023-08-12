@@ -46,7 +46,7 @@ impl StaticStack {
 
     fn realign(&mut self) {
         let align = 8;
-        self.ofs = self.ofs + (8 - 1) & !(8 - 1);
+        self.ofs = self.ofs + (align - 1) & !(align - 1);
         if self.ofs > self.len {
             panic!("overflow");
         }
@@ -78,28 +78,32 @@ impl Shims {
             let mut buf = StaticStack::new(addr, size as usize);
 
             // trampoline_x86_64.s:call64:
-            let call64 = buf.write(&[0x67, 0xff, 0x54, 0x24, 0x08, 0xcb]);
+            let call64 = buf.write(b"\x67\xff\x54\x24\x08\xca\x08\x00");
             buf.realign();
 
-            // 16:32 selector:address of call64, which is written just below:
+            // 16:32 selector:address of call64
             let call64_addr = buf.write(&(call64 as u32).to_le_bytes()) as u32;
             buf.write(&(0x2bu32).to_le_bytes());
             buf.realign();
+
+            println!(
+                "call64 at {:x}, m16:32 at {:x}",
+                call64 as u32, call64_addr as u32
+            );
 
             Shims { buf, call64_addr }
         }
     }
 
     pub fn add(&mut self, name: String, handler: Option<fn(&mut Machine)>) -> u32 {
+        let handler = handler.unwrap();
         unsafe {
-            let tramp_addr = self.buf.cur_ptr() as u32;
-            let target: u64 = the_handler as u64; //handler.map(|f| std::mem::transmute(f));
-            println!("tramp {:x} handler target {:0x}", tramp_addr, target);
+            let target: u64 = handler as u64;
 
             // Code from trampoline_x86.s:
 
             // pushl high 32 bits of dest
-            self.buf.write(b"\x68");
+            let tramp_addr = self.buf.write(b"\x68") as u32;
             self.buf.write(&((target >> 32) as u32).to_le_bytes());
             // pushl low 32 bits of dest
             self.buf.write(b"\x68");
@@ -109,16 +113,15 @@ impl Shims {
             self.buf.write(b"\xff\x1d");
             self.buf.write(&self.call64_addr.to_le_bytes());
 
-            // addl $0x08, %esp
-            self.buf.write(b"\x83\xc4\x08");
-
-            // retl $20, %esp
-            self.buf.write(b"\xc2\x20\x00");
+            // retl <16-bit bytes to pop>
+            self.buf.write(b"\xc2");
+            let stack_consumed = 0x14u16;
+            self.buf.write(&(stack_consumed + 8).to_le_bytes());
             self.buf.realign();
 
-            println!("registered {} at {:x}", name, tramp_addr,);
+            println!("{name} tramp {:x} handler target {:0x}", tramp_addr, target);
 
-            0x2010
+            tramp_addr
         }
     }
 }

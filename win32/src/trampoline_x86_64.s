@@ -7,13 +7,15 @@
 
 call64:
     # stack contents:
-    #   +0  64-bit target addr (8 bytes)
-    #   +8  return addr in exe
-    #   +12 argn passed from exe
+    #   0   32-bit return address
+    #   4   32-bit segment selector
+    #   8   64-bit target addr (8 bytes)
+    #   16  exe return address
+    #   20... argn passed from exe
 
     callq *8(%esp)
 
     # We want 'far ret', https://www.felixcloutier.com/x86/ret opcode cb
     # It is only available in Clang if we use att syntax(!)
     # Note that it pops 32-bit CS/EIP, even though we are in 64-bit mode.
-    lret
+    lret $8  # ret to 0:4, clean target addr

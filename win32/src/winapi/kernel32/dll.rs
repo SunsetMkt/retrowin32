@@ -52,9 +52,12 @@ impl DLL {
                 .find(|&export| export.ordinal == Some(ord as usize)),
         };
 
+        let export = export.unwrap();
+        println!("sym {} needs {:x}", export.name, (export.stack_consumed)());
+
         let addr = shims.add(
             format!("{}!{}", self.name, sym.to_string()),
-            export.map(|e| e.func),
+            Some(export.func),
         );
 
         match *sym {

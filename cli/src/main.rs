@@ -156,7 +156,7 @@ struct Args {
 fn main() -> anyhow::Result<()> {
     logging::init()?;
     let args: Args = argh::from_env();
-    win32::trace::set_scheme(args.win32_trace.as_deref().unwrap_or("-"));
+    win32::trace::set_scheme(""); //args.win32_trace.as_deref().unwrap_or("-"));
     let cmdline = args.cmdline.as_ref().unwrap_or(&args.exe);
 
     let buf = std::fs::read(&args.exe).map_err(|err| anyhow!("{}: {}", args.exe, err))?;

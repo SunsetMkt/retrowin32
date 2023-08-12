@@ -106,3 +106,6 @@ lret 12
 ```
 
 which both cleans the stack _and_ does the segment swap.
+
+
+https://dougallj.wordpress.com/2022/11/09/why-is-rosetta-2-fast/
