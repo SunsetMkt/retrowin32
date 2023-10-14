@@ -70,12 +70,8 @@ impl Shims {
         let crate::shims::Shim {
             func,
             stack_consumed,
-            is_async,
             ..
         } = *shim;
-        if is_async {
-            unimplemented!()
-        }
 
         let esp = machine
             .unicorn
