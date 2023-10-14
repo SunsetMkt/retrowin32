@@ -152,6 +152,8 @@ pub fn fn_wrapper(module: TokenStream, func: &syn::ItemFn) -> (TokenStream, Toke
             let pin = std::pin::pin!(#module::#name(machine, #(#args),*));
             crate::shims::call_sync(pin).to_raw()
         }
+        #[cfg(feature = "x86-unicorn")]
+        todo!()
         }
     } else {
         quote! {

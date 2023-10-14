@@ -172,6 +172,7 @@ version = "0.1.0"
 dependencies = [
  "serde",
  "serde_bytes",
+ "unicorn-engine",
 ]
 
 [[package]]
@@ -466,6 +467,7 @@ dependencies = [
  "num-traits",
  "serde",
  "tsify",
+ "unicorn-engine",
  "wasm-bindgen",
  "win32-derive",
  "x86",

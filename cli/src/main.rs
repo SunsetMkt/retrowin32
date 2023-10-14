@@ -204,10 +204,8 @@ fn main() -> anyhow::Result<()> {
     unsafe {
         let ptr: *mut win32::Machine = &mut machine;
         machine.shims.set_machine_hack(ptr, addrs.stack_pointer);
+        jump_to_entry_point(&mut machine, addrs.entry_point);
     }
-
-    #[cfg(feature = "x86-64")]
-    jump_to_entry_point(&mut machine, addrs.entry_point);
 
     #[cfg(feature = "x86-emu")]
     {
@@ -249,6 +247,51 @@ fn main() -> anyhow::Result<()> {
                 millis,
                 (machine.x86.instr_count / millis) / 1000
             );
+        }
+    }
+
+    #[cfg(feature = "x86-unicorn")]
+    {
+        let ptr: *mut win32::Machine = &mut machine;
+        unsafe {
+            machine.shims.set_machine_hack(ptr, &mut machine.unicorn);
+        }
+        // machine
+        //     .unicorn
+        //     .add_mem_hook(
+        //         unicorn_engine::unicorn_const::HookType::MEM_READ,
+        //         0,
+        //         8 << 20,
+        //         |u, mt, addr, size, _| {
+        //             log::info!("hook {mt:?} {addr:x} {size:x}");
+        //             let mut buf: [u8; 4] = [0; 4];
+        //             u.mem_read(addr, &mut buf).unwrap();
+        //             log::info!("val is {buf:x?}");
+        //             true
+        //         },
+        //     )
+        //     .unwrap();
+        // machine
+        //     .unicorn
+        //     .add_mem_hook(
+        //         unicorn_engine::unicorn_const::HookType::MEM_WRITE,
+        //         0,
+        //         8 << 20,
+        //         |u, _mt, addr, _size, val| {
+        //             log::info!("*{addr:x} = {val:x}");
+        //             true
+        //         },
+        //     )
+        //     .unwrap();
+        let mut eip = addrs.entry_point as u64;
+        while eip != 0 {
+            //log::info!("execute {:x}", eip);
+            machine.unicorn.emu_start(eip, 0, 0, 50).unwrap();
+
+            eip = machine
+                .unicorn
+                .reg_read(unicorn_engine::RegisterX86::EIP)
+                .unwrap();
         }
     }
 
