@@ -1,5 +1,7 @@
 //! Parsing of dllexport attributes and functions that use them.
 
+use syn::parse::Parser;
+
 #[derive(Clone, Copy)]
 pub enum CallConv {
     Stdcall,
@@ -11,7 +13,10 @@ pub struct DllExportMeta {
     pub callconv: CallConv,
 }
 
+/// A dllexport function.
 pub struct DllExport<'a> {
+    /// Module name as used in tracing, e.g. "kernel32/file".
+    pub trace_module: &'a str,
     pub meta: DllExportMeta,
     pub args: Vec<Argument<'a>>,
     /// If this function is part of a vtable, this is the name of the vtable.
@@ -34,6 +39,10 @@ impl<'a> DllExport<'a> {
     }
 }
 
+pub struct DllExportData<'a> {
+    pub name: &'a syn::Ident,
+}
+
 pub struct Vtable {
     pub name: syn::Ident,
     pub fns: Vec<(syn::Ident, Option<String>)>,
@@ -42,6 +51,7 @@ pub struct Vtable {
 #[derive(Default)]
 pub struct DllExports<'a> {
     pub fns: Vec<DllExport<'a>>,
+    pub data: Vec<DllExportData<'a>>,
     pub vtables: Vec<Vtable>,
 }
 
@@ -52,8 +62,7 @@ fn parse_dllexport(attr: &syn::Attribute) -> syn::Result<Option<DllExportMeta>> 
         return Ok(None);
     }
     let seg = &path.segments[1];
-    // TODO: remove shims_from_x86
-    if seg.ident != "dllexport" && seg.ident != "shims_from_x86" {
+    if seg.ident != "dllexport" {
         return Ok(None);
     }
 
@@ -128,7 +137,10 @@ pub fn parse_argument_stack(ty: &syn::Type) -> ArgumentStack {
     }
 }
 
-fn parse_fn(func: &syn::ItemFn) -> syn::Result<Option<DllExport>> {
+fn parse_fn<'a>(
+    trace_module: &'a str,
+    func: &'a syn::ItemFn,
+) -> syn::Result<Option<DllExport<'a>>> {
     let meta = match find_dllexport(&func.attrs)? {
         Some(meta) => meta,
         None => return Ok(None),
@@ -165,6 +177,7 @@ fn parse_fn(func: &syn::ItemFn) -> syn::Result<Option<DllExport>> {
     }
 
     Ok(Some(DllExport {
+        trace_module,
         meta,
         args,
         vtable: None,
@@ -173,7 +186,10 @@ fn parse_fn(func: &syn::ItemFn) -> syn::Result<Option<DllExport>> {
     }))
 }
 
-fn parse_mod(item: &syn::ItemMod) -> syn::Result<Option<DllExports>> {
+fn parse_mod<'a>(
+    trace_module: &'a str,
+    item: &'a syn::ItemMod,
+) -> syn::Result<Option<DllExports<'a>>> {
     if find_dllexport(&item.attrs)?.is_none() {
         return Ok(None);
     }
@@ -181,7 +197,7 @@ fn parse_mod(item: &syn::ItemMod) -> syn::Result<Option<DllExports>> {
     let name = &item.ident;
     let mut dllexports = DllExports::default();
     let body = &item.content.as_ref().unwrap().1;
-    gather_dllexports(body, &mut dllexports)?;
+    gather_dllexports(trace_module, body, &mut dllexports)?;
     for dllexport in &mut dllexports.fns {
         dllexport.vtable = Some(name);
         dllexport.sym_name = quote::format_ident!("{}_{}", name, dllexport.sym_name);
@@ -191,7 +207,7 @@ fn parse_mod(item: &syn::ItemMod) -> syn::Result<Option<DllExports>> {
     for item in body {
         match item {
             syn::Item::Macro(item) => {
-                if let Some(vtable) = parse_vtable(item)? {
+                if let Some(vtable) = parse_vtable(name, item)? {
                     dllexports.vtables.push(vtable);
                     break;
                 }
@@ -204,42 +220,25 @@ fn parse_mod(item: &syn::ItemMod) -> syn::Result<Option<DllExports>> {
 }
 
 /// Parse a call to the vtable! macro.
-fn parse_vtable(item: &syn::ItemMacro) -> syn::Result<Option<Vtable>> {
+fn parse_vtable(name: &syn::Ident, item: &syn::ItemMacro) -> syn::Result<Option<Vtable>> {
     let mac = &item.mac;
     if !mac.path.is_ident("vtable") {
         return Ok(None);
     }
 
-    struct VtableMacro {
-        name: syn::Ident,
-        fields: syn::punctuated::Punctuated<syn::FieldValue, syn::Token![,]>,
-    }
-    impl syn::parse::Parse for VtableMacro {
-        fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
-            /*
-               vtable![IDirectDrawClipper shims
-               QueryInterface: todo,
-               AddRef: todo,
-            */
-            let name = input.parse::<syn::Ident>()?;
-            input.parse::<syn::Ident>()?; // "shims"
-            let fields = input.parse_terminated(syn::FieldValue::parse, syn::Token![,])?;
-            Ok(VtableMacro { name, fields })
-        }
-    }
-
-    let vt = syn::parse2::<VtableMacro>(mac.tokens.clone())?;
+    let parser = syn::punctuated::Punctuated::<syn::FieldValue, syn::Token![,]>::parse_terminated;
+    let fields = parser.parse2(mac.tokens.clone())?;
 
     let mut fns = Vec::new();
-    for field in vt.fields {
-        let name = match field.member {
+    for field in fields {
+        let field_name = match field.member {
             syn::Member::Named(name) => name,
             syn::Member::Unnamed(_) => todo!(),
         };
         let imp = match field.expr {
             syn::Expr::Path(expr) => {
                 if expr.path.is_ident("ok") {
-                    Some(format!("{}_{}", vt.name, name))
+                    Some(format!("{name}_{field_name}"))
                 } else if expr.path.is_ident("todo") {
                     None
                 } else {
@@ -265,25 +264,45 @@ fn parse_vtable(item: &syn::ItemMacro) -> syn::Result<Option<Vtable>> {
                 return Err(syn::Error::new_spanned(e, "bad input"));
             }
         };
-        fns.push((name, imp));
+        fns.push((field_name, imp));
     }
 
-    Ok(Some(Vtable { name: vt.name, fns }))
+    Ok(Some(Vtable {
+        name: name.clone(),
+        fns,
+    }))
+}
+
+fn parse_const(item: &syn::ItemConst) -> syn::Result<Option<DllExportData>> {
+    if find_dllexport(&item.attrs)?.is_none() {
+        return Ok(None);
+    }
+
+    Ok(Some(DllExportData { name: &item.ident }))
 }
 
 /// Gather all the dllexports in a list of syn::Items (module contents).
-pub fn gather_dllexports<'a>(items: &'a [syn::Item], out: &mut DllExports<'a>) -> syn::Result<()> {
+pub fn gather_dllexports<'a>(
+    trace_module: &'a str,
+    items: &'a [syn::Item],
+    out: &mut DllExports<'a>,
+) -> syn::Result<()> {
     for item in items {
         match item {
             syn::Item::Fn(func) => {
-                if let Some(func) = parse_fn(func)? {
+                if let Some(func) = parse_fn(trace_module, func)? {
                     out.fns.push(func);
                 }
             }
             syn::Item::Mod(item) => {
-                if let Some(exports) = parse_mod(item)? {
+                if let Some(exports) = parse_mod(trace_module, item)? {
                     out.fns.extend(exports.fns);
                     out.vtables.extend(exports.vtables);
+                }
+            }
+            syn::Item::Const(item) => {
+                if let Some(item) = parse_const(item)? {
+                    out.data.push(item);
                 }
             }
             _ => continue,

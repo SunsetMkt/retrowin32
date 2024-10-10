@@ -1,15 +1,16 @@
-use crate::{winapi::com::vtable, Machine};
-use memory::Extensions;
+use crate::{
+    winapi::{com::vtable, kernel32::get_symbol},
+    Machine,
+};
+use memory::{Extensions, ExtensionsMut};
 
-const TRACE_CONTEXT: &'static str = "ddraw/palette";
-
-#[win32_derive::shims_from_x86]
+#[win32_derive::dllexport]
 pub mod IDirectDrawPalette {
     use crate::winapi::ddraw::{DD_OK, PALETTEENTRY};
 
     use super::*;
 
-    vtable![IDirectDrawPalette shims
+    vtable![
         QueryInterface: todo,
         AddRef: todo,
         Release: ok,
@@ -22,11 +23,7 @@ pub mod IDirectDrawPalette {
     pub fn new(machine: &mut Machine) -> u32 {
         let ddraw = &mut machine.state.ddraw;
         let lpDirectDrawPalette = ddraw.heap.alloc(machine.emu.memory.mem(), 4);
-        let vtable = *ddraw.vtable_IDirectDrawPalette.get_or_insert_with(|| {
-            vtable(machine.emu.memory.mem(), &mut ddraw.heap, |shim| {
-                machine.emu.shims.add(shim)
-            })
-        });
+        let vtable = get_symbol(machine, "ddraw.dll", "IDirectDrawPalette");
         machine.mem().put_pod::<u32>(lpDirectDrawPalette, vtable);
         lpDirectDrawPalette
     }
@@ -52,8 +49,13 @@ pub mod IDirectDrawPalette {
             .emu
             .memory
             .mem()
-            .view_n::<PALETTEENTRY>(entries, count);
-        palette[start as usize..][..count as usize].clone_from_slice(entries);
+            .iter_pod::<PALETTEENTRY>(entries, count);
+        for (dst, src) in palette[start as usize..][..count as usize]
+            .iter_mut()
+            .zip(entries)
+        {
+            *dst = src;
+        }
         DD_OK
     }
 }

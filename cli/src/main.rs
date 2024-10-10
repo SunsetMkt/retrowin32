@@ -12,7 +12,6 @@ mod resv32;
 use anyhow::anyhow;
 use std::borrow::Cow;
 use std::process::ExitCode;
-use win32::winapi::types::win32_error_str;
 use win32::Host;
 
 #[derive(argh::FromArgs)]
@@ -21,6 +20,10 @@ struct Args {
     /// change working directory before running
     #[argh(option, short = 'C')]
     chdir: Option<String>,
+
+    /// dlls to load from disk rather than builtin
+    #[argh(option)]
+    external_dll: Vec<String>,
 
     /// winapi systems to trace; see trace.rs for docs
     #[argh(option)]
@@ -35,9 +38,18 @@ struct Args {
     #[argh(option, from_str_fn(parse_trace_points))]
     trace_points: Option<std::collections::VecDeque<u32>>,
 
+    /// exit after executing this many instructions
+    #[argh(option)]
+    #[cfg(feature = "x86-emu")]
+    exit_after: Option<usize>,
+
     /// enable debug logging
     #[argh(switch)]
     debug: bool,
+
+    /// enable audio output
+    #[argh(switch)]
+    audio: bool,
 
     /// command line to run
     #[argh(positional, greedy)]
@@ -125,7 +137,7 @@ fn main() -> anyhow::Result<ExitCode> {
     let mut cmdline = args.cmdline.clone();
     let cwd = host
         .current_dir()
-        .map_err(|e| anyhow!("failed to get current dir: {}", win32_error_str(e)))?;
+        .map_err(|e| anyhow!("failed to get current dir: {e:?}"))?;
     cmdline[0] = cwd
         .join(&cmdline[0])
         .normalize()
@@ -137,11 +149,15 @@ fn main() -> anyhow::Result<ExitCode> {
         .collect::<Vec<_>>()
         .join(" ");
     let mut machine = win32::Machine::new(Box::new(host.clone()), cmdline);
+    machine.set_external_dlls(&args.external_dll);
+    machine.state.winmm.audio_enabled = args.audio;
 
     let addrs = machine
         .load_exe(&buf, &exe, None)
         .map_err(|err| anyhow!("loading {}: {}", exe.display(), err))?;
     _ = addrs;
+
+    let exit_code: u32;
 
     #[cfg(feature = "x86-64")]
     {
@@ -151,6 +167,7 @@ fn main() -> anyhow::Result<ExitCode> {
             machine.emu.shims.set_machine_hack(ptr, addrs.stack_pointer);
             machine.jump_to_entry_point(addrs.entry_point);
         }
+        exit_code = 0; // TODO: exit code path never hit
     }
 
     #[cfg(feature = "x86-emu")]
@@ -162,9 +179,6 @@ fn main() -> anyhow::Result<ExitCode> {
             let mut seen_blocks = std::collections::HashSet::new();
             while machine.run() {
                 let regs = &machine.emu.x86.cpu().regs;
-                if regs.eip & 0xFFFF_0000 == 0xF1A7_0000 {
-                    continue;
-                }
                 if seen_blocks.contains(&regs.eip) {
                     continue;
                 }
@@ -186,19 +200,26 @@ fn main() -> anyhow::Result<ExitCode> {
                 print_trace(&machine);
             }
         } else {
-            while machine.run() {}
+            while machine.run() {
+                if let Some(exit_after) = args.exit_after {
+                    if machine.emu.x86.instr_count >= exit_after {
+                        machine.status = win32::Status::Exit(0);
+                        break;
+                    }
+                }
+            }
         }
 
-        match &machine.emu.x86.cpu().state {
-            x86::CPUState::Error(error) => {
-                log::error!("{:?}", error);
-                x86::debug::dump_state(machine.emu.x86.cpu(), machine.mem(), 0);
+        match &machine.status {
+            win32::Status::Exit(code) => {
+                exit_code = *code;
             }
-            x86::CPUState::Exit(_) => {}
-            x86::CPUState::Running | x86::CPUState::Blocked(_) | x86::CPUState::SysCall => {
-                unreachable!()
+            win32::Status::Error { message } => {
+                log::error!("{}", message);
+                machine.dump_state(0);
+                exit_code = 1;
             }
-            x86::CPUState::DebugBreak => todo!(),
+            _ => unreachable!(),
         }
 
         let millis = start.elapsed().as_millis() as usize;
@@ -215,27 +236,25 @@ fn main() -> anyhow::Result<ExitCode> {
 
     #[cfg(feature = "x86-unicorn")]
     {
-        let mut trace_points = args.trace_points.unwrap_or_default();
-        let mut eip = addrs.entry_point;
-        loop {
-            let end = trace_points.pop_front().unwrap_or(0);
-            win32::shims::unicorn_loop(&mut machine, eip, end);
-            if end == 0 {
-                break;
-            } else {
-                print_trace(&machine);
-                eip = end;
+        if let Some(_trace_points) = args.trace_points {
+            print_trace(&machine);
+            todo!();
+        } else {
+            match machine.main(addrs.entry_point) {
+                win32::Status::Exit(code) => {
+                    exit_code = *code;
+                }
+                win32::Status::Error { message } => {
+                    log::error!("{}", message);
+                    machine.dump_state();
+                    exit_code = 1;
+                }
+                _ => unreachable!(),
             }
         }
     }
 
-    let exit_code = host
-        .0
-        .borrow()
-        .exit_code()
-        .map(|c| ExitCode::from(c.try_into().unwrap_or(u8::MAX)))
-        .unwrap_or(ExitCode::SUCCESS);
-    Ok(exit_code)
+    Ok(ExitCode::from(exit_code as u8))
 }
 
 fn escape_arg(arg: &str) -> Cow<str> {

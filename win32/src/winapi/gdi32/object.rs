@@ -1,34 +1,25 @@
 use super::{Brush, DCTarget, Pen, BITMAP, COLORREF, HDC};
 use crate::{
     winapi::{
-        bitmap::{Bitmap, BitmapMono, BitmapRGBA32},
+        bitmap::{BitmapMono, BitmapRGBA32},
         types::HANDLE,
     },
     Machine,
 };
-
-const TRACE_CONTEXT: &'static str = "gdi32/object";
+use memory::ExtensionsMut;
+use std::rc::Rc;
 
 #[derive(Debug)]
-pub enum BitmapType {
-    RGBA32(BitmapRGBA32),
+pub enum Bitmap {
+    RGBA32(Rc<BitmapRGBA32>),
     Mono(BitmapMono),
-}
-
-impl BitmapType {
-    pub fn inner(&self) -> &dyn Bitmap {
-        match self {
-            BitmapType::RGBA32(b) => b,
-            BitmapType::Mono(b) => b,
-        }
-    }
 }
 
 /// GDI Object, as identified by HANDLEs.
 #[derive(Debug)]
 pub enum Object {
     Brush(Brush),
-    Bitmap(BitmapType),
+    Bitmap(Bitmap),
     Pen(Pen),
 }
 
@@ -56,13 +47,13 @@ pub enum GetStockObjectArg {
 pub fn GetStockObject(machine: &mut Machine, i: Result<GetStockObjectArg, u32>) -> HGDIOBJ {
     match i.unwrap() {
         GetStockObjectArg::WHITE_BRUSH => machine.state.gdi32.objects.add(Object::Brush(Brush {
-            color: Some(COLORREF((0xff, 0xff, 0xff))),
+            color: Some(COLORREF::white()),
         })),
         GetStockObjectArg::LTGRAY_BRUSH => machine.state.gdi32.objects.add(Object::Brush(Brush {
-            color: Some(COLORREF((0xc0, 0xc0, 0xc0))),
+            color: Some(COLORREF::from_rgb(0xc0, 0xc0, 0xc0)),
         })),
         GetStockObjectArg::BLACK_BRUSH => machine.state.gdi32.objects.add(Object::Brush(Brush {
-            color: Some(COLORREF((0x00, 0x00, 0x00))),
+            color: Some(COLORREF::from_rgb(0x00, 0x00, 0x00)),
         })),
         GetStockObjectArg::NULL_BRUSH => machine
             .state
@@ -113,17 +104,29 @@ pub fn GetObjectA(machine: &mut Machine, handle: HGDIOBJ, bytes: u32, out: u32) 
         Object::Brush(_) => todo!(),
         Object::Bitmap(bitmap) => {
             assert_eq!(bytes as usize, std::mem::size_of::<BITMAP>());
-            let out = machine.mem().view_mut::<BITMAP>(out);
-            let bitmap = bitmap.inner();
-            *out = BITMAP {
-                bmType: 0,
-                bmWidth: bitmap.width(),
-                bmHeight: bitmap.height(),
-                bmWidthBytes: 0,
-                bmPlanes: 0,
-                bmBitsPixel: 0,
-                bmBits: 0,
-            };
+            machine.mem().put_pod::<BITMAP>(
+                out,
+                match bitmap {
+                    Bitmap::RGBA32(bitmap) => BITMAP {
+                        bmType: 0,
+                        bmWidth: bitmap.width,
+                        bmHeight: bitmap.height,
+                        bmWidthBytes: 0,
+                        bmPlanes: 0,
+                        bmBitsPixel: 32,
+                        bmBits: 0,
+                    },
+                    Bitmap::Mono(bitmap) => BITMAP {
+                        bmType: 0,
+                        bmWidth: bitmap.width,
+                        bmHeight: bitmap.height,
+                        bmWidthBytes: 0,
+                        bmPlanes: 0,
+                        bmBitsPixel: 1,
+                        bmBits: 0,
+                    },
+                },
+            );
             bytes
         }
         Object::Pen(_) => todo!(),

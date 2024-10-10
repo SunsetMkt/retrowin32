@@ -1,9 +1,8 @@
 import * as preact from 'preact';
 import { Fragment, h } from 'preact';
-import { Emulator } from './emulator';
+import { Emulator, EmulatorHost } from './emulator';
 import * as wasm from './glue/pkg/glue';
 import { fetchFileSet } from './host';
-import { parseCSV } from './labels';
 
 namespace WindowComponent {
   export interface Props {
@@ -87,6 +86,8 @@ interface URLParams {
   dir?: string;
   /** Executable to run. */
   exe: string;
+  /** DLLs to load from files instead of builtin implementations. */
+  externalDLLs: string[];
   /** Other data files to load.  TODO: we should fetch these dynamically instead. */
   files: string[];
   /** If true, relocate the exe on load. */
@@ -100,14 +101,15 @@ function parseURL(): URLParams | undefined {
   const exe = query.get('exe');
   if (!exe) return undefined;
   const dir = query.get('dir') || undefined;
+  const externalDLLs = (query.get('external') || '').split(',');
   const files = query.getAll('file');
   const relocate = query.has('relocate');
   const cmdLine = query.get('cmdline') || undefined;
-  const params: URLParams = { dir, exe, files, relocate, cmdLine };
+  const params: URLParams = { dir, exe, externalDLLs, files, relocate, cmdLine };
   return params;
 }
 
-export async function loadEmulator() {
+export async function loadEmulator(host: EmulatorHost) {
   const params = parseURL();
   if (!params) {
     throw new Error('invalid URL params');
@@ -117,23 +119,15 @@ export async function loadEmulator() {
 
   await wasm.default(new URL('wasm.wasm', document.location.href));
 
-  const csvLabels = new Map<number, string>();
-  const resp = await fetch(params.dir + params.exe + '.csv');
-  if (resp.ok) {
-    for (const [addr, name] of parseCSV(await resp.text())) {
-      csvLabels.set(addr, name);
-    }
-  }
-
   const cmdLine = params.cmdLine ?? params.exe;
   const exePath = (params.dir ?? '') + params.exe;
   return new Emulator(
-    null!,
+    host,
     fileset,
     exePath,
     cmdLine,
+    params.externalDLLs,
     fileset.get(params.exe)!,
-    csvLabels,
     params.relocate ?? false,
   );
 }

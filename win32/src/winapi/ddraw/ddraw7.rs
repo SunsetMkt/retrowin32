@@ -3,14 +3,12 @@
 use super::{palette::IDirectDrawPalette, types::*, DD_OK};
 pub use crate::winapi::com::GUID;
 use crate::{
-    winapi::{com::vtable, ddraw, types::*},
+    winapi::{com::vtable, ddraw, kernel32::get_symbol, types::*},
     Machine,
 };
 use bitflags::bitflags;
-use memory::Extensions;
 use memory::Pod;
-
-const TRACE_CONTEXT: &'static str = "ddraw/7";
+use memory::{Extensions, ExtensionsMut};
 
 pub const IID_IDirectDraw7: GUID = GUID {
     Data1: 0x15e65ec0,
@@ -64,11 +62,11 @@ impl TryFrom<u32> for DDFLIP {
     }
 }
 
-#[win32_derive::shims_from_x86]
+#[win32_derive::dllexport]
 pub mod IDirectDraw7 {
     use super::*;
 
-    vtable![IDirectDraw7 shims
+    vtable![
         QueryInterface: todo,
         AddRef: todo,
         Release: ok,
@@ -104,11 +102,7 @@ pub mod IDirectDraw7 {
     pub fn new(machine: &mut Machine) -> u32 {
         let ddraw = &mut machine.state.ddraw;
         let lpDirectDraw = ddraw.heap.alloc(machine.emu.memory.mem(), 4);
-        let vtable = *ddraw.vtable_IDirectDraw7.get_or_insert_with(|| {
-            vtable(machine.emu.memory.mem(), &mut ddraw.heap, |shim| {
-                machine.emu.shims.add(shim)
-            })
-        });
+        let vtable = get_symbol(machine, "ddraw.dll", "IDirectDraw7");
         machine.mem().put_pod::<u32>(lpDirectDraw, vtable);
         lpDirectDraw
     }
@@ -137,9 +131,8 @@ pub mod IDirectDraw7 {
         let palette = IDirectDrawPalette::new(machine);
         let entries = machine
             .mem()
-            .view_n::<PALETTEENTRY>(entries, 256)
-            .to_vec()
-            .into_boxed_slice();
+            .iter_pod::<PALETTEENTRY>(entries, 256)
+            .collect();
         machine.state.ddraw.palettes.insert(palette, entries);
         machine.mem().put_pod::<u32>(lplpPalette, palette);
         DD_OK
@@ -184,14 +177,7 @@ pub mod IDirectDraw7 {
             todo!()
         }
 
-        let mem = machine.emu.memory.mem();
-        let desc_addr = machine
-            .state
-            .ddraw
-            .heap
-            .alloc(mem, std::mem::size_of::<DDSURFACEDESC2>() as u32);
-        let desc = mem.view_mut::<DDSURFACEDESC2>(desc_addr);
-        *desc = DDSURFACEDESC2::zeroed();
+        let mut desc = DDSURFACEDESC2::default();
         // TODO: offer multiple display modes rather than hardcoding this one.
         desc.dwSize = std::mem::size_of::<DDSURFACEDESC2>() as u32;
         desc.dwWidth = 320;
@@ -206,6 +192,14 @@ pub mod IDirectDraw7 {
             dwBBitMask: 0x0000FF00,
             dwRGBAlphaBitMask: 0x000000FF,
         };
+
+        let mem = machine.emu.memory.mem();
+        let desc_addr = machine
+            .state
+            .ddraw
+            .heap
+            .alloc(mem, std::mem::size_of::<DDSURFACEDESC2>() as u32);
+        mem.put_pod::<DDSURFACEDESC2>(desc_addr, desc);
 
         machine
             .call_x86(lpEnumCallback, vec![desc_addr, lpContext])
@@ -249,7 +243,7 @@ pub mod IDirectDraw7 {
         let flags = flags.unwrap();
         if flags.contains(DDSCL::EXCLUSIVE) {
             let window = machine.state.user32.windows.get_mut(hwnd).unwrap();
-            window.host.fullscreen();
+            window.expect_toplevel_mut().host.fullscreen();
         }
         DD_OK
     }
@@ -290,11 +284,11 @@ pub mod IDirectDraw7 {
     }
 }
 
-#[win32_derive::shims_from_x86]
+#[win32_derive::dllexport]
 pub mod IDirectDrawSurface7 {
     use super::*;
 
-    vtable![IDirectDrawSurface7 shims
+    vtable![
         QueryInterface: todo,
         AddRef: todo,
         Release: ok,
@@ -349,11 +343,7 @@ pub mod IDirectDrawSurface7 {
     pub fn new(machine: &mut Machine) -> u32 {
         let ddraw = &mut machine.state.ddraw;
         let lpDirectDrawSurface7 = ddraw.heap.alloc(machine.emu.memory.mem(), 4);
-        let vtable = *ddraw.vtable_IDirectDrawSurface7.get_or_insert_with(|| {
-            vtable(machine.emu.memory.mem(), &mut ddraw.heap, |shim| {
-                machine.emu.shims.add(shim)
-            })
-        });
+        let vtable = get_symbol(machine, "ddraw.dll", "IDirectDrawSurface7");
         machine.mem().put_pod::<u32>(lpDirectDrawSurface7, vtable);
         lpDirectDrawSurface7
     }
@@ -564,25 +554,25 @@ pub mod IDirectDrawSurface7 {
             rect.bottom = surf.height as i32;
         }
         assert!(surf.pixels != 0);
+
+        // We need to copy surf.pixels to convert its format to the RGBA expected by the write_pixels API.
         match machine.state.ddraw.bytes_per_pixel {
             1 => {
                 let pixels = machine
                     .emu
                     .memory
                     .mem()
-                    .view_n::<u8>(surf.pixels, surf.width * surf.height);
+                    .iter_pod::<u8>(surf.pixels, surf.width * surf.height);
                 if let Some(palette) = machine
                     .state
                     .ddraw
                     .palettes
                     .get(&machine.state.ddraw.palette_hack)
                 {
-                    // XXX very inefficient
                     let pixels32: Vec<_> = pixels
-                        .iter()
-                        .map(|&i| {
+                        .map(|i| {
                             let p = &palette[i as usize];
-                            [p.peRed, p.peGreen, p.peBlue, 255]
+                            [p.peRed, p.peGreen, p.peBlue, 0xFF]
                         })
                         .collect();
                     surf.host.write_pixels(&pixels32);
@@ -593,9 +583,9 @@ pub mod IDirectDrawSurface7 {
                     .emu
                     .memory
                     .mem()
-                    .view_n::<[u8; 4]>(surf.pixels, surf.width * surf.height);
-                // XXX setting alpha channel manually, very inefficient :(
-                let pixels32: Vec<_> = pixels.iter().map(|&[r, g, b, _a]| [r, g, b, 255]).collect();
+                    .iter_pod::<[u8; 4]>(surf.pixels, surf.width * surf.height);
+                // Ignore alpha channel in input; output is always opaque.
+                let pixels32: Vec<_> = pixels.map(|[r, g, b, _a]| [r, g, b, 0xff]).collect();
                 surf.host.write_pixels(&pixels32);
             }
             bpp => todo!("Unlock for {bpp}bpp"),

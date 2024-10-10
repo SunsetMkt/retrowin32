@@ -1,17 +1,38 @@
 use crate::Pod;
 use std::mem::size_of;
 
+#[inline(never)]
+fn aligned_panic(ptr: usize, align: usize) {
+    // TODO: this should be a panic but anatyda.exe currently uses unaligned access
+    // in the FromStack bits, needs a rethink.
+    log::warn!("pointer {ptr:x} should be aligned to {align}",);
+}
+
+fn check_aligned<T: Pod>(ptr: *const T) {
+    let align = std::mem::align_of::<T>();
+    if ptr as usize % align != 0 {
+        aligned_panic(ptr as usize, align);
+    }
+}
+
 pub trait Extensions<'m>: Sized {
     fn as_slice(self) -> &'m [u8];
-    fn get_ptr<T: Pod>(self, ofs: u32) -> *mut T;
+
+    fn get_ptr<T: Pod>(self, ofs: u32) -> *const T;
     fn get_pod<T: Clone + Pod>(self, ofs: u32) -> T {
         unsafe { std::ptr::read_unaligned(self.get_ptr::<T>(ofs)) }
     }
-    fn put_pod<T: Clone + Pod>(self, ofs: u32, val: T) {
-        unsafe {
-            std::ptr::write_unaligned(self.get_ptr::<T>(ofs), val);
-        }
+    fn get_aligned_ref<T: Pod>(self, ofs: u32) -> &'m T {
+        let ptr = self.get_ptr::<T>(ofs);
+        check_aligned(ptr);
+        unsafe { &*(ptr as *const T) }
     }
+    fn get_aligned_ref_mut<T: Pod>(self, ofs: u32) -> &'m mut T {
+        let ptr = self.get_ptr::<T>(ofs);
+        check_aligned(ptr);
+        unsafe { &mut *(ptr as *mut T) }
+    }
+
     fn sub32(self, ofs: u32, len: u32) -> &'m [u8];
     fn slicez(self, ofs: u32) -> &'m [u8];
 
@@ -30,7 +51,13 @@ pub trait Extensions<'m>: Sized {
 }
 
 pub trait ExtensionsMut<'m>: Sized {
+    fn get_ptr_mut<T: Pod>(self, ofs: u32) -> *mut T;
     fn sub32_mut(self, ofs: u32, len: u32) -> &'m mut [u8];
+    fn put_pod<T: Clone + Pod>(self, ofs: u32, val: T) {
+        unsafe {
+            std::ptr::write_unaligned(self.get_ptr_mut::<T>(ofs), val);
+        }
+    }
 }
 
 /// See iter_pod.
@@ -56,12 +83,12 @@ impl<'m> Extensions<'m> for &'m [u8] {
         self
     }
 
-    fn get_ptr<T: Pod>(self, ofs: u32) -> *mut T {
+    fn get_ptr<T: Pod>(self, ofs: u32) -> *const T {
         unsafe {
             if ofs as usize + size_of::<T>() > self.len() {
                 oob_panic(ofs, size_of::<T>());
             }
-            self.as_ptr().add(ofs as usize) as *mut T
+            self.as_ptr().add(ofs as usize) as *const T
         }
     }
 
@@ -78,6 +105,9 @@ impl<'m> Extensions<'m> for &'m [u8] {
 }
 
 impl<'m> ExtensionsMut<'m> for &'m mut [u8] {
+    fn get_ptr_mut<T: Pod>(self, ofs: u32) -> *mut T {
+        (self as &[u8]).get_ptr::<T>(ofs) as *mut T
+    }
     fn sub32_mut(self, ofs: u32, len: u32) -> &'m mut [u8] {
         &mut self[ofs as usize..][..len as usize]
     }
@@ -113,7 +143,7 @@ impl<'m> Mem<'m> {
     }
 
     pub fn is_oob<T>(&self, addr: u32) -> bool {
-        self.ptr as usize + addr as usize + size_of::<T>() > self.end as usize
+        addr + size_of::<T>() as u32 > self.len()
     }
 
     fn get_ptr_unchecked(&self, ofs: u32) -> *mut u8 {
@@ -125,17 +155,9 @@ impl<'m> Mem<'m> {
     pub fn copy(&self, src: u32, dst: u32, len: u32) {
         unsafe {
             let src = self.get_ptr::<u8>(src);
-            let dst = self.get_ptr::<u8>(dst);
+            let dst = self.get_ptr_mut::<u8>(dst);
             std::ptr::copy(src, dst, len as usize);
         }
-    }
-
-    pub fn as_slice_todo(&self) -> &'m [u8] {
-        unsafe { std::slice::from_raw_parts(self.ptr, self.len() as usize) }
-    }
-
-    pub fn offset_of(&self, ptr: *const u8) -> u32 {
-        (ptr as usize - self.ptr as usize) as u32
     }
 
     pub fn len(&self) -> u32 {
@@ -143,11 +165,6 @@ impl<'m> Mem<'m> {
     }
 
     pub fn slice(&self, b: impl std::ops::RangeBounds<u32>) -> &'m [u8] {
-        self.subslice_todo(b).as_slice_todo()
-    }
-
-    // TODO: remove this in favor of .slice()
-    pub fn subslice_todo(&self, b: impl std::ops::RangeBounds<u32>) -> Mem<'m> {
         let bstart = match b.start_bound() {
             std::ops::Bound::Included(&n) => n,
             std::ops::Bound::Excluded(&n) => n + 1,
@@ -164,47 +181,8 @@ impl<'m> Mem<'m> {
             if !(self.ptr..self.end).contains(&ptr) || !(self.ptr..self.end.add(1)).contains(&end) {
                 panic!("oob slice: {bstart:x?}..{bend:x?}",);
             }
-            Mem {
-                ptr,
-                end,
-                _marker: std::marker::PhantomData::default(),
-            }
+            std::slice::from_raw_parts(ptr, end.offset_from(ptr) as usize)
         }
-    }
-
-    // TODO: this fails if addr isn't appropriately aligned.
-    // We need to revisit this whole "view" API...
-    pub fn view<T: Pod>(&self, addr: u32) -> &'m T {
-        unsafe {
-            let ptr = self.get_ptr::<u8>(addr);
-            &*(ptr as *const T)
-        }
-    }
-
-    // TODO: this fails if addr isn't appropriately aligned.
-    // We need to revisit this whole "view" API...
-    pub fn view_mut<T: Pod>(&self, addr: u32) -> &'m mut T {
-        unsafe {
-            let ptr = self.get_ptr::<u8>(addr);
-            &mut *(ptr as *mut T)
-        }
-    }
-
-    pub fn view_n<T: Pod>(&self, ofs: u32, count: u32) -> &'m [T] {
-        let ptr = self.get_ptr_unchecked(ofs) as *const T;
-        let count = count as usize;
-        unsafe {
-            let end = ptr.add(count);
-            if end as *const _ > self.end {
-                oob_panic(ofs, count * size_of::<T>());
-            }
-            std::slice::from_raw_parts(ptr, count)
-        }
-    }
-
-    /// Note: can returned unaligned pointers depending on addr.
-    pub fn ptr_mut<T: Pod + Copy>(&self, addr: u32) -> *mut T {
-        self.get_ptr::<T>(addr)
     }
 
     /// Create a new Mem with arbitrary lifetime.  Very unsafe, used in stack_args codegen.
@@ -220,11 +198,11 @@ fn oob_panic(ofs: u32, size: usize) -> ! {
 
 impl<'m> Extensions<'m> for Mem<'m> {
     fn as_slice(self) -> &'m [u8] {
-        self.as_slice_todo()
+        unimplemented!()
     }
 
-    fn get_ptr<T: Pod>(self, ofs: u32) -> *mut T {
-        let ptr = self.get_ptr_unchecked(ofs) as *mut T;
+    fn get_ptr<T: Pod>(self, ofs: u32) -> *const T {
+        let ptr = self.get_ptr_unchecked(ofs) as *const T;
         unsafe {
             if ptr.add(1) as *const _ > self.end {
                 oob_panic(ofs, size_of::<T>());
@@ -238,14 +216,21 @@ impl<'m> Extensions<'m> for Mem<'m> {
     }
 
     fn slicez(self, ofs: u32) -> &'m [u8] {
-        let ofs = ofs as usize;
-        let slice = &self.as_slice_todo()[ofs..];
-        let nul = slice.iter().position(|&c| c == 0).unwrap();
-        &slice[..nul]
+        unsafe {
+            let start = self.ptr.add(ofs as usize);
+            let mut len = 0;
+            while start.add(len) < self.end && *start.add(len) != 0 {
+                len += 1;
+            }
+            std::slice::from_raw_parts(start, len)
+        }
     }
 }
 
 impl<'m> ExtensionsMut<'m> for Mem<'m> {
+    fn get_ptr_mut<T: Pod>(self, ofs: u32) -> *mut T {
+        self.get_ptr::<T>(ofs) as *mut T
+    }
     fn sub32_mut(self, ofs: u32, len: u32) -> &'m mut [u8] {
         assert!(ofs + len <= self.len());
         unsafe { std::slice::from_raw_parts_mut(self.ptr.add(ofs as usize), len as usize) }

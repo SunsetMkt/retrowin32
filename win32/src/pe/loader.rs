@@ -121,7 +121,6 @@ fn patch_iat(machine: &mut Machine, base: u32, imports_data: &IMAGE_DATA_DIRECTO
     for dll_imports in pe::read_imports(section) {
         let dll_name = dll_imports.image_name(image).to_ascii_lowercase();
         let hmodule = winapi::kernel32::load_library(machine, &dll_name);
-        // TODO: missing dll should not be an possibility here, we should error instead.
         let mut dll = machine.state.kernel32.dlls.get_mut(&hmodule);
         for (i, entry) in dll_imports.ilt(image).enumerate() {
             let sym = entry.as_import_symbol(image);
@@ -130,12 +129,21 @@ fn patch_iat(machine: &mut Machine, base: u32, imports_data: &IMAGE_DATA_DIRECTO
             machine.labels.insert(iat_addr, format!("{}@IAT", name));
 
             let resolved_addr = if let Some(dll) = dll.as_mut() {
-                dll.resolve(&sym, |shim| machine.emu.shims.add(shim))
+                if let Some(sym) = dll.resolve(&sym) {
+                    Some(sym)
+                } else {
+                    log::warn!("missing symbol {name}");
+                    None
+                }
             } else {
-                machine.emu.shims.add(Err(format!("{name} not found")))
+                None
             };
-            machine.labels.insert(resolved_addr, name);
-            patches.push((iat_addr, resolved_addr));
+
+            let addr = resolved_addr.unwrap_or(0);
+            if addr != 0 {
+                machine.labels.insert(addr, name);
+            }
+            patches.push((iat_addr, addr));
         }
     }
 
@@ -161,7 +169,21 @@ fn load_pe(
         if let Some(relocs) = file.get_data_directory(pe::IMAGE_DIRECTORY_ENTRY::BASERELOC) {
             let image = machine.mem().slice(base..);
             if let Some(sec) = relocs.as_slice(image) {
-                apply_relocs(image, file.opt_header.ImageBase, base, sec);
+                // Warning: apply_relocs wants to mutate arbitrary memory, which violates Rust aliasing rules.
+                // It has started silently failing in release builds in the past...
+                apply_relocs(
+                    file.opt_header.ImageBase,
+                    base,
+                    sec,
+                    |addr| {
+                        let addr = base + addr;
+                        machine.mem().get_pod::<u32>(addr)
+                    },
+                    |addr, val| {
+                        let addr = base + addr;
+                        machine.mem().put_pod::<u32>(addr, val);
+                    },
+                );
             }
         }
     }

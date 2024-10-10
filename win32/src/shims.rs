@@ -11,19 +11,40 @@
 //! 3. shims_unicorn.rs, which is used with the Unicorn CPU emulator
 
 use crate::Machine;
+use std::collections::HashMap;
 
-#[cfg(feature = "x86-unicorn")]
-pub use crate::shims_unicorn::unicorn_loop;
+pub type SyncHandler = unsafe fn(&mut Machine, u32) -> u32;
+pub type AsyncHandler =
+    unsafe fn(&mut Machine, u32) -> std::pin::Pin<Box<dyn std::future::Future<Output = u32>>>;
+#[derive(Debug, Clone, Copy)]
+pub enum Handler {
+    Sync(SyncHandler),
+    Async(AsyncHandler),
+}
 
-pub type Handler = unsafe fn(&mut Machine, u32) -> u32;
-
+#[derive(Debug)]
 pub struct Shim {
     pub name: &'static str,
     pub func: Handler,
-    /// Number of stack bytes popped by arguments.
-    /// For cdecl calling convention (used in varargs) this is 0.
-    pub stack_consumed: u32,
-    pub is_async: bool,
+}
+
+#[derive(Default)]
+pub struct Shims {
+    shims: HashMap<u32, Result<&'static Shim, String>>,
+}
+
+impl Shims {
+    pub fn register(&mut self, addr: u32, shim: Result<&'static Shim, String>) {
+        self.shims.insert(addr, shim);
+    }
+
+    pub fn get(&self, addr: u32) -> Result<&Shim, &str> {
+        match self.shims.get(&addr) {
+            Some(Ok(shim)) => Ok(shim),
+            Some(Err(name)) => Err(name),
+            None => panic!("unknown import reference at {:x}", addr),
+        }
+    }
 }
 
 /// Synchronously evaluate a Future, under the assumption that it is always immediately Ready.

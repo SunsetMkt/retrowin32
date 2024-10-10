@@ -78,6 +78,7 @@ fn message_from_events(
 }
 
 pub struct GUI {
+    sdl: sdl2::Sdl,
     video: sdl2::VideoSubsystem,
     pump: sdl2::EventPump,
     timer: sdl2::TimerSubsystem,
@@ -94,6 +95,7 @@ impl GUI {
         let timer = sdl.timer().map_err(|err| anyhow::anyhow!(err))?;
 
         Ok(GUI {
+            sdl,
             video,
             pump,
             timer,
@@ -156,6 +158,10 @@ impl GUI {
 
     pub fn create_surface(&mut self, opts: &win32::SurfaceOptions) -> Box<dyn win32::Surface> {
         Box::new(Texture::new(self.win.as_ref().unwrap(), opts))
+    }
+
+    pub fn init_audio(&mut self, sample_rate: u32) -> Box<dyn win32::Audio> {
+        Box::new(Audio::new(&self.sdl, sample_rate))
     }
 }
 
@@ -242,7 +248,7 @@ impl win32::Surface for Texture {
             .unwrap();
     }
 
-    fn show(&mut self) {
+    fn show(&self) {
         let canvas = &mut self.window.0.borrow_mut().canvas;
         // Passing None/None for the src/dst rects means to do a scaling full copy,
         // which is what we want for the fullscreen case in particular.
@@ -272,5 +278,143 @@ impl win32::Surface for Texture {
                 canvas.copy(src, src_rect, dst_rect).unwrap()
             })
             .unwrap();
+    }
+}
+
+/// Copy bytes from a [u8] to a [T].  The slices must be of appropriate size.
+/// This is like copy_from_slice, but allows for unaligned ([u8]) input.
+fn copy_from_bytes<T>(out: &mut [T], bytes: &[u8]) {
+    assert_eq!(out.len() * std::mem::size_of::<T>(), bytes.len());
+    let out_bytes =
+        unsafe { std::slice::from_raw_parts_mut(out.as_mut_ptr() as *mut u8, bytes.len()) };
+    out_bytes.copy_from_slice(bytes);
+}
+
+/// A ring buffer for accumulating a [T].  A bit strange in that it takes unaligned [u8] input.
+struct RingBuffer<T> {
+    buf: Box<[T]>,
+    start: usize,
+    end: usize,
+}
+
+impl<T: Copy + Clone + Default> RingBuffer<T> {
+    fn new(size: usize) -> Self {
+        RingBuffer {
+            buf: vec![Default::default(); size].into_boxed_slice(),
+            start: 0,
+            end: 0,
+        }
+    }
+
+    /// Write bytes to the buffer.  bytes must represent (possibly-unaligned) slice of T.
+    fn write(&mut self, mut bytes: &[u8]) {
+        // Note that this accepts [u8] and not [T] because the input data isn't necessarily
+        // aligned!  We preserve the invariant that the output is aligned.
+        let element_size = size_of::<T>();
+        if self.end >= self.start {
+            // fill self.end..len
+            let len = self.buf.len();
+            let space = &mut self.buf[self.end..len];
+            let n = (space.len() * element_size).min(bytes.len());
+            let n_elem = n / element_size;
+            copy_from_bytes(&mut space[..n_elem], &bytes[..n]);
+            bytes = &bytes[n..];
+            self.end = (self.end + n_elem) % len;
+        }
+
+        if bytes.len() > 0 {
+            // fill self.end..self.start, we know self.end < self.start
+            let space = &mut self.buf[self.end..self.start];
+            let n = (space.len() * element_size).min(bytes.len());
+            let n_elem = n / element_size;
+            copy_from_bytes(&mut space[..n_elem], &bytes[..n]);
+            bytes = &bytes[n..];
+            self.end += n_elem;
+        }
+
+        if bytes.len() > 0 || self.start == self.end {
+            panic!("ringbuffer overflow");
+        }
+    }
+
+    // Read Ts from the buffer, returning how many were read.
+    fn read(&mut self, mut buf: &mut [T]) -> usize {
+        let mut n_read = 0;
+
+        if self.start > self.end {
+            // read self.start..len
+            let len = self.buf.len();
+            let avail = &mut self.buf[self.start..len];
+            let n = avail.len().min(buf.len());
+            buf[..n].copy_from_slice(&avail[..n]);
+            n_read += n;
+            buf = &mut buf[n..];
+            self.start = (self.start + n) % len;
+        }
+
+        // read self.start..self.end, we know self.start < self.end
+        let avail = &mut self.buf[self.start..self.end];
+        let n = avail.len().min(buf.len());
+        buf[..n].copy_from_slice(&avail[..n]);
+        n_read += n;
+        // buf = &mut buf[n..];
+        self.start = (self.start + n) % self.buf.len();
+
+        n_read
+    }
+}
+
+struct AudioBuffer {
+    buf: RingBuffer<i16>,
+}
+
+impl Default for AudioBuffer {
+    fn default() -> Self {
+        AudioBuffer {
+            buf: RingBuffer::new(64 << 10),
+        }
+    }
+}
+
+impl AudioBuffer {
+    fn write(&mut self, buf: &[u8]) {
+        assert!(buf.len() % 2 == 0); // must contain i16s
+        self.buf.write(buf);
+    }
+}
+
+impl sdl2::audio::AudioCallback for AudioBuffer {
+    type Channel = i16;
+    fn callback(&mut self, buf: &mut [i16]) {
+        let n = self.buf.read(buf);
+        if n < buf.len() {
+            buf[n..].fill(0);
+        }
+    }
+}
+
+struct Audio {
+    dev: sdl2::audio::AudioDevice<AudioBuffer>,
+}
+
+impl Audio {
+    fn new(sdl: &sdl2::Sdl, sample_rate: u32) -> Self {
+        let audio = sdl.audio().unwrap();
+        let spec = sdl2::audio::AudioSpecDesired {
+            freq: Some(sample_rate as i32),
+            channels: Some(1),
+            samples: None,
+        };
+        let dev = audio
+            .open_playback(None, &spec, |_spec| AudioBuffer::default())
+            .unwrap();
+        dev.resume();
+        Audio { dev }
+    }
+}
+
+impl win32::Audio for Audio {
+    fn write(&mut self, buf: &[u8]) {
+        self.dev.lock().write(buf);
     }
 }

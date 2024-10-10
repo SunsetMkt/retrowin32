@@ -5,8 +5,6 @@ use crate::{
     Machine,
 };
 
-const TRACE_CONTEXT: &'static str = "kernel32/ini";
-
 #[win32_derive::dllexport]
 pub fn GetPrivateProfileIntW(
     _machine: &mut Machine,
@@ -59,4 +57,14 @@ pub fn GetProfileStringW(
     dst[..copy_len].copy_from_slice(&src.buf()[..copy_len]);
     dst[copy_len] = 0;
     copy_len as u32
+}
+
+#[win32_derive::dllexport]
+pub fn WriteProfileStringW(
+    _machine: &mut Machine,
+    lpAppName: Option<&Str16>,
+    lpKeyName: Option<&Str16>,
+    lpString: Option<&Str16>,
+) -> bool {
+    todo!();
 }

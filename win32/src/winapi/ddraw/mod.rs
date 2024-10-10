@@ -9,8 +9,7 @@ mod palette;
 mod types;
 
 pub use crate::winapi::com::GUID;
-pub use clipper::DirectDrawCreateClipper;
-pub use clipper::IDirectDrawClipper;
+pub use clipper::*;
 pub use ddraw1::*;
 pub use ddraw2::*;
 pub use ddraw7::*;
@@ -20,8 +19,6 @@ use super::{heap::Heap, types::*};
 use crate::{host, machine::Machine, SurfaceOptions};
 use std::collections::HashMap;
 pub use types::*;
-
-const TRACE_CONTEXT: &'static str = "ddraw";
 
 pub struct Surface {
     pub host: Box<dyn host::Surface>,
@@ -87,18 +84,19 @@ impl Surface {
 
         surfaces
     }
+
+    pub fn to_rect(&self) -> RECT {
+        RECT {
+            left: 0,
+            top: 0,
+            right: self.width as i32,
+            bottom: self.height as i32,
+        }
+    }
 }
 
 pub struct State {
     heap: Heap,
-    vtable_IDirectDraw: Option<u32>,
-    vtable_IDirectDrawSurface: Option<u32>,
-    vtable_IDirectDraw2: Option<u32>,
-    vtable_IDirectDrawSurface2: Option<u32>,
-    vtable_IDirectDraw7: Option<u32>,
-    vtable_IDirectDrawSurface7: Option<u32>,
-    vtable_IDirectDrawPalette: Option<u32>,
-    vtable_IDirectDrawClipper: Option<u32>,
 
     // TODO: this is per-IDirectDraw state.
     hwnd: HWND,
@@ -128,14 +126,6 @@ impl Default for State {
     fn default() -> Self {
         State {
             heap: Heap::default(),
-            vtable_IDirectDraw: None,
-            vtable_IDirectDrawSurface: None,
-            vtable_IDirectDraw2: None,
-            vtable_IDirectDrawSurface2: None,
-            vtable_IDirectDraw7: None,
-            vtable_IDirectDrawSurface7: None,
-            vtable_IDirectDrawPalette: None,
-            vtable_IDirectDrawClipper: None,
             hwnd: HWND::null(),
             surfaces: HashMap::new(),
             bytes_per_pixel: 4,

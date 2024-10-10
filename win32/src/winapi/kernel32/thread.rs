@@ -6,8 +6,6 @@ use crate::{
 };
 use memory::Pod;
 
-const TRACE_CONTEXT: &'static str = "kernel32/thread";
-
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 pub struct HTHREADT;
 pub type HTHREAD = HANDLE<HTHREADT>;
@@ -80,6 +78,7 @@ pub async fn CreateThread(
     {
         let id = 1; // TODO
         let stack_pointer = machine.create_stack(format!("thread{id} stack"), dwStackSize);
+        // TODO: should reuse a CPU from a previous thread that has exited
         let cpu = machine.emu.x86.new_cpu();
         cpu.regs.set32(x86::Register::ESP, stack_pointer);
         cpu.regs.set32(x86::Register::EBP, stack_pointer);
@@ -99,6 +98,22 @@ pub async fn CreateThread(
         machine.call_x86(lpStartAddress, vec![lpParameter]).await;
         HTHREAD::null()
     }
+}
+
+#[win32_derive::dllexport]
+pub fn ExitThread(machine: &mut Machine, dwExitCode: u32) {
+    if machine.emu.x86.cur_cpu == 0 {
+        panic!("ExitThread called on main thread");
+    }
+
+    log::warn!(
+        "thread on cpu {id} exiting with code {code}",
+        code = dwExitCode,
+        id = machine.emu.x86.cur_cpu
+    );
+    // TODO: free stack, other thread cleanup, set event to signal waiters, etc.
+
+    machine.emu.x86.cpu_mut().state = x86::CPUState::Free;
 }
 
 #[win32_derive::dllexport]
@@ -131,6 +146,11 @@ pub fn InterlockedIncrement(_machine: &mut Machine, addend: Option<&mut u32>) ->
     let addend = addend.unwrap();
     *addend += 1;
     *addend
+}
+
+#[win32_derive::dllexport]
+pub fn InterlockedDecrement(_machine: &mut Machine, addend: Option<&mut u32>) -> u32 {
+    todo!()
 }
 
 #[repr(C)]

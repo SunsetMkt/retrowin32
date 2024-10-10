@@ -3,7 +3,8 @@ use crate::{
     host,
     str16::expect_ascii,
     winapi::{
-        bitmap::{self, BitmapRGBA32},
+        self,
+        bitmap::{BitmapRGBA32, PixelData},
         gdi32::HDC,
         stack_args::{ArrayWithSize, FromArg},
         types::{Str16, String16, HWND, POINT, RECT},
@@ -11,10 +12,8 @@ use crate::{
     Host, Machine, SurfaceOptions,
 };
 use bitflags::bitflags;
-use memory::{Extensions, Mem};
+use memory::{Extensions, ExtensionsMut, Mem};
 use std::rc::Rc;
-
-const TRACE_CONTEXT: &'static str = "user32/window";
 
 /*
 
@@ -44,84 +43,133 @@ ShowWindow() {
 
 */
 
-pub struct WindowPixels {
-    pub bitmap: BitmapRGBA32,
-}
-impl WindowPixels {
-    pub fn new(width: u32, height: u32) -> Self {
-        let size = (width * height) as usize;
-        let raw = {
-            let mut p = Vec::with_capacity(size);
-            p.resize(size, [0u8; 4]);
-            p.into_boxed_slice()
-        };
-        Self {
-            bitmap: BitmapRGBA32 {
-                width,
-                height,
-                pixels: bitmap::PixelData::Owned(raw),
-            },
-        }
-    }
-}
-
-pub struct UpdateRegion {
-    /// Whether to erase background in BeginPaint.
-    pub erase_background: bool,
-    // TODO: rect
-}
-
 pub struct Window {
     pub hwnd: HWND,
-    pub hdc: HDC,
-    pub host: Box<dyn host::Window>,
-    pub surface: Box<dyn host::Surface>,
+    pub typ: WindowType,
     /// Client area width (not total window width).
     pub width: u32,
     /// Client area height (not total window height).
     pub height: u32,
     pub wndclass: Rc<WndClass>,
-    pub pixels: Option<WindowPixels>,
-    pub dirty: Option<UpdateRegion>,
     pub style: WindowStyle,
+    /// The current show state of the window.
+    pub show_cmd: SW,
+}
+
+pub enum WindowType {
+    TopLevel(WindowTopLevel),
+    Child,
+}
+
+/// Properties of only top-level windows.
+pub struct WindowTopLevel {
+    pub host: Box<dyn host::Window>,
+    surface: Box<dyn host::Surface>,
+    // TODO: CS_OWNDC windows do own a DC, but otherwise they don't.
+    // pub hdc: HDC,
+    /// Backing store, lazily created.
+    /// Rc so it can be shared within drawing functions.
+    backing_store: Option<Rc<BitmapRGBA32>>,
+    pub dirty: Option<Dirty>,
 }
 
 impl Window {
-    fn ensure_pixels(&mut self) -> &mut WindowPixels {
-        match self.pixels {
-            Some(ref mut px) => px,
-            None => {
-                self.pixels = Some(WindowPixels::new(self.width, self.height));
-                self.pixels.as_mut().unwrap()
-            }
+    // TODO: expect_toplevel was added to introduce child windows,
+    // but many callers just need to handle child windows instead of calling these.
+    pub fn expect_toplevel_mut(&mut self) -> &mut WindowTopLevel {
+        match &mut self.typ {
+            WindowType::TopLevel(win) => win,
+            _ => panic!("expected top-level window, see TODO"),
         }
     }
 
-    pub fn bitmap_mut<'a>(&mut self) -> &mut BitmapRGBA32 {
-        &mut self.ensure_pixels().bitmap
-    }
-
-    pub fn flush_pixels(&mut self, mem: Mem) {
-        if let Some(pixels) = &mut self.pixels {
-            self.surface
-                .write_pixels(&pixels.bitmap.pixels.as_slice(mem));
-            self.surface.show();
-        }
+    pub fn bitmap(&mut self) -> &Rc<BitmapRGBA32> {
+        let Window { width, height, .. } = *self;
+        self.expect_toplevel_mut()
+            .ensure_backing_store(width, height)
     }
 
     pub fn set_client_size(&mut self, host: &mut dyn Host, width: u32, height: u32) {
         self.width = width;
         self.height = height;
-        self.host.set_size(width, height);
-        self.surface = host.create_surface(
-            self.hwnd.to_raw(),
-            &host::SurfaceOptions {
-                width,
-                height,
-                primary: true,
-            },
-        );
-        self.pixels = None; // recreate lazily
+        match &mut self.typ {
+            WindowType::TopLevel(w) => {
+                w.host.set_size(width, height);
+                w.surface = host.create_surface(
+                    self.hwnd.to_raw(),
+                    &host::SurfaceOptions {
+                        width,
+                        height,
+                        primary: true,
+                    },
+                );
+                w.backing_store = None; // recreate lazily
+            }
+            _ => {}
+        }
+    }
+
+    pub fn is_dirty(&self) -> bool {
+        match &self.typ {
+            WindowType::TopLevel(top) => top.dirty.is_some(),
+            _ => false, // TODO
+        }
+    }
+
+    // TODO: update region
+    pub fn add_dirty(&mut self, erase: bool) {
+        match &mut self.typ {
+            WindowType::TopLevel(top) => {
+                let prev = top
+                    .dirty
+                    .as_ref()
+                    .map(|d| d.erase_background)
+                    .unwrap_or(false);
+                top.dirty = Some(Dirty {
+                    erase_background: prev || erase,
+                });
+            }
+            _ => todo!(),
+        }
+    }
+
+    pub fn flush_backing_store(&mut self, mem: Mem) {
+        match self.typ {
+            WindowType::TopLevel(ref mut top) => {
+                top.flush_backing_store(mem);
+            }
+            _ => {}
+        }
+    }
+}
+
+pub struct Dirty {
+    pub erase_background: bool,
+    // TODO: region
+}
+
+impl WindowTopLevel {
+    fn ensure_backing_store(&mut self, width: u32, height: u32) -> &Rc<BitmapRGBA32> {
+        match self.backing_store {
+            Some(ref mut px) => px,
+            None => {
+                self.backing_store = Some(Rc::new(BitmapRGBA32 {
+                    width,
+                    height,
+                    pixels: PixelData::new_owned((width * height) as usize),
+                }));
+                self.backing_store.as_mut().unwrap()
+            }
+        }
+    }
+
+    fn flush_backing_store(&mut self, mem: Mem) {
+        if let Some(backing_store) = &self.backing_store {
+            backing_store.pixels.with_slice(mem, |pixels| {
+                self.surface.write_pixels(pixels);
+            });
+            self.surface.show();
+        }
     }
 }
 
@@ -400,15 +448,13 @@ pub async fn CreateWindowExW(
         }
     };
 
-    let _style = dwStyle.unwrap();
+    let style = dwStyle.unwrap();
     const CW_USEDEFAULT: u32 = 0x8000_0000;
 
     // hInstance is only relevant when multiple DLLs register classes:
     //   https://devblogs.microsoft.com/oldnewthing/20050418-59/?p=35873
 
     let hwnd = machine.state.user32.windows.reserve();
-    let mut host_win = machine.host.create_window(hwnd.to_raw());
-    host_win.set_title(&lpWindowName.unwrap().to_string());
     let width = if nWidth == CW_USEDEFAULT { 640 } else { nWidth };
     let height = if nHeight == CW_USEDEFAULT {
         480
@@ -419,31 +465,39 @@ pub async fn CreateWindowExW(
     let style = dwStyle.unwrap();
     let menu = false; // TODO
     let (width, height) = client_size_from_window_size(style, menu, width, height);
-    host_win.set_size(width, height);
-    let surface = machine.host.create_surface(
-        hwnd.to_raw(),
-        &SurfaceOptions {
-            width,
-            height,
-            primary: true,
-        },
-    );
+
+    let typ = if style.contains(WindowStyle::CHILD) {
+        WindowType::Child
+    } else {
+        let mut host_win = machine.host.create_window(hwnd.to_raw());
+        host_win.set_title(&lpWindowName.unwrap().to_string());
+        host_win.set_size(width, height);
+        let surface = machine.host.create_surface(
+            hwnd.to_raw(),
+            &SurfaceOptions {
+                width,
+                height,
+                primary: true,
+            },
+        );
+        WindowType::TopLevel(WindowTopLevel {
+            host: host_win,
+            surface,
+            backing_store: None,
+            dirty: Some(Dirty {
+                erase_background: true,
+            }),
+        })
+    };
 
     let window = Window {
         hwnd,
-        hdc: machine.state.gdi32.dcs.add(crate::winapi::gdi32::DC::new(
-            crate::winapi::gdi32::DCTarget::Window(hwnd),
-        )),
-        host: host_win,
-        surface,
+        typ,
         width,
         height,
         wndclass,
-        pixels: None,
-        dirty: Some(UpdateRegion {
-            erase_background: true,
-        }),
         style,
+        show_cmd: SW::HIDE,
     };
     machine.state.user32.windows.set(hwnd, window);
 
@@ -516,13 +570,16 @@ pub fn FindWindowA(
 #[win32_derive::dllexport]
 pub async fn UpdateWindow(machine: &mut Machine, hWnd: HWND) -> bool {
     let window = machine.state.user32.windows.get(hWnd).unwrap();
-    if window.dirty.is_none() {
-        return true;
+    match &window.typ {
+        WindowType::TopLevel(top) => {
+            if top.dirty.is_none() {
+                return true;
+            }
+        }
+        _ => {
+            log::warn!("TODO: UpdateWindow for child windows");
+        }
     }
-    let windowpos_addr = machine.state.scratch.alloc(
-        machine.emu.memory.mem(),
-        std::mem::size_of::<WINDOWPOS>() as u32,
-    );
 
     let msg = MSG {
         hwnd: hWnd,
@@ -533,27 +590,13 @@ pub async fn UpdateWindow(machine: &mut Machine, hWnd: HWND) -> bool {
         pt_x: 0,
         pt_y: 0,
     };
-    DispatchMessageA(machine, Some(&msg)).await;
-
-    dispatch_message(
-        machine,
-        &MSG {
-            hwnd: hWnd,
-            message: WM::WINDOWPOSCHANGED as u32,
-            wParam: 0,
-            lParam: windowpos_addr,
-            time: 0,
-            pt_x: 0,
-            pt_y: 0,
-        },
-    )
-    .await;
+    dispatch_message(machine, &msg).await;
 
     true // success
 }
 
 /// nCmdShow passed to ShowWindow().
-#[derive(Debug, win32_derive::TryFromEnum)]
+#[derive(Copy, Clone, Debug, win32_derive::TryFromEnum)]
 pub enum SW {
     HIDE = 0,
     NORMAL = 1,
@@ -571,17 +614,16 @@ pub enum SW {
 
 #[win32_derive::dllexport]
 pub async fn ShowWindow(machine: &mut Machine, hWnd: HWND, nCmdShow: Result<SW, u32>) -> bool {
-    let windowpos_addr = machine.state.scratch.alloc(
-        machine.emu.memory.mem(),
-        std::mem::size_of::<WINDOWPOS>() as u32,
-    );
+    // Store the show command for returning from GetWindowPlacement.
+    machine.state.user32.windows.get_mut(hWnd).unwrap().show_cmd = nCmdShow.unwrap();
+
     dispatch_message(
         machine,
         &MSG {
             hwnd: hWnd,
             message: WM::ACTIVATEAPP as u32,
-            wParam: 0,
-            lParam: windowpos_addr,
+            wParam: true as u32, // activating
+            lParam: 0,           // TODO: thread id
             time: 0,
             pt_x: 0,
             pt_y: 0,
@@ -589,13 +631,14 @@ pub async fn ShowWindow(machine: &mut Machine, hWnd: HWND, nCmdShow: Result<SW, 
     )
     .await;
 
+    const WA_ACTIVE: u32 = 1;
     dispatch_message(
         machine,
         &MSG {
             hwnd: hWnd,
             message: WM::ACTIVATE as u32,
-            wParam: 1,
-            lParam: 0,
+            wParam: WA_ACTIVE,
+            lParam: 0, // TODO: previous window hwnd
             time: 0,
             pt_x: 0,
             pt_y: 0,
@@ -603,6 +646,9 @@ pub async fn ShowWindow(machine: &mut Machine, hWnd: HWND, nCmdShow: Result<SW, 
     )
     .await;
 
+    // TODO: WM_WINDOWPOSCHANGED should pass a WINDOWPOS struct,
+    // but the DefWindowProc we provide ignores it and calls WM_MOVE/WM_SIZE directly.
+    let windowpos_addr = 0;
     dispatch_message(
         machine,
         &MSG {
@@ -632,12 +678,11 @@ pub fn GetFocus(machine: &mut Machine) -> HWND {
     machine.state.user32.windows.iter().next().unwrap().hwnd
 }
 
-#[win32_derive::dllexport]
-pub async fn DefWindowProcA(
+async fn def_window_proc(
     machine: &mut Machine,
     hWnd: HWND,
     msg: Result<WM, u32>,
-    wParam: u32,
+    _wParam: u32,
     lParam: u32,
 ) -> u32 {
     let msg = match msg {
@@ -646,12 +691,18 @@ pub async fn DefWindowProcA(
     };
     match msg {
         WM::PAINT => {
-            let window = machine.state.user32.windows.get_mut(hWnd).unwrap();
+            let window = machine
+                .state
+                .user32
+                .windows
+                .get_mut(hWnd)
+                .unwrap()
+                .expect_toplevel_mut();
             window.dirty = None;
         }
         WM::WINDOWPOSCHANGED => {
             let Window { width, height, .. } = *machine.state.user32.windows.get_mut(hWnd).unwrap();
-            let WINDOWPOS { flags, .. } = *machine.mem().view::<WINDOWPOS>(lParam);
+            let WINDOWPOS { flags, .. } = machine.mem().get_pod::<WINDOWPOS>(lParam);
 
             if !flags.contains(SWP::NOSIZE) {
                 const SIZE_RESTORED: u32 = 0;
@@ -688,6 +739,17 @@ pub async fn DefWindowProcA(
 }
 
 #[win32_derive::dllexport]
+pub async fn DefWindowProcA(
+    machine: &mut Machine,
+    hWnd: HWND,
+    msg: Result<WM, u32>,
+    wParam: u32,
+    lParam: u32,
+) -> u32 {
+    def_window_proc(machine, hWnd, msg, wParam, lParam).await
+}
+
+#[win32_derive::dllexport]
 pub async fn DefWindowProcW(
     machine: &mut Machine,
     hWnd: HWND,
@@ -695,7 +757,7 @@ pub async fn DefWindowProcW(
     wParam: u32,
     lParam: u32,
 ) -> u32 {
-    DefWindowProcA(machine, hWnd, msg, wParam, lParam).await
+    def_window_proc(machine, hWnd, msg, wParam, lParam).await
 }
 
 /// Compute window rectangle from client rectangle.
@@ -794,7 +856,7 @@ impl TryFrom<u32> for SWP {
 }
 
 #[repr(C)]
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct WINDOWPOS {
     pub hwnd: HWND,
     pub hwndInsertAfter: HWND,
@@ -821,15 +883,18 @@ pub async fn SetWindowPos(
         machine.emu.memory.mem(),
         std::mem::size_of::<WINDOWPOS>() as u32,
     );
-    *machine.mem().view_mut::<WINDOWPOS>(windowpos_addr) = WINDOWPOS {
-        hwnd: hWnd,
-        hwndInsertAfter: hWndInsertAfter,
-        x: X,
-        y: Y,
-        cx,
-        cy,
-        flags: uFlags.unwrap(),
-    };
+    machine.mem().put_pod::<WINDOWPOS>(
+        windowpos_addr,
+        WINDOWPOS {
+            hwnd: hWnd,
+            hwndInsertAfter: hWndInsertAfter,
+            x: X,
+            y: Y,
+            cx,
+            cy,
+            flags: uFlags.unwrap(),
+        },
+    );
 
     // A trace of winstream.exe had this sequence of synchronous messages:
     // WM_WINDOWPOSCHANGING
@@ -846,6 +911,11 @@ pub async fn SetWindowPos(
         pt_y: 0,
     };
     dispatch_message(machine, &msg).await;
+
+    let window = machine.state.user32.windows.get_mut(hWnd).unwrap();
+    let menu = true; // TODO
+    let (width, height) = client_size_from_window_size(window.style, menu, cx as u32, cy as u32);
+    window.set_client_size(&mut *machine.host, width, height);
 
     true
 }
@@ -909,9 +979,42 @@ pub fn GetWindowRect(machine: &mut Machine, hWnd: HWND, lpRect: Option<&mut RECT
     true
 }
 
+#[repr(C, packed)]
+#[derive(Clone, Debug)]
+pub struct WINDOWPLACEMENT {
+    length: u32,
+    flags: u32,
+    showCmd: u32,
+    ptMinPosition: POINT,
+    ptMaxPosition: POINT,
+    rcNormalPosition: RECT,
+}
+unsafe impl memory::Pod for WINDOWPLACEMENT {}
+
 #[win32_derive::dllexport]
-pub fn GetWindowPlacement(_machine: &mut Machine, hWnd: HWND, lpwndpl: Option<&mut u32>) -> bool {
-    false
+pub fn GetWindowPlacement(
+    machine: &mut Machine,
+    hWnd: HWND,
+    lpwndpl: Option<&mut WINDOWPLACEMENT>,
+) -> bool {
+    let window = machine.state.user32.windows.get(hWnd).unwrap();
+    let wndpl = lpwndpl.unwrap();
+
+    *wndpl = WINDOWPLACEMENT {
+        length: std::mem::size_of::<WINDOWPLACEMENT>() as u32,
+        flags: 0,
+        showCmd: window.show_cmd as u32,
+        ptMinPosition: POINT { x: 0, y: 0 },
+        ptMaxPosition: POINT { x: 0, y: 0 },
+        rcNormalPosition: RECT {
+            left: 0,
+            top: 0,
+            right: window.width as i32,
+            bottom: window.height as i32,
+        },
+    };
+
+    true
 }
 
 #[win32_derive::dllexport]
@@ -925,9 +1028,27 @@ pub fn GetWindowDC(_machine: &mut Machine, hWnd: HWND) -> HDC {
 }
 
 #[win32_derive::dllexport]
-pub fn ReleaseDC(_machine: &mut Machine, hwnd: HWND, hdc: HDC) -> bool {
-    // Note: there is also DeleteDC; this one is specific for some specific DC types...
-    false // fail
+pub fn ReleaseDC(machine: &mut Machine, hwnd: HWND, hdc: HDC) -> bool {
+    // Note: there is also DeleteDC; this one is specifically for GetWindowDC/GetDC.
+    if let Some(dc) = machine.state.gdi32.dcs.remove(hdc) {
+        match dc.target {
+            winapi::gdi32::DCTarget::Window(dc_hwnd) => {
+                if dc_hwnd == hwnd {
+                    true
+                } else {
+                    log::warn!("ReleaseDC of DC not matching HWND");
+                    false // fail
+                }
+            }
+            _ => {
+                log::warn!("ReleaseDC of non-window DC");
+                false // fail
+            }
+        }
+    } else {
+        log::warn!("ReleaseDC of unknown DC");
+        false // fail
+    }
 }
 
 #[win32_derive::dllexport]
@@ -946,9 +1067,15 @@ pub fn GetWindowLongA(_machine: &mut Machine, hWnd: HWND, nIndex: i32) -> i32 {
 #[win32_derive::dllexport]
 pub fn GetDC(machine: &mut Machine, hWnd: HWND) -> HDC {
     match hWnd.to_option() {
-        Some(hWnd) => {
-            let window = machine.state.user32.windows.get(hWnd).unwrap();
-            window.hdc
+        Some(hwnd) => {
+            let window = machine.state.user32.windows.get(hwnd).unwrap();
+            match &window.typ {
+                WindowType::TopLevel(_) => machine.state.gdi32.new_window_dc(hwnd),
+                _ => {
+                    log::warn!("GetDC for non-top-level window");
+                    HDC::null()
+                }
+            }
         }
         None => machine.state.gdi32.screen_dc,
     }
@@ -984,7 +1111,10 @@ pub fn ReleaseCapture(_machine: &mut Machine) -> bool {
 pub fn SetWindowTextA(machine: &mut Machine, hWnd: HWND, lpString: Option<&str>) -> bool {
     match machine.state.user32.windows.get_mut(hWnd) {
         Some(window) => {
-            window.host.set_title(lpString.unwrap());
+            window
+                .expect_toplevel_mut()
+                .host
+                .set_title(lpString.unwrap());
             true
         }
         None => {
@@ -999,4 +1129,14 @@ pub fn RegisterWindowMessageW(machine: &mut Machine, lpString: Option<&Str16>) -
     let name = lpString.unwrap().to_string();
     machine.state.user32.user_window_message_count += 1;
     WM::USER as u32 + machine.state.user32.user_window_message_count
+}
+
+#[win32_derive::dllexport]
+pub fn GetCapture(machine: &mut Machine) -> HWND {
+    todo!();
+}
+
+#[win32_derive::dllexport]
+pub fn EnableWindow(_machine: &mut Machine, hWnd: HWND, bEnable: bool) -> bool {
+    todo!();
 }

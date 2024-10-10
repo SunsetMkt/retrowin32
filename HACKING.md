@@ -2,20 +2,7 @@
 
 ## Setup
 
-### Mac
-
-```
-$ brew install sdl2
-$ export LIBRARY_PATH="$LIBRARY_PATH:$(brew --prefix)/lib"
-```
-
-### Linux
-
-Debian/Ubuntu:
-
-```
-$ sudo apt install libsdl2-dev
-```
+See [build setup docs](doc/build_setup.md) for initial build requirements.
 
 ## CLI build
 
@@ -76,19 +63,9 @@ Web builds require `x86-emu` and no `sdl`.
 ### rust-analyzer
 
 Rust's IDE support doesn't know about which features you're using. In VSCode I
-configure it via my workspace config, like the following, which I change when
-working on different sets of features:
-
-```json
-"rust-analyzer.cargo.noDefaultFeatures": true,
-"rust-analyzer.cargo.features": [
-  "x86-emu",
-  "sdl"
-],
-"rust-analyzer.cargo.extraEnv": {
-  "XWIN": "/Users/evmar/redist"
-}
-```
+configure it via the workspace config in `.vscode/settings.json`. You can add a
+similar block to your user settings to override which emulator backend you're
+working on.
 
 ## Building while developing
 
@@ -110,8 +87,8 @@ And sometimes I add:
 - `--release` when the debug build runs too slowly, and
 - `-F x86-emu,sdl` for GUI support
 
-Note if you make a change to functions exported in the `win32/src/winapi/`
-layer, you must re-run the code generator as documented in [`win32/`](win32/).
+If you make a change to functions exported in the `win32/src/winapi/` layer, you
+must re-run the code generator as documented in [`win32/`](win32/).
 
 ## Code layout
 

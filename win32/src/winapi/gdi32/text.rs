@@ -1,11 +1,9 @@
 use super::{CLR_INVALID, HDC};
 use crate::{
-    winapi::{stack_args::ArrayWithSize, types::HANDLE},
+    winapi::{gdi32::COLORREF, stack_args::ArrayWithSize, types::HANDLE},
     Machine,
 };
 use memory::Pod;
-
-const TRACE_CONTEXT: &'static str = "gdi32/text";
 
 pub struct FONT {}
 pub type HFONT = HANDLE<FONT>;
@@ -32,7 +30,12 @@ pub fn CreateFontA(
 }
 
 #[win32_derive::dllexport]
-pub fn SetTextColor(_machine: &mut Machine, hdc: HDC, color: u32) -> u32 {
+pub fn SetTextAlign(_machine: &mut Machine, hdc: HDC, fMode: u32) -> u32 {
+    0 // TA_LEFT | TA_TOP | TA_NOUPDATECP
+}
+
+#[win32_derive::dllexport]
+pub fn SetTextColor(_machine: &mut Machine, hdc: HDC, color: COLORREF) -> COLORREF {
     CLR_INVALID // fail
 }
 

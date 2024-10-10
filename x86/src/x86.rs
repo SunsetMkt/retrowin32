@@ -2,7 +2,7 @@
 
 use crate::{
     fpu::FPU,
-    icache::InstrCache,
+    icache::{BasicBlock, InstrCache},
     ops,
     registers::{Flags, Registers},
     Register,
@@ -20,12 +20,12 @@ pub enum CPUState {
     DebugBreak,
     SysCall,
     Error(String),
-    Exit(u32),
+    Free,
 }
 
 impl CPUState {
     pub fn is_running(&self) -> bool {
-        matches!(*self, CPUState::Running)
+        matches!(self, CPUState::Running)
     }
 }
 
@@ -52,9 +52,6 @@ pub struct CPU {
 
 impl CPU {
     pub fn new() -> Self {
-        unsafe {
-            ops::init_op_tab();
-        }
         CPU {
             regs: Registers::default(),
             flags: Flags::empty(),
@@ -68,19 +65,18 @@ impl CPU {
         self.state = CPUState::Error(msg);
     }
 
-    // /// Check whether reading a T from mem[addr] would cause OOB, and crash() if so.
-    // fn check_oob<T>(&mut self, addr: u32) -> bool {
-    //     if addr < NULL_POINTER_REGION_SIZE {
-    //         self.crash(format!("crash: null pointer at {addr:#x}"));
-    //         return true;
-    //     }
-    //     let end = addr.wrapping_add(std::mem::size_of::<T>() as u32);
-    //     if end > self.mem.len() as u32 || end < addr {
-    //         self.crash(format!("crash: oob pointer at {addr:#x}"));
-    //         return true;
-    //     }
-    //     false
-    // }
+    /// Jump to an address, verifying it's within valid bounds.
+    pub fn jmp(&mut self, mem: Mem, addr: u32) {
+        if addr < 0x1000 {
+            self.err(format!("jmp to null page addr={addr:x}"));
+            return;
+        }
+        if mem.is_oob::<u8>(addr) && addr != MAGIC_ADDR {
+            self.err(format!("jmp to oob addr={addr:x}"));
+            return;
+        }
+        self.regs.eip = addr;
+    }
 
     /// Set up the CPU such that we are making a Rust->x86 call, returning a Future
     /// that completes when the x86 call returns.
@@ -92,7 +88,7 @@ impl CPU {
             ops::push(self, mem, arg);
         }
         ops::push(self, mem, MAGIC_ADDR); // return address
-        self.regs.eip = func;
+        self.jmp(mem, func);
 
         // Clear registers to make traces clean.
         // Other registers are callee-saved per ABI.
@@ -105,9 +101,15 @@ impl CPU {
 
     /// Set up the CPU such that we are making an x86->async call, enqueuing a Future
     /// that is polled the next time the CPU executes.
-    pub fn call_async(&mut self, _mem: Mem, future: BoxFuture<()>) {
+    pub fn call_async(&mut self, future: BoxFuture<u32>, return_address: u32) {
         self.regs.eip = MAGIC_ADDR;
-        self.futures.push(future);
+        let cpu = self as *mut CPU;
+        self.futures.push(Box::pin(async move {
+            let cpu = unsafe { &mut *cpu };
+            let ret = future.await;
+            cpu.regs.set32(Register::EAX, ret);
+            cpu.regs.eip = return_address;
+        }));
     }
 
     fn async_executor(&mut self) {
@@ -129,6 +131,36 @@ impl CPU {
     pub fn block(&mut self, wait: Option<u32>) -> BlockFuture {
         self.state = CPUState::Blocked(wait);
         BlockFuture { cpu: self }
+    }
+
+    // Useful to disassemble this function (see misc/dump-fn.sh):
+    // #[inline(never)]
+    pub fn execute_block(&mut self, mem: Mem, block: &BasicBlock) -> usize {
+        // Performance note: this function is the central hottest loop in the emulator.
+        // Some things I've tried:
+        // - changing eip to be a usize: worth a few percent when usize!=u32
+        // - unrolling the loop: worth a few percent
+        //   To try it:
+        //   1) make loop iterative: loop { let Some(op) = iter.next() else { break }; ... }
+        //   2) macro paste the block: macro_rules! unroll { ($code:tt) => { $code $code $code $code } }
+
+        let mut count = 0;
+        for op in block.ops.iter() {
+            let prev_ip = self.regs.eip;
+            self.regs.eip = op.instr.next_ip() as u32;
+            count += 1;
+            (op.op)(self, mem, &op.instr);
+            match self.state {
+                CPUState::Running => continue,
+                CPUState::Error(_) => {
+                    // Point the debugger at the failed instruction.
+                    self.regs.eip = prev_ip;
+                    break;
+                }
+                _ => break,
+            }
+        }
+        count
     }
 }
 
@@ -228,10 +260,13 @@ impl X86 {
 
         // Common perf-sensitive case: find next runnable CPU.
         for i in 0..self.cpus.len() {
-            let i = (self.cur_cpu + i) % self.cpus.len();
-            if self.cpus[i].state.is_running() {
-                self.cur_cpu = i;
-                return;
+            let i = (self.cur_cpu + i + 1) % self.cpus.len();
+            match self.cpus[i].state {
+                CPUState::Running | CPUState::SysCall | CPUState::Error(_) => {
+                    self.cur_cpu = i;
+                    return;
+                }
+                _ => {}
             }
         }
 
@@ -239,11 +274,8 @@ impl X86 {
         let mut soonest = None;
         for (i, cpu) in self.cpus.iter().enumerate() {
             match cpu.state {
-                CPUState::Running => {}
-                CPUState::DebugBreak
-                | CPUState::Error(_)
-                | CPUState::Exit(_)
-                | CPUState::SysCall => {
+                CPUState::Running | CPUState::Free => {}
+                CPUState::DebugBreak | CPUState::Error(_) | CPUState::SysCall => {
                     self.cur_cpu = i;
                     return;
                 }
@@ -272,23 +304,8 @@ impl X86 {
             cpu.async_executor();
             return;
         }
-        let mut prev_ip = cpu.regs.eip;
-        let block = self.icache.get_block(mem, prev_ip);
-        for op in block.ops.iter() {
-            prev_ip = cpu.regs.eip;
-            cpu.regs.eip = op.instr.next_ip() as u32;
-            self.instr_count = self.instr_count.wrapping_add(1);
-            (op.op)(cpu, mem, &op.instr);
-            if !cpu.state.is_running() {
-                break;
-            }
-        }
-        match cpu.state {
-            CPUState::Error(_) => {
-                // Point the debugger at the failed instruction.
-                cpu.regs.eip = prev_ip;
-            }
-            _ => {}
-        }
+        let block = self.icache.get_block(mem, cpu.regs.eip);
+        let count = cpu.execute_block(mem, block);
+        self.instr_count = self.instr_count.wrapping_add(count);
     }
 }

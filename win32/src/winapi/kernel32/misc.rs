@@ -1,26 +1,22 @@
 //! kernel32 API without a better home.
 
-use super::{teb_mut, WriteFile};
+use super::teb_mut;
 use crate::{
-    winapi::{
-        stack_args::{ArrayWithSize, ArrayWithSizeMut},
-        types::*,
-    },
+    winapi::{types::*, ERROR},
     Machine,
 };
-use ::memory::{Extensions, Pod};
+use ::memory::Pod;
 use bitflags::bitflags;
 use memory::ExtensionsMut;
 
-const TRACE_CONTEXT: &'static str = "kernel32/misc";
-
-pub fn set_last_error(machine: &mut Machine, err: u32) {
-    teb_mut(machine).LastErrorValue = err;
+pub fn set_last_error(machine: &mut Machine, err: ERROR) {
+    teb_mut(machine).LastErrorValue = err.into();
 }
 
 #[win32_derive::dllexport]
 pub fn SetLastError(machine: &mut Machine, dwErrCode: u32) -> u32 {
-    set_last_error(machine, dwErrCode);
+    // Avoid set_last_error to allow for unknown error codes.
+    teb_mut(machine).LastErrorValue = dwErrCode;
     0 // unused
 }
 
@@ -29,82 +25,14 @@ pub fn GetLastError(machine: &mut Machine) -> u32 {
     teb_mut(machine).LastErrorValue
 }
 
-pub fn exit_process(machine: &mut Machine, exit_code: u32) {
-    machine.host.exit(exit_code);
-    // Set the CPU state immediately here because otherwise the CPU will
-    // continue executing instructions after the exit call.
-    // TODO: this is unsatisfying.
-    // Maybe better is to generate a hlt instruction somewhere and jump to it?
-    // Note also we need a mechanism to exit a completed thread without stopping the whole
-    // program.
-    #[cfg(feature = "x86-emu")]
-    {
-        machine.emu.x86.cpu_mut().state = x86::CPUState::Exit(exit_code);
-    }
+#[win32_derive::dllexport]
+pub fn ExitProcess(machine: &mut Machine, uExitCode: u32) {
+    machine.exit(uExitCode);
 }
 
 #[win32_derive::dllexport]
-pub fn ExitProcess(machine: &mut Machine, uExitCode: u32) -> u32 {
-    exit_process(machine, uExitCode);
-    0
-}
-
-#[win32_derive::dllexport]
-pub fn GetACP(_machine: &mut Machine) -> u32 {
-    1252 // windows-1252
-}
-
-#[win32_derive::dllexport]
-pub fn IsValidCodePage(_machine: &mut Machine, CodePage: u32) -> bool {
-    CodePage == 1252
-}
-
-#[win32_derive::dllexport]
-pub fn GetCPInfo(_machine: &mut Machine, _CodePage: u32, _lpCPInfo: u32) -> u32 {
-    0 // fail
-}
-
-#[win32_derive::dllexport]
-pub fn GetEnvironmentStrings(machine: &mut Machine) -> u32 {
-    machine.state.kernel32.env
-}
-
-#[win32_derive::dllexport]
-pub fn FreeEnvironmentStringsA(_machine: &mut Machine, _penv: u32) -> u32 {
-    1 // success
-}
-
-#[win32_derive::dllexport]
-pub fn GetEnvironmentStringsW(_machine: &mut Machine) -> u32 {
-    // CRT startup appears to fallback on non-W version of this if it returns null.
-    0
-}
-
-#[win32_derive::dllexport]
-pub fn GetEnvironmentVariableA(
-    _machine: &mut Machine,
-    name: Option<&str>,
-    buf: ArrayWithSize<u8>,
-) -> bool {
-    false
-}
-
-#[win32_derive::dllexport]
-pub fn GetEnvironmentVariableW(
-    _machine: &mut Machine,
-    name: Option<&Str16>,
-    buf: ArrayWithSize<u16>,
-) -> bool {
-    false
-}
-
-#[win32_derive::dllexport]
-pub fn SetEnvironmentVariableA(
-    _machine: &mut Machine,
-    name: Option<&str>,
-    value: Option<&str>,
-) -> bool {
-    true
+pub fn TerminateProcess(_machine: &mut Machine, hProcess: u32, uExitCode: u32) -> bool {
+    todo!();
 }
 
 #[derive(Debug, win32_derive::TryFromEnum)]
@@ -149,13 +77,31 @@ pub fn IsProcessorFeaturePresent(
     _machine: &mut Machine,
     feature: Result<ProcessorFeature, u32>,
 ) -> bool {
-    log::warn!("IsProcessorFeaturePresent({feature:?}) => false");
-    false
+    match feature.unwrap() {
+        ProcessorFeature::FLOATING_POINT_PRECISION_ERRATA => {
+            // We don't emulate floating point errors.
+            false
+        }
+        feature => {
+            log::warn!("IsProcessorFeaturePresent({feature:?}) unhandled, returning false");
+            false
+        }
+    }
 }
 
 #[win32_derive::dllexport]
 pub fn IsDebuggerPresent(_machine: &mut Machine) -> bool {
     true // Might cause a binary to log info via the debug API? Not sure.
+}
+
+#[win32_derive::dllexport]
+pub fn DebugBreak(_machine: &mut Machine) {
+    todo!()
+}
+
+#[win32_derive::dllexport]
+pub fn GetCurrentProcess(_machine: &mut Machine) -> u32 {
+    todo!()
 }
 
 #[win32_derive::dllexport]
@@ -212,22 +158,6 @@ pub fn OutputDebugStringA(_machine: &mut Machine, msg: Option<&str>) -> u32 {
 }
 
 #[win32_derive::dllexport]
-pub fn WriteConsoleA(
-    _machine: &mut Machine,
-    hConsoleOutput: HANDLE<()>,
-    lpBuffer: ArrayWithSize<u8>,
-    lpNumberOfCharsWritten: Option<&mut u32>,
-    lpReserved: u32,
-) -> bool {
-    let msg = std::str::from_utf8(lpBuffer.unwrap()).unwrap();
-    log::debug!("WriteConsoleA: {:?}", msg);
-    if let Some(w) = lpNumberOfCharsWritten {
-        *w = msg.len() as u32;
-    }
-    true // success
-}
-
-#[win32_derive::dllexport]
 pub fn SetUnhandledExceptionFilter(_machine: &mut Machine, _lpTopLevelExceptionFilter: u32) -> u32 {
     0 // No current handler.
 }
@@ -236,6 +166,17 @@ pub fn SetUnhandledExceptionFilter(_machine: &mut Machine, _lpTopLevelExceptionF
 pub fn UnhandledExceptionFilter(_machine: &mut Machine, _exceptionInfo: u32) -> u32 {
     // "The process is being debugged, so the exception should be passed (as second chance) to the application's debugger."
     0 // EXCEPTION_CONTINUE_SEARCH
+}
+
+#[win32_derive::dllexport]
+pub fn RaiseException(
+    _machine: &mut Machine,
+    dwExceptionCode: u32,
+    dwExceptionFlags: u32,
+    nNumberOfArguments: u32,
+    lpArguments: u32,
+) {
+    todo!();
 }
 
 #[win32_derive::dllexport]
@@ -257,85 +198,6 @@ unsafe impl ::memory::Pod for SLIST_HEADER {}
 pub fn InitializeSListHead(_machine: &mut Machine, ListHead: Option<&mut SLIST_HEADER>) -> u32 {
     ListHead.unwrap().Next = 0;
     0
-}
-
-/// Code pages
-#[derive(Debug, win32_derive::TryFromEnum)]
-pub enum CP {
-    /// The system default Windows ANSI code page.
-    ACP = 0,
-    OEMCP = 1,
-    WINDOWS_1252 = 1252,
-    UTF8 = 65001,
-}
-
-#[win32_derive::dllexport]
-pub fn MultiByteToWideChar(
-    machine: &mut Machine,
-    CodePage: Result<CP, u32>,
-    dwFlags: u32,
-    lpMultiByteStr: u32,
-    cbMultiByte: i32,
-    lpWideCharStr: ArrayWithSizeMut<u16>,
-) -> u32 {
-    match CodePage {
-        Err(value) => unimplemented!("MultiByteToWideChar code page {value}"),
-        _ => {} // treat all others as ansi for now
-    }
-    // TODO: dwFlags
-
-    let input_len = match cbMultiByte {
-        0 => return 0,                                               // TODO: invalid param
-        -1 => machine.mem().slicez(lpMultiByteStr).len() as u32 + 1, // include nul
-        len => len as u32,
-    };
-
-    let mut lpWideCharStr = lpWideCharStr.to_option();
-    match lpWideCharStr {
-        Some(buf) if buf.len() == 0 => lpWideCharStr = None,
-        _ => (),
-    };
-
-    match lpWideCharStr {
-        None => input_len,
-        Some(buf) => {
-            let input = machine.mem().sub32(lpMultiByteStr, input_len);
-            let mut len = 0;
-            for (&c_in, c_out) in std::iter::zip(input, buf) {
-                if c_in > 0x7f {
-                    unimplemented!("unicode");
-                }
-                *c_out = c_in as u16;
-                len += 1;
-            }
-            len
-        }
-    }
-}
-
-#[win32_derive::dllexport]
-pub fn WriteConsoleW(
-    machine: &mut Machine,
-    hConsoleOutput: HFILE,
-    lpBuffer: ArrayWithSize<u16>,
-    lpNumberOfCharsWritten: Option<&mut u32>,
-    _lpReserved: u32,
-) -> bool {
-    let buf = Str16::from_buffer(lpBuffer.unwrap()).to_string();
-    let mut bytes_written = 0;
-    if !WriteFile(
-        machine,
-        hConsoleOutput,
-        Some(buf.as_bytes()),
-        Some(&mut bytes_written),
-        0,
-    ) {
-        return false;
-    }
-    if let Some(chars_written) = lpNumberOfCharsWritten {
-        *chars_written = bytes_written;
-    }
-    return bytes_written == buf.len() as u32;
 }
 
 #[win32_derive::dllexport]
@@ -390,9 +252,10 @@ pub fn FormatMessageW(
         todo!();
     }
     let msg = if flags.contains(FormatMessageFlags::FROM_SYSTEM) {
-        match dwMessageId {
-            0x1c => "The printer is out of paper.",
-            id => todo!("system message {:x}", id),
+        match ERROR::try_from(dwMessageId) {
+            Ok(ERROR::FILE_NOT_FOUND) => "The system cannot find the file specified.",
+            Ok(ERROR::OUT_OF_PAPER) => "The printer is out of paper.",
+            err => todo!("system error {err:x?}"),
         }
     } else {
         todo!();
@@ -414,11 +277,11 @@ pub fn FormatMessageW(
 pub fn CloseHandle(machine: &mut Machine, hObject: HFILE) -> bool {
     if machine.state.kernel32.files.remove(hObject).is_none() {
         log::debug!("CloseHandle({hObject:?}): unknown handle");
-        set_last_error(machine, ERROR_INVALID_HANDLE);
+        set_last_error(machine, ERROR::INVALID_HANDLE);
         return false;
     }
 
-    set_last_error(machine, ERROR_SUCCESS);
+    set_last_error(machine, ERROR::SUCCESS);
     true
 }
 
@@ -429,7 +292,7 @@ pub fn GetSystemDirectoryA(machine: &mut Machine, lpBuffer: u32, uSize: u32) -> 
     if uSize < path_bytes.len() as u32 + 1 {
         return path_bytes.len() as u32 + 1;
     }
-    set_last_error(machine, ERROR_SUCCESS);
+    set_last_error(machine, ERROR::SUCCESS);
     if lpBuffer != 0 {
         let buf = machine.mem().sub32_mut(lpBuffer, uSize);
         buf[..path_bytes.len()].copy_from_slice(path_bytes);
@@ -442,7 +305,7 @@ pub fn GetSystemDirectoryA(machine: &mut Machine, lpBuffer: u32, uSize: u32) -> 
 pub fn GetWindowsDirectoryA(machine: &mut Machine, lpBuffer: u32, uSize: u32) -> u32 {
     let path = "C:\\Windows";
     let path_bytes = path.as_bytes();
-    set_last_error(machine, ERROR_SUCCESS);
+    set_last_error(machine, ERROR::SUCCESS);
     if uSize < path_bytes.len() as u32 + 1 {
         return path_bytes.len() as u32 + 1;
     }
@@ -504,12 +367,12 @@ pub fn MulDiv(_machine: &mut Machine, nNumber: i32, nNumerator: i32, nDenominato
 }
 
 #[win32_derive::dllexport]
-pub fn IsDBCSLeadByteEx(_machine: &mut Machine, _TestChar: u8, _CodePage: u32) -> bool {
-    // TODO
-    false
-}
-
-#[win32_derive::dllexport]
-pub fn IsDBCSLeadByte(_machine: &mut Machine, _TestChar: u8) -> bool {
-    false
+pub fn RtlUnwind(
+    _machine: &mut Machine,
+    TargetFrame: u32,
+    TargetIp: u32,
+    ExceptionRecord: u32,
+    ReturnValue: u32,
+) {
+    todo!();
 }

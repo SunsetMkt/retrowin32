@@ -1,7 +1,12 @@
-use crate::{host, winapi::types::*, Machine, MouseButton};
-use bitflags::bitflags;
+use std::ops::RangeInclusive;
 
-const TRACE_CONTEXT: &'static str = "user32/message";
+use super::{Timers, Window};
+use crate::{
+    host,
+    winapi::{handle::Handles, types::*},
+    Host, Machine, MouseButton,
+};
+use bitflags::bitflags;
 
 #[repr(C)]
 #[derive(Clone)]
@@ -96,53 +101,158 @@ fn msg_from_message(message: host::Message) -> MSG {
     msg
 }
 
-/// Returns Ok if an event is enqueued.
-/// Returns Err(wait) if we need to wait for an event.
-fn enqueue_timer_event_if_ready(machine: &mut Machine, hwnd: HWND) -> Result<(), Option<u32>> {
-    if machine.state.user32.timers.is_empty() {
-        return Err(None);
-    }
-
-    let now = machine.host.time();
-    if let Some(timer) = machine.state.user32.timers.find_next(hwnd, now) {
-        machine
-            .state
-            .user32
-            .messages
-            .push_back(timer.generate_wm_timer(now));
-        return Ok(());
-    }
-
-    let soonest = machine.state.user32.timers.soonest();
-    Err(Some(soonest))
+/// A Windows message queue.
+/// At a high level just a queue of MSG, but there are particulars around painting and timers.
+/// https://learn.microsoft.com/en-us/windows/win32/winmsg/about-messages-and-message-queues
+/// The basic approach is that there are a few get_* methods that each can either peek or remove
+/// the requested message.  Internally, paint/timers are never actually inserted into a queue
+/// but the caller doesn't need to be aware.
+///
+/// TODO: should be per-thread.
+/// TODO: this generally doesn't support multiple HWNDs either,
+/// and will need to be revisited to make that work.
+#[derive(Default)]
+pub struct MessageQueue {
+    msgs: std::collections::VecDeque<MSG>,
 }
 
-/// Returns Ok if an event is enqueued.
-/// Returns Err(wait) if we need to wait for an event.
-fn fill_message_queue(machine: &mut Machine, hwnd: HWND) -> Result<(), Option<u32>> {
+impl MessageQueue {
+    fn push(&mut self, msg: MSG) {
+        self.msgs.push_back(msg);
+    }
+
+    /// Get any queued message matching the filter criteria.
+    fn get_queued(
+        &mut self,
+        hwnd: HWND,
+        filter: &RangeInclusive<u32>,
+        remove: bool,
+    ) -> Option<MSG> {
+        let pos = self.msgs.iter().position(|msg| {
+            if !hwnd.is_null() && (!msg.hwnd.is_null() && msg.hwnd != hwnd) {
+                return false;
+            }
+            filter.contains(&msg.message)
+        })?;
+        if remove {
+            self.msgs.remove(pos)
+        } else {
+            Some(self.msgs[pos].clone())
+        }
+    }
+
+    /// Get any pending WM_PAINT matching the filter criteria.
+    fn get_paint(
+        &mut self,
+        hwnd: HWND,
+        windows: &Handles<HWND, Window>,
+        _remove: bool,
+    ) -> Option<MSG> {
+        // Note: remove is intentionally ignored because we never enqueue a WM_PAINT.
+        // This just accepts the flag to match the other get_* fns.
+        let hwnd = if hwnd.is_null() {
+            windows.iter().find(|w| w.is_dirty())?.hwnd
+        } else {
+            if !windows.get(hwnd).unwrap().is_dirty() {
+                return None;
+            }
+            hwnd
+        };
+        Some(MSG {
+            hwnd,
+            message: WM::PAINT as u32,
+            wParam: 0,
+            lParam: 0,
+            time: 0,
+            pt_x: 0,
+            pt_y: 0,
+        })
+    }
+
+    /// Get any pending WM_TIMER matching the filter criteria.
+    /// Err(wait) returns indicate how long to block until the next timer.
+    fn get_timer(
+        &mut self,
+        host: &dyn Host,
+        timers: &mut Timers,
+        remove: bool,
+    ) -> Result<MSG, Option<u32>> {
+        if timers.is_empty() {
+            // No pending timers.
+            return Err(None);
+        }
+
+        let now = host.ticks();
+        // TODO: support filtering by HWND.
+        if let Some(timer) = timers.find_next(HWND::null(), now) {
+            if !remove {
+                todo!("how does peeking timers work");
+            }
+            return Ok(timer.generate_wm_timer(now));
+        }
+
+        let soonest = timers.soonest();
+        Err(Some(soonest))
+    }
+}
+
+/// Retrieves the next available message without blocking.
+/// Returns Err(wait) if we need to wait.
+fn poll_message(
+    machine: &mut Machine,
+    hwnd: HWND,
+    filter: Option<RangeInclusive<u32>>,
+    remove: bool,
+) -> Result<MSG, Option<u32>> {
+    let filter = filter.unwrap_or(0..=0xFFFF_FFFF);
+    if let Some(msg) = machine
+        .state
+        .user32
+        .messages
+        .get_queued(hwnd, &filter, remove)
+    {
+        return Ok(msg);
+    }
+
+    // TODO: obey filter here.
     if let Some(msg) = machine.host.get_message() {
-        machine
-            .state
-            .user32
-            .messages
-            .push_back(msg_from_message(msg));
-        return Ok(());
+        let msg = msg_from_message(msg);
+        if !remove {
+            machine.state.user32.messages.push(msg.clone());
+        }
+        return Ok(msg);
     }
 
-    if enqueue_paint_if_needed(machine, hwnd) {
-        return Ok(());
+    if filter.contains(&(WM::PAINT as u32)) {
+        if let Some(msg) =
+            machine
+                .state
+                .user32
+                .messages
+                .get_paint(hwnd, &machine.state.user32.windows, remove)
+        {
+            return Ok(msg);
+        }
     }
 
-    enqueue_timer_event_if_ready(machine, hwnd)
+    if filter.contains(&(WM::TIMER as u32)) {
+        return machine.state.user32.messages.get_timer(
+            &*machine.host,
+            &mut machine.state.user32.timers,
+            remove,
+        );
+    } else {
+        Err(None) // block
+    }
 }
 
 #[cfg(feature = "x86-emu")]
-async fn await_message(machine: &mut Machine, _hwnd: HWND, wait: Option<u32>) {
+async fn await_message(machine: &mut Machine, wait: Option<u32>) {
     machine.emu.x86.cpu_mut().block(wait).await;
 }
 
 #[cfg(not(feature = "x86-emu"))]
-async fn await_message(machine: &mut Machine, _hwnd: HWND, wait: Option<u32>) {
+async fn await_message(machine: &mut Machine, wait: Option<u32>) {
     machine.host.block(wait);
 }
 
@@ -161,57 +271,6 @@ impl TryFrom<u32> for RemoveMsg {
     }
 }
 
-/// Enqueues a WM_PAINT if the given hwnd (or any hwnd) needs a paint.
-fn enqueue_paint_if_needed(machine: &mut Machine, hwnd: HWND) -> bool {
-    let hwnd = if hwnd.is_null() {
-        match machine
-            .state
-            .user32
-            .windows
-            .iter()
-            .find(|w| w.dirty.is_some())
-        {
-            Some(w) => w.hwnd,
-            None => return false,
-        }
-    } else {
-        if !machine
-            .state
-            .user32
-            .windows
-            .get(hwnd)
-            .unwrap()
-            .dirty
-            .is_some()
-        {
-            return false;
-        }
-        hwnd
-    };
-    machine.state.user32.messages.push_front(MSG {
-        hwnd,
-        message: WM::PAINT as u32,
-        wParam: 0,
-        lParam: 0,
-        time: 0,
-        pt_x: 0,
-        pt_y: 0,
-    });
-    true
-}
-
-fn find_message(machine: &mut Machine, hwnd: HWND, min: u32, max: u32) -> Option<usize> {
-    machine.state.user32.messages.iter().position(|msg| {
-        if !hwnd.is_null() && (!msg.hwnd.is_null() && msg.hwnd != hwnd) {
-            return false;
-        }
-        if min != 0 && max != 0 && (msg.message < min || msg.message > max) {
-            return false;
-        }
-        true
-    })
-}
-
 #[win32_derive::dllexport]
 pub fn PeekMessageA(
     machine: &mut Machine,
@@ -223,14 +282,15 @@ pub fn PeekMessageA(
 ) -> bool {
     let lpMsg = lpMsg.unwrap();
 
-    let _ = fill_message_queue(machine, hWnd);
+    let filter = if wMsgFilterMin == 0 && wMsgFilterMax == 0 {
+        None
+    } else {
+        Some(wMsgFilterMin..=wMsgFilterMax)
+    };
+    let remove = wRemoveMsg.unwrap().contains(RemoveMsg::PM_REMOVE);
 
-    if let Some(index) = find_message(machine, hWnd, wMsgFilterMin, wMsgFilterMax) {
-        *lpMsg = machine.state.user32.messages.get(index).unwrap().clone();
-        let remove = wRemoveMsg.unwrap();
-        if remove.contains(RemoveMsg::PM_REMOVE) {
-            machine.state.user32.messages.remove(index);
-        }
+    if let Ok(msg) = poll_message(machine, hWnd, filter, remove) {
+        *lpMsg = msg;
         return true;
     }
     false
@@ -255,6 +315,38 @@ pub fn PeekMessageW(
     )
 }
 
+async fn get_message(
+    machine: &mut Machine,
+    lpMsg: Option<&mut MSG>,
+    hWnd: HWND,
+    wMsgFilterMin: u32,
+    wMsgFilterMax: u32,
+) -> i32 {
+    let msg: MSG;
+    loop {
+        let filter = if wMsgFilterMin == 0 && wMsgFilterMax == 0 {
+            None
+        } else {
+            Some(wMsgFilterMin..=wMsgFilterMax)
+        };
+        match poll_message(machine, hWnd, filter, true) {
+            Ok(m) => {
+                msg = m;
+                break;
+            }
+            Err(wait_until) => await_message(machine, wait_until).await,
+        }
+    }
+
+    let quit = msg.message == WM::QUIT as u32;
+    *lpMsg.unwrap() = msg;
+    if quit {
+        return 0;
+    }
+    1
+}
+
+// Note: the docs say this returns BOOL, but really it can return -1/0/nonzero.
 #[win32_derive::dllexport]
 pub async fn GetMessageA(
     machine: &mut Machine,
@@ -263,27 +355,10 @@ pub async fn GetMessageA(
     wMsgFilterMin: u32,
     wMsgFilterMax: u32,
 ) -> i32 {
-    assert_eq!(wMsgFilterMin, 0);
-    assert_eq!(wMsgFilterMax, 0);
-
-    loop {
-        match fill_message_queue(machine, hWnd) {
-            Ok(_) => break,
-            Err(wait_until) => await_message(machine, hWnd, wait_until).await,
-        }
-    }
-
-    if let Some(index) = find_message(machine, hWnd, wMsgFilterMin, wMsgFilterMax) {
-        let msg = machine.state.user32.messages.get(index).unwrap().clone();
-        machine.state.user32.messages.remove(index);
-        *lpMsg.unwrap() = msg.clone();
-        if msg.message == WM::QUIT as u32 {
-            return 0;
-        }
-    }
-    return 1;
+    get_message(machine, lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax).await
 }
 
+// Note: the docs say this returns BOOL, but really it can return -1/0/nonzero.
 #[win32_derive::dllexport]
 pub async fn GetMessageW(
     machine: &mut Machine,
@@ -292,11 +367,17 @@ pub async fn GetMessageW(
     wMsgFilterMin: u32,
     wMsgFilterMax: u32,
 ) -> i32 {
-    GetMessageA(machine, lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax).await
+    get_message(machine, lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax).await
 }
 
 #[win32_derive::dllexport]
-pub fn WaitMessage(_machine: &mut Machine) -> bool {
+pub async fn WaitMessage(machine: &mut Machine) -> bool {
+    loop {
+        match poll_message(machine, HWND::null(), None, false) {
+            Ok(_) => break,
+            Err(wait_until) => await_message(machine, wait_until).await,
+        }
+    }
     true
 }
 
@@ -359,8 +440,8 @@ pub async fn DispatchMessageW(machine: &mut Machine, lpMsg: Option<&MSG>) -> u32
 }
 
 #[win32_derive::dllexport]
-pub fn PostQuitMessage(machine: &mut Machine, nExitCode: i32) -> u32 {
-    machine.state.user32.messages.push_back(MSG {
+pub fn PostQuitMessage(machine: &mut Machine, nExitCode: i32) {
+    machine.state.user32.messages.push(MSG {
         hwnd: HWND::null(),
         message: WM::QUIT as u32,
         wParam: 0,
@@ -369,12 +450,11 @@ pub fn PostQuitMessage(machine: &mut Machine, nExitCode: i32) -> u32 {
         pt_x: 0,
         pt_y: 0,
     });
-    0 // unused
 }
 
 #[win32_derive::dllexport]
 pub fn PostMessageW(machine: &mut Machine, hWnd: HWND, Msg: u32, wParam: u32, lParam: u32) -> bool {
-    machine.state.user32.messages.push_back(MSG {
+    machine.state.user32.messages.push(MSG {
         hwnd: hWnd,
         message: Msg,
         wParam,
@@ -414,6 +494,17 @@ pub async fn SendMessageA(
         pt_y: 0,
     };
     dispatch_message(machine, &msg).await
+}
+
+#[win32_derive::dllexport]
+pub async fn SendMessageW(
+    machine: &mut Machine,
+    hWnd: HWND,
+    Msg: Result<WM, u32>,
+    wParam: u32,
+    lParam: u32,
+) -> u32 {
+    todo!()
 }
 
 #[win32_derive::dllexport]

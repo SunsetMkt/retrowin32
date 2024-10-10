@@ -11,24 +11,41 @@
         white-space: pre-wrap;
     }
 
-    section.panel {
-        margin: 1ex;
-        padding: 1ex;
+    html {
+        height: 100%;
+        overflow: hidden;
+        display: flex;
     }
 
     body {
+        flex: 1;
         display: flex;
         flex-direction: column;
+        gap: 8px;
     }
 
-    .clicky {
-        cursor: pointer;
+    section.panel {
+        padding: 1ex;
+    }
+
+    /* memory */
+    .grid span {
+        margin-right: 0.5ch;
+    }
+
+    .grid span:nth-child(4n) {
+        margin-right: 1ch;
+    }
+
+    .grid span:last-child {
+        margin-right: 0;
     }
 
     .highlight {
         background: white;
         outline: solid 1px red;
     }
+
 
     .error {
         color: red;

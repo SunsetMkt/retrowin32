@@ -2,7 +2,7 @@
 
 use anyhow::bail;
 use wasm_bindgen::prelude::*;
-use win32::{ReadDir, Stat, StatKind, WindowsPath};
+use win32::{Stat, StatKind, WindowsPath};
 
 struct WebSurface {
     _hwnd: u32,
@@ -56,7 +56,7 @@ impl win32::Surface for WebSurface {
         self.ctx.put_image_data(&image_data, 0.0, 0.0).unwrap();
     }
 
-    fn show(&mut self) {
+    fn show(&self) {
         self.screen
             .draw_image_with_html_canvas_element(&self.canvas, 0.0, 0.0)
             .unwrap();
@@ -106,6 +106,8 @@ extern "C" {
     fn set_title(this: &JsWindow, title: &str);
     #[wasm_bindgen(method)]
     fn set_size(this: &JsWindow, width: u32, height: u32);
+    #[wasm_bindgen(method)]
+    fn fullscreen(this: &JsWindow);
 }
 
 impl win32::Window for JsWindow {
@@ -118,7 +120,7 @@ impl win32::Window for JsWindow {
     }
 
     fn fullscreen(&mut self) {
-        log::warn!("todo: fullscreen");
+        JsWindow::fullscreen(self);
     }
 }
 
@@ -145,7 +147,7 @@ extern "C" {
 }
 
 impl win32::File for JsFile {
-    fn stat(&self) -> Result<Stat, u32> {
+    fn stat(&self) -> Result<Stat, win32::ERROR> {
         Ok(Stat {
             kind: StatKind::File,
             size: JsFile::info(self),
@@ -155,7 +157,7 @@ impl win32::File for JsFile {
         })
     }
 
-    fn set_len(&self, len: u64) -> Result<(), u32> {
+    fn set_len(&self, len: u64) -> Result<(), win32::ERROR> {
         todo!("set_len {len}")
     }
 }
@@ -220,6 +222,12 @@ fn message_from_event(event: web_sys::Event) -> anyhow::Result<win32::Message> {
             event.down = true;
             win32::MessageDetail::Mouse(event)
         }
+        "mousemove" => {
+            let mut event = map_mousevent(event.unchecked_into::<web_sys::MouseEvent>())?;
+            event.down = false;
+            event.button = win32::MouseButton::None;
+            win32::MessageDetail::Mouse(event)
+        }
         "mouseup" => {
             let mut event = map_mousevent(event.unchecked_into::<web_sys::MouseEvent>())?;
             event.down = false;
@@ -231,18 +239,27 @@ fn message_from_event(event: web_sys::Event) -> anyhow::Result<win32::Message> {
     Ok(win32::Message { hwnd, detail, time })
 }
 
+struct ReadDir {}
+impl win32::ReadDir for ReadDir {
+    fn next(&mut self) -> Result<Option<win32::ReadDirEntry>, win32::ERROR> {
+        log::warn!("TODO: ReadDir");
+        Ok(None)
+    }
+}
+
 #[wasm_bindgen(typescript_custom_section)]
 const JSHOST_TS: &'static str = r#"
 export interface JsHost {
-  exit(code: number): void;
-  
+  log(level: number, msg: string): void;
   ensure_timer(when: number): void;
   get_event(): Event | undefined;
   
-  open(path: string, access: {}): JsFile;
-  log(buf: Uint8Array);
+  open(path: string, access: {}): JsFile|null;
+  stdout(buf: Uint8Array): void;
   
   create_window(hwnd: number): JsWindow;
+  screen(): CanvasRenderingContext2D;
+  audio(buf: Int16Array): void;
 }"#;
 
 #[wasm_bindgen]
@@ -253,16 +270,13 @@ extern "C" {
     fn log(this: &JsHost, level: u8, msg: String);
 
     #[wasm_bindgen(method)]
-    fn exit(this: &JsHost, exit_code: u32);
-
-    #[wasm_bindgen(method)]
     fn ensure_timer(this: &JsHost, when: u32);
 
     #[wasm_bindgen(method)]
     fn get_event(this: &JsHost) -> web_sys::Event;
 
     #[wasm_bindgen(method)]
-    fn open(this: &JsHost, path: &str, options: win32::FileOptions) -> JsFile;
+    fn open(this: &JsHost, path: &str, options: win32::FileOptions) -> Option<JsFile>;
     #[wasm_bindgen(method)]
     fn stdout(this: &JsHost, buf: &[u8]);
 
@@ -271,14 +285,13 @@ extern "C" {
 
     #[wasm_bindgen(method)]
     fn screen(this: &JsHost) -> web_sys::CanvasRenderingContext2d;
+
+    #[wasm_bindgen(method)]
+    fn audio(this: &JsHost, buf: &[i16]);
 }
 
 impl win32::Host for JsHost {
-    fn exit(&self, exit_code: u32) {
-        JsHost::exit(self, exit_code)
-    }
-
-    fn time(&self) -> u32 {
+    fn ticks(&self) -> u32 {
         web_sys::window().unwrap().performance().unwrap().now() as u32
     }
 
@@ -308,20 +321,19 @@ impl win32::Host for JsHost {
         &self,
         path: &WindowsPath,
         options: win32::FileOptions,
-    ) -> Result<Box<dyn win32::File>, u32> {
-        Ok(Box::new(JsHost::open(
-            self,
-            &path.to_string_lossy(),
-            options,
-        )))
+    ) -> Result<Box<dyn win32::File>, win32::ERROR> {
+        match JsHost::open(self, &path.to_string_lossy(), options) {
+            Some(file) => Ok(Box::new(file)),
+            None => Err(win32::ERROR::FILE_NOT_FOUND),
+        }
     }
 
-    fn stat(&self, path: &WindowsPath) -> Result<Stat, u32> {
+    fn stat(&self, path: &WindowsPath) -> Result<Stat, win32::ERROR> {
         todo!("stat {path}")
     }
 
-    fn read_dir(&self, path: &WindowsPath) -> Result<Box<dyn ReadDir>, u32> {
-        todo!("read_dir {path}")
+    fn read_dir(&self, _path: &WindowsPath) -> Result<Box<dyn win32::ReadDir>, win32::ERROR> {
+        Ok(Box::new(ReadDir {}))
     }
 
     fn log(&self, buf: &[u8]) {
@@ -341,19 +353,23 @@ impl win32::Host for JsHost {
         Box::new(WebSurface::new(hwnd, opts, JsHost::screen(self)))
     }
 
-    fn current_dir(&self) -> Result<win32::WindowsPathBuf, u32> {
-        todo!()
+    fn current_dir(&self) -> Result<win32::WindowsPathBuf, win32::ERROR> {
+        Ok(win32::WindowsPathBuf::from("Z:\\".to_string()))
     }
 
-    fn create_dir(&self, path: &WindowsPath) -> Result<(), u32> {
+    fn create_dir(&self, path: &WindowsPath) -> Result<(), win32::ERROR> {
         todo!("create_dir {path}")
     }
 
-    fn remove_file(&self, path: &WindowsPath) -> Result<(), u32> {
+    fn remove_file(&self, path: &WindowsPath) -> Result<(), win32::ERROR> {
         todo!("remove_file {path}")
     }
 
-    fn remove_dir(&self, path: &WindowsPath) -> Result<(), u32> {
+    fn remove_dir(&self, path: &WindowsPath) -> Result<(), win32::ERROR> {
         todo!("remove_dir {path}")
+    }
+
+    fn init_audio(&mut self, _sample_rate: u32) -> Box<dyn win32::Audio> {
+        todo!()
     }
 }

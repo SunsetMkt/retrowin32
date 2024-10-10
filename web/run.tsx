@@ -3,60 +3,117 @@ import { Fragment, h } from 'preact';
 import { Emulator, EmulatorHost } from './emulator';
 import { EmulatorComponent, loadEmulator } from './web';
 
-interface State {
-  output?: string;
+interface Status {
+  instrCount: number;
+  instrPerMs: number;
 }
 
-class Runner extends preact.Component<{ emulator: Emulator }, State> implements EmulatorHost {
-  constructor(props: { emulator: Emulator }) {
-    super(props);
-    this.props.emulator.emuHost = this;
+class Panel extends preact.Component<{ emulator?: Emulator }, { status?: Status }> {
+  private debugger() {
+    window.location.pathname = window.location.pathname.replace('/run.html', '/debugger.html');
   }
 
-  private print(text: string) {
-    this.setState((state) => ({ output: (state.output ?? '') + text }));
+  private updateStatus = () => {
+    if (!this.props.emulator) return;
+
+    this.setState({
+      status: {
+        instrCount: this.props.emulator.emu.instr_count,
+        instrPerMs: Math.floor(this.props.emulator.instrPerMs),
+      },
+    });
+  };
+  interval?: number;
+  componentDidUpdate(): void {
+    if (this.props.emulator && !this.interval) {
+      this.updateStatus();
+      this.interval = setInterval(this.updateStatus, 500);
+    } else if (!this.props.emulator && this.interval) {
+      clearInterval(this.interval);
+      this.interval = undefined;
+    }
   }
+
+  render() {
+    let status;
+    if (this.state.status) {
+      status = (
+        <div>
+          {this.state.status.instrCount} instrs executed, {Math.floor(this.state.status.instrPerMs)}/ms
+        </div>
+      );
+    }
+
+    return (
+      <header class='panel'>
+        <a style='font-weight: bold; color: inherit' href='./'>retrowin32</a>: a windows emulator
+        <div style='width: 2ex'></div>
+        <button onClick={this.debugger}>
+          view in debugger
+        </button>
+        <div style={{ flex: '1' }} />
+        {status}
+      </header>
+    );
+  }
+}
+
+namespace Page {
+  export interface State {
+    emulator?: Emulator;
+    output?: string;
+  }
+}
+
+class Page extends preact.Component<{}, Page.State> {
+  private async load() {
+    const host: EmulatorHost = {
+      exit: (code) => {
+        this.print(`exited with code ${code}\n`);
+      },
+      onWindowChanged: () => {
+        this.forceUpdate();
+      },
+      showTab: (name: string) => {
+      },
+      onError: (msg) => {
+        this.print(msg + '\n');
+        this.setState({ emulator: undefined });
+      },
+      onStdOut: (stdout) => {
+        this.print(stdout);
+      },
+      onStopped: () => {
+        // TODO
+      },
+    };
+    const emulator = await loadEmulator(host);
+    emulator.emu.set_tracing_scheme('-');
+    this.setState({ emulator });
+    emulator.start();
+  }
+
+  private print = (text: string) => {
+    this.setState((state) => ({ output: (state.output ?? '') + text }));
+  };
 
   componentDidMount(): void {
-    this.props.emulator.start();
-  }
-
-  exit(code: number): void {
-    this.print(`exited with code ${code}\n`);
-  }
-
-  onWindowChanged(): void {
-    this.forceUpdate();
-  }
-
-  showTab(name: string): void {
-    throw new Error('Method not implemented.');
-  }
-
-  onError(msg: string): void {
-    this.print(msg + '\n');
-  }
-
-  onStdOut(stdout: string): void {
-    this.print(stdout);
-  }
-
-  onStopped(): void {
-    // this.print(`emulator stopped`);
+    this.load().catch((e) => this.print(e.stack ?? e.toString()));
   }
 
   render() {
     return (
       <>
-        {this.state.output ? <pre class='stdout'>{this.state.output}</pre> : null}
-        <EmulatorComponent emulator={this.props.emulator} />
+        <Panel emulator={this.state.emulator} />
+        <main>
+          {this.state.output ? <pre class='stdout'>{this.state.output}</pre> : null}
+          {this.state.emulator ? <EmulatorComponent emulator={this.state.emulator} /> : null}
+        </main>
       </>
     );
   }
 }
 
-export async function main() {
-  const emulator = await loadEmulator();
-  emulator.emu.set_tracing_scheme('-');
-  preact.render(<Runner emulator={emulator} />, document.getElementById('main')!);
+export function main() {
+  preact.render(<Page />, document.body);
 }

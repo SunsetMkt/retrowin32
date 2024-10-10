@@ -2,26 +2,23 @@
 //! a "1" suffix but contrast with intefaces with names like IDirectDraw7.
 
 use super::{
-    ddraw2::{self, IDirectDrawSurface2},
+    ddraw2,
     ddraw7::{IDirectDraw7, IDirectDrawSurface7},
     types::*,
     DD_OK,
 };
 use crate::winapi::com::GUID;
 use crate::{
-    winapi::{com::vtable, ddraw, types::*},
+    winapi::{com::vtable, ddraw, kernel32::get_symbol, types::*},
     Machine,
 };
-use memory::Extensions;
-use memory::Pod;
+use memory::ExtensionsMut;
 
-const TRACE_CONTEXT: &'static str = "ddraw/1";
-
-#[win32_derive::shims_from_x86]
+#[win32_derive::dllexport]
 pub mod IDirectDraw {
     use super::*;
 
-    vtable![IDirectDraw shims
+    vtable![
         QueryInterface: ok,
         AddRef: todo,
         Release: ok,
@@ -30,7 +27,7 @@ pub mod IDirectDraw {
         CreatePalette: (IDirectDraw7::CreatePalette),
         CreateSurface: ok,
         DuplicateSurface: todo,
-        EnumDisplayModes: ok,
+        EnumDisplayModes: (IDirectDraw2::EnumDisplayModes),
         EnumSurfaces: todo,
         FlipToGDISurface: todo,
         GetCaps: todo,
@@ -50,11 +47,7 @@ pub mod IDirectDraw {
     pub fn new(machine: &mut Machine) -> u32 {
         let ddraw = &mut machine.state.ddraw;
         let lpDirectDraw = ddraw.heap.alloc(machine.emu.memory.mem(), 4);
-        let vtable = *ddraw.vtable_IDirectDraw.get_or_insert_with(|| {
-            vtable(machine.emu.memory.mem(), &mut ddraw.heap, |shim| {
-                machine.emu.shims.add(shim)
-            })
-        });
+        let vtable = get_symbol(machine, "ddraw.dll", "IDirectDraw");
         machine.mem().put_pod::<u32>(lpDirectDraw, vtable);
         lpDirectDraw
     }
@@ -108,54 +101,6 @@ pub mod IDirectDraw {
     }
 
     #[win32_derive::dllexport]
-    pub async fn EnumDisplayModes(
-        machine: &mut Machine,
-        this: u32,
-        dwFlags: u32,
-        lpSurfaceDesc: Option<&DDSURFACEDESC>,
-        lpContext: u32,
-        lpEnumCallback: u32,
-    ) -> u32 {
-        if lpSurfaceDesc.is_some() {
-            todo!()
-        }
-        let mem = machine.emu.memory.mem();
-        let desc_addr = machine
-            .state
-            .ddraw
-            .heap
-            .alloc(mem, std::mem::size_of::<DDSURFACEDESC>() as u32);
-        let desc = mem.view_mut::<DDSURFACEDESC>(desc_addr);
-        *desc = DDSURFACEDESC::zeroed();
-        // TODO: offer multiple display modes rather than hardcoding this one.
-        desc.dwSize = std::mem::size_of::<DDSURFACEDESC>() as u32;
-        desc.dwWidth = 320;
-        desc.dwHeight = 200;
-        desc.ddpfPixelFormat = DDPIXELFORMAT {
-            dwSize: std::mem::size_of::<DDPIXELFORMAT>() as u32,
-            dwFlags: 0,
-            dwFourCC: 0,
-            dwRGBBitCount: 8,
-            dwRBitMask: 0xFF000000,
-            dwGBitMask: 0x00FF0000,
-            dwBBitMask: 0x0000FF00,
-            dwRGBAlphaBitMask: 0x000000FF,
-        };
-
-        machine
-            .call_x86(lpEnumCallback, vec![desc_addr, lpContext])
-            .await;
-
-        machine
-            .state
-            .ddraw
-            .heap
-            .free(machine.emu.memory.mem(), desc_addr);
-
-        DD_OK
-    }
-
-    #[win32_derive::dllexport]
     pub fn Release(_machine: &mut Machine, this: u32) -> u32 {
         log::warn!("{this:x}->Release()");
         0 // TODO: return refcount?
@@ -173,11 +118,11 @@ pub mod IDirectDraw {
     }
 }
 
-#[win32_derive::shims_from_x86]
+#[win32_derive::dllexport]
 pub mod IDirectDrawSurface {
     use super::*;
 
-    vtable![IDirectDrawSurface shims
+    vtable![
         QueryInterface: todo,
         AddRef: todo,
         Release: ok,
@@ -219,11 +164,7 @@ pub mod IDirectDrawSurface {
     pub fn new(machine: &mut Machine) -> u32 {
         let ddraw = &mut machine.state.ddraw;
         let lpDirectDrawSurface = ddraw.heap.alloc(machine.emu.memory.mem(), 4);
-        let vtable = *ddraw.vtable_IDirectDrawSurface.get_or_insert_with(|| {
-            vtable(machine.emu.memory.mem(), &mut ddraw.heap, |shim| {
-                machine.emu.shims.add(shim)
-            })
-        });
+        let vtable = get_symbol(machine, "ddraw.dll", "IDirectDrawSurface");
         machine.mem().put_pod::<u32>(lpDirectDrawSurface, vtable);
         lpDirectDrawSurface
     }

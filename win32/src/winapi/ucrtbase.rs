@@ -1,10 +1,10 @@
-#![allow(non_snake_case)]
+//! The C runtime library.  This module is also the implementation of msvcrt.dll.
 
-use super::kernel32::ExitProcess;
+#![allow(non_snake_case)]
+#![allow(non_upper_case_globals)]
+
 use crate::Machine;
 use memory::Extensions;
-
-const TRACE_CONTEXT: &'static str = "ucrtbase";
 
 #[win32_derive::dllexport(cdecl)]
 pub async fn _initterm(machine: &mut Machine, start: u32, end: u32) -> u32 {
@@ -89,8 +89,13 @@ pub fn _configure_narrow_argv(_machine: &mut Machine, _mode: u32) -> u32 {
 }
 
 #[win32_derive::dllexport(cdecl)]
-pub fn exit(machine: &mut Machine, status: u32) -> u32 {
-    ExitProcess(machine, status)
+pub fn _exit(machine: &mut Machine, status: u32) {
+    machine.exit(status);
+}
+
+#[win32_derive::dllexport(cdecl)]
+pub fn exit(machine: &mut Machine, status: u32) {
+    machine.exit(status);
 }
 
 #[win32_derive::dllexport(cdecl)]
@@ -105,6 +110,11 @@ pub fn _unlock(_machine: &mut Machine, locknum: u32) -> u32 {
 
 #[win32_derive::dllexport(cdecl)]
 pub fn __dllonexit(_machine: &mut Machine, func: u32, d: u32, f: u32) -> u32 {
+    0
+}
+
+#[win32_derive::dllexport(cdecl)]
+pub fn _controlfp(_machine: &mut Machine, _new: u32, _mask: u32) -> u32 {
     0
 }
 
@@ -144,6 +154,18 @@ pub fn _set_new_mode(_machine: &mut Machine, newhandlermode: u32) -> u32 {
 }
 
 #[win32_derive::dllexport(cdecl)]
+pub fn __getmainargs(
+    _machine: &mut Machine,
+    argc: Option<&mut u32>,
+    argv: Option<&mut u32>,
+    env: Option<&mut u32>,
+    doWildCard: u32,
+    startInfo: u32,
+) -> u32 {
+    0
+}
+
+#[win32_derive::dllexport(cdecl)]
 pub fn malloc(machine: &mut Machine, size: u32) -> u32 {
     let heap = machine
         .state
@@ -161,3 +183,71 @@ pub fn free(machine: &mut Machine, ptr: u32) -> u32 {
     heap.free(machine.emu.memory.mem(), ptr);
     0
 }
+
+// MSDN: "Calling rand before any call to srand generates the same sequence as calling srand with seed passed as 1."
+static mut RAND_STATE: u32 = 1;
+
+#[win32_derive::dllexport(cdecl)]
+pub fn srand(machine: &mut Machine, seed: u32) {
+    unsafe {
+        RAND_STATE = seed % (1 << 31);
+    }
+}
+
+#[win32_derive::dllexport(cdecl)]
+pub fn rand(machine: &mut Machine) -> u32 {
+    // https://en.wikipedia.org/wiki/Linear_congruential_generator
+    unsafe {
+        RAND_STATE = ((RAND_STATE.wrapping_mul(134775813)).wrapping_add(1)) % (1 << 31);
+        RAND_STATE
+    }
+}
+
+fn time64(machine: &mut Machine, destTime: Option<&mut u64>) -> u32 {
+    let time = machine.host.system_time().timestamp() as u64;
+    if let Some(destTime) = destTime {
+        *destTime = time;
+    }
+
+    // TODO: 64-bit return values go through edx:eax, which is not yet modeled in the shims
+    // machinery, so we only return 32 bits here.
+    // Thankfully 32-bit time_t only overflows in 2038 anyway.
+    time as u32
+}
+
+#[win32_derive::dllexport(cdecl)]
+pub fn time(machine: &mut Machine, destTime: Option<&mut u64>) -> u32 {
+    time64(machine, destTime)
+}
+
+#[win32_derive::dllexport(cdecl)]
+pub fn _time64(machine: &mut Machine, destTime: Option<&mut u64>) -> u32 {
+    time64(machine, destTime)
+}
+
+#[win32_derive::dllexport(cdecl)]
+pub fn _XcptFilter(machine: &mut Machine, xcptnum: u32, pxcptinfoptrs: u32) -> u32 {
+    todo!();
+}
+
+#[win32_derive::dllexport(cdecl)]
+pub fn _except_handler3(
+    _machine: &mut Machine,
+    exception_record: u32,
+    registration: u32,
+    context: u32,
+    dispatcher: u32,
+) -> i32 {
+    todo!();
+}
+
+#[win32_derive::dllexport(cdecl)]
+pub fn __setusermatherr(machine: &mut Machine, pf: u32) {
+    todo!();
+}
+
+#[win32_derive::dllexport]
+pub const _adjust_fdiv: &'static str = "_adjust_fdiv";
+
+#[win32_derive::dllexport]
+pub const _acmdln: &'static str = "_acmdln";

@@ -10,8 +10,7 @@ use crate::{
     Machine,
 };
 use memory::{Extensions, ExtensionsMut};
-
-const TRACE_CONTEXT: &'static str = "user32/resource";
+use std::{ops::Range, rc::Rc};
 
 // TODO: switch to the HANDLE<T> type?
 pub type HCURSOR = u32;
@@ -82,7 +81,7 @@ fn load_bitmap(
             .state
             .gdi32
             .objects
-            .add(gdi32::Object::Bitmap(gdi32::BitmapType::RGBA32(bmp))),
+            .add(gdi32::Object::Bitmap(gdi32::Bitmap::RGBA32(Rc::new(bmp)))),
     )
 }
 
@@ -156,7 +155,7 @@ pub fn LoadBitmapA(
     load_bitmap(machine, hInstance, name.as_ref()).unwrap()
 }
 
-fn find_string(machine: &Machine, hInstance: HINSTANCE, uID: u32) -> Option<&[u8]> {
+fn find_string(machine: &Machine, hInstance: HINSTANCE, uID: u32) -> Option<Range<u32>> {
     // Strings are stored as blocks of 16 consecutive strings.
     let (resource_id, index) = ((uID >> 4) + 1, uID & 0xF);
 
@@ -167,6 +166,7 @@ fn find_string(machine: &Machine, hInstance: HINSTANCE, uID: u32) -> Option<&[u8
         ResourceKey::Id(pe::RT::STRING as u32),
         ResourceKey::Id(resource_id),
     )?;
+    let block_ofs = block.start;
     let block = machine.mem().slice(block);
 
     // Each block is a sequence of two byte length-prefixed strings.
@@ -177,8 +177,11 @@ fn find_string(machine: &Machine, hInstance: HINSTANCE, uID: u32) -> Option<&[u8
         ofs += (1 + len) * 2;
     }
     let len = block.get_pod::<u16>(ofs) as u32;
-    let str = block.sub32(ofs + 2, len * 2);
-    Some(str)
+    let start = block_ofs + ofs + 2;
+    Some(Range {
+        start,
+        end: start + len * 2,
+    })
 }
 
 #[win32_derive::dllexport]
@@ -190,7 +193,7 @@ pub fn LoadStringA(
     cchBufferMax: u32,
 ) -> u32 {
     let str = match find_string(machine, hInstance, uID) {
-        Some(str) => Str16::from_bytes(str),
+        Some(str) => Str16::from_bytes(machine.mem().slice(str)),
         None => return 0,
     };
     assert!(cchBufferMax != 0); // MSDN claims this is invalid
@@ -212,19 +215,17 @@ pub fn LoadStringW(
     lpBuffer: u32,
     cchBufferMax: u32,
 ) -> u32 {
-    let str = match find_string(machine, hInstance, uID) {
-        Some(str) => str,
-        None => return 0,
+    let Some(str) = find_string(machine, hInstance, uID) else {
+        return 0;
     };
+    let mem = machine.mem();
     if cchBufferMax == 0 {
-        machine
-            .mem()
-            .put_pod::<u32>(lpBuffer, machine.mem().offset_of(str.as_ptr()));
+        mem.put_pod::<u32>(lpBuffer, str.start);
         str.len() as u32
     } else {
         let dst = machine.mem().sub32_mut(lpBuffer, cchBufferMax * 2);
-        let copy_len = std::cmp::min(dst.len() as usize - 2, str.len());
-        dst[..copy_len].copy_from_slice(&str[..copy_len]);
+        let copy_len = std::cmp::min(dst.len() - 2, str.len()) as u32;
+        dst[..copy_len as usize].copy_from_slice(mem.sub32(str.start, copy_len));
         dst.put_pod::<u16>(copy_len as u32, 0);
         copy_len as u32
     }

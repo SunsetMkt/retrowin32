@@ -1,9 +1,9 @@
 #![allow(non_snake_case)]
-#![allow(non_upper_case_globals)]
+#![allow(non_snake_case)]
 #![allow(unused_imports)]
 #![allow(unused_variables)]
 #[doc = r" Generated code, do not edit."]
-use crate::shims::Shim;
+use crate::shims::{Handler, Shim};
 pub struct BuiltinDLL {
     pub file_name: &'static str,
     #[doc = r" The xth function in the DLL represents a call to shims[x]."]
@@ -13,37 +13,96 @@ pub struct BuiltinDLL {
 }
 pub mod advapi32 {
     use super::*;
-    mod impls {
+    mod wrappers {
         use crate::{
             machine::Machine,
             winapi::{self, stack_args::*, types::*},
         };
         use memory::Extensions;
         use winapi::advapi32::*;
-        pub unsafe fn RegCloseKey(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn RegCloseKey(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hKey = <HKEY>::from_stack(mem, esp + 4u32);
-            winapi::advapi32::RegCloseKey(machine, hKey).to_raw()
+            let hKey = <HKEY>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("advapi32") {
+                Some(crate::trace::trace_begin(
+                    "advapi32",
+                    "RegCloseKey",
+                    &[("hKey", &hKey)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::advapi32::RegCloseKey(machine, hKey);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::advapi32::RegCloseKey_pos.0,
+                    winapi::advapi32::RegCloseKey_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn RegCreateKeyA(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn RegCreateKeyA(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hKey = <HKEY>::from_stack(mem, esp + 4u32);
-            let lpSubKey = <Option<&str>>::from_stack(mem, esp + 8u32);
-            let phkResult = <Option<&mut u32>>::from_stack(mem, esp + 12u32);
-            winapi::advapi32::RegCreateKeyA(machine, hKey, lpSubKey, phkResult).to_raw()
+            let hKey = <HKEY>::from_stack(mem, stack_args + 0u32);
+            let lpSubKey = <Option<&str>>::from_stack(mem, stack_args + 4u32);
+            let phkResult = <Option<&mut u32>>::from_stack(mem, stack_args + 8u32);
+            let __trace_context = if crate::trace::enabled("advapi32") {
+                Some(crate::trace::trace_begin(
+                    "advapi32",
+                    "RegCreateKeyA",
+                    &[
+                        ("hKey", &hKey),
+                        ("lpSubKey", &lpSubKey),
+                        ("phkResult", &phkResult),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::advapi32::RegCreateKeyA(machine, hKey, lpSubKey, phkResult);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::advapi32::RegCreateKeyA_pos.0,
+                    winapi::advapi32::RegCreateKeyA_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn RegCreateKeyExW(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn RegCreateKeyExW(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hKey = <HKEY>::from_stack(mem, esp + 4u32);
-            let lpSubKey = <Option<&Str16>>::from_stack(mem, esp + 8u32);
-            let Reserved = <u32>::from_stack(mem, esp + 12u32);
-            let lpClass = <Option<&Str16>>::from_stack(mem, esp + 16u32);
-            let dwOptions = <u32>::from_stack(mem, esp + 20u32);
-            let samDesired = <u32>::from_stack(mem, esp + 24u32);
-            let lpSecurityAttributes = <u32>::from_stack(mem, esp + 28u32);
-            let phkResult = <Option<&mut u32>>::from_stack(mem, esp + 32u32);
-            let lpdwDisposition = <Option<&mut u32>>::from_stack(mem, esp + 36u32);
-            winapi::advapi32::RegCreateKeyExW(
+            let hKey = <HKEY>::from_stack(mem, stack_args + 0u32);
+            let lpSubKey = <Option<&Str16>>::from_stack(mem, stack_args + 4u32);
+            let Reserved = <u32>::from_stack(mem, stack_args + 8u32);
+            let lpClass = <Option<&Str16>>::from_stack(mem, stack_args + 12u32);
+            let dwOptions = <u32>::from_stack(mem, stack_args + 16u32);
+            let samDesired = <u32>::from_stack(mem, stack_args + 20u32);
+            let lpSecurityAttributes = <u32>::from_stack(mem, stack_args + 24u32);
+            let phkResult = <Option<&mut u32>>::from_stack(mem, stack_args + 28u32);
+            let lpdwDisposition = <Option<&mut u32>>::from_stack(mem, stack_args + 32u32);
+            let __trace_context = if crate::trace::enabled("advapi32") {
+                Some(crate::trace::trace_begin(
+                    "advapi32",
+                    "RegCreateKeyExW",
+                    &[
+                        ("hKey", &hKey),
+                        ("lpSubKey", &lpSubKey),
+                        ("Reserved", &Reserved),
+                        ("lpClass", &lpClass),
+                        ("dwOptions", &dwOptions),
+                        ("samDesired", &samDesired),
+                        ("lpSecurityAttributes", &lpSecurityAttributes),
+                        ("phkResult", &phkResult),
+                        ("lpdwDisposition", &lpdwDisposition),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::advapi32::RegCreateKeyExW(
                 machine,
                 hKey,
                 lpSubKey,
@@ -54,18 +113,77 @@ pub mod advapi32 {
                 lpSecurityAttributes,
                 phkResult,
                 lpdwDisposition,
-            )
-            .to_raw()
+            );
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::advapi32::RegCreateKeyExW_pos.0,
+                    winapi::advapi32::RegCreateKeyExW_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn RegQueryValueExA(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn RegOpenKeyExA(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hKey = <HKEY>::from_stack(mem, esp + 4u32);
-            let lpValueName = <Option<&str>>::from_stack(mem, esp + 8u32);
-            let lpReserved = <u32>::from_stack(mem, esp + 12u32);
-            let lpType = <Option<&mut u32>>::from_stack(mem, esp + 16u32);
-            let lpData = <u32>::from_stack(mem, esp + 20u32);
-            let lpcbData = <Option<&mut u32>>::from_stack(mem, esp + 24u32);
-            winapi::advapi32::RegQueryValueExA(
+            let hKey = <HKEY>::from_stack(mem, stack_args + 0u32);
+            let lpSubKey = <Option<&str>>::from_stack(mem, stack_args + 4u32);
+            let ulOptions = <u32>::from_stack(mem, stack_args + 8u32);
+            let samDesired = <u32>::from_stack(mem, stack_args + 12u32);
+            let phkResult = <Option<&mut HKEY>>::from_stack(mem, stack_args + 16u32);
+            let __trace_context = if crate::trace::enabled("advapi32") {
+                Some(crate::trace::trace_begin(
+                    "advapi32",
+                    "RegOpenKeyExA",
+                    &[
+                        ("hKey", &hKey),
+                        ("lpSubKey", &lpSubKey),
+                        ("ulOptions", &ulOptions),
+                        ("samDesired", &samDesired),
+                        ("phkResult", &phkResult),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::advapi32::RegOpenKeyExA(
+                machine, hKey, lpSubKey, ulOptions, samDesired, phkResult,
+            );
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::advapi32::RegOpenKeyExA_pos.0,
+                    winapi::advapi32::RegOpenKeyExA_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn RegQueryValueExA(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let hKey = <HKEY>::from_stack(mem, stack_args + 0u32);
+            let lpValueName = <Option<&str>>::from_stack(mem, stack_args + 4u32);
+            let lpReserved = <u32>::from_stack(mem, stack_args + 8u32);
+            let lpType = <Option<&mut u32>>::from_stack(mem, stack_args + 12u32);
+            let lpData = <u32>::from_stack(mem, stack_args + 16u32);
+            let lpcbData = <Option<&mut u32>>::from_stack(mem, stack_args + 20u32);
+            let __trace_context = if crate::trace::enabled("advapi32") {
+                Some(crate::trace::trace_begin(
+                    "advapi32",
+                    "RegQueryValueExA",
+                    &[
+                        ("hKey", &hKey),
+                        ("lpValueName", &lpValueName),
+                        ("lpReserved", &lpReserved),
+                        ("lpType", &lpType),
+                        ("lpData", &lpData),
+                        ("lpcbData", &lpcbData),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::advapi32::RegQueryValueExA(
                 machine,
                 hKey,
                 lpValueName,
@@ -73,18 +191,42 @@ pub mod advapi32 {
                 lpType,
                 lpData,
                 lpcbData,
-            )
-            .to_raw()
+            );
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::advapi32::RegQueryValueExA_pos.0,
+                    winapi::advapi32::RegQueryValueExA_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn RegQueryValueExW(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn RegQueryValueExW(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hKey = <HKEY>::from_stack(mem, esp + 4u32);
-            let lpValueName = <Option<&Str16>>::from_stack(mem, esp + 8u32);
-            let lpReserved = <u32>::from_stack(mem, esp + 12u32);
-            let lpType = <Option<&mut u32>>::from_stack(mem, esp + 16u32);
-            let lpData = <u32>::from_stack(mem, esp + 20u32);
-            let lpcbData = <Option<&mut u32>>::from_stack(mem, esp + 24u32);
-            winapi::advapi32::RegQueryValueExW(
+            let hKey = <HKEY>::from_stack(mem, stack_args + 0u32);
+            let lpValueName = <Option<&Str16>>::from_stack(mem, stack_args + 4u32);
+            let lpReserved = <u32>::from_stack(mem, stack_args + 8u32);
+            let lpType = <Option<&mut u32>>::from_stack(mem, stack_args + 12u32);
+            let lpData = <u32>::from_stack(mem, stack_args + 16u32);
+            let lpcbData = <Option<&mut u32>>::from_stack(mem, stack_args + 20u32);
+            let __trace_context = if crate::trace::enabled("advapi32") {
+                Some(crate::trace::trace_begin(
+                    "advapi32",
+                    "RegQueryValueExW",
+                    &[
+                        ("hKey", &hKey),
+                        ("lpValueName", &lpValueName),
+                        ("lpReserved", &lpReserved),
+                        ("lpType", &lpType),
+                        ("lpData", &lpData),
+                        ("lpcbData", &lpcbData),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::advapi32::RegQueryValueExW(
                 machine,
                 hKey,
                 lpValueName,
@@ -92,18 +234,42 @@ pub mod advapi32 {
                 lpType,
                 lpData,
                 lpcbData,
-            )
-            .to_raw()
+            );
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::advapi32::RegQueryValueExW_pos.0,
+                    winapi::advapi32::RegQueryValueExW_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn RegSetValueExA(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn RegSetValueExA(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hKey = <HKEY>::from_stack(mem, esp + 4u32);
-            let lpValueName = <Option<&str>>::from_stack(mem, esp + 8u32);
-            let Reserved = <u32>::from_stack(mem, esp + 12u32);
-            let dwType = <u32>::from_stack(mem, esp + 16u32);
-            let lpData = <u32>::from_stack(mem, esp + 20u32);
-            let cbData = <u32>::from_stack(mem, esp + 24u32);
-            winapi::advapi32::RegSetValueExA(
+            let hKey = <HKEY>::from_stack(mem, stack_args + 0u32);
+            let lpValueName = <Option<&str>>::from_stack(mem, stack_args + 4u32);
+            let Reserved = <u32>::from_stack(mem, stack_args + 8u32);
+            let dwType = <u32>::from_stack(mem, stack_args + 12u32);
+            let lpData = <u32>::from_stack(mem, stack_args + 16u32);
+            let cbData = <u32>::from_stack(mem, stack_args + 20u32);
+            let __trace_context = if crate::trace::enabled("advapi32") {
+                Some(crate::trace::trace_begin(
+                    "advapi32",
+                    "RegSetValueExA",
+                    &[
+                        ("hKey", &hKey),
+                        ("lpValueName", &lpValueName),
+                        ("Reserved", &Reserved),
+                        ("dwType", &dwType),
+                        ("lpData", &lpData),
+                        ("cbData", &cbData),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::advapi32::RegSetValueExA(
                 machine,
                 hKey,
                 lpValueName,
@@ -111,18 +277,42 @@ pub mod advapi32 {
                 dwType,
                 lpData,
                 cbData,
-            )
-            .to_raw()
+            );
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::advapi32::RegSetValueExA_pos.0,
+                    winapi::advapi32::RegSetValueExA_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn RegSetValueExW(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn RegSetValueExW(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hKey = <HKEY>::from_stack(mem, esp + 4u32);
-            let lpValueName = <Option<&Str16>>::from_stack(mem, esp + 8u32);
-            let Reserved = <u32>::from_stack(mem, esp + 12u32);
-            let dwType = <u32>::from_stack(mem, esp + 16u32);
-            let lpData = <u32>::from_stack(mem, esp + 20u32);
-            let cbData = <u32>::from_stack(mem, esp + 24u32);
-            winapi::advapi32::RegSetValueExW(
+            let hKey = <HKEY>::from_stack(mem, stack_args + 0u32);
+            let lpValueName = <Option<&Str16>>::from_stack(mem, stack_args + 4u32);
+            let Reserved = <u32>::from_stack(mem, stack_args + 8u32);
+            let dwType = <u32>::from_stack(mem, stack_args + 12u32);
+            let lpData = <u32>::from_stack(mem, stack_args + 16u32);
+            let cbData = <u32>::from_stack(mem, stack_args + 20u32);
+            let __trace_context = if crate::trace::enabled("advapi32") {
+                Some(crate::trace::trace_begin(
+                    "advapi32",
+                    "RegSetValueExW",
+                    &[
+                        ("hKey", &hKey),
+                        ("lpValueName", &lpValueName),
+                        ("Reserved", &Reserved),
+                        ("dwType", &dwType),
+                        ("lpData", &lpData),
+                        ("cbData", &cbData),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::advapi32::RegSetValueExW(
                 machine,
                 hKey,
                 lpValueName,
@@ -130,64 +320,51 @@ pub mod advapi32 {
                 dwType,
                 lpData,
                 cbData,
-            )
-            .to_raw()
+            );
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::advapi32::RegSetValueExW_pos.0,
+                    winapi::advapi32::RegSetValueExW_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
     }
-    mod shims {
-        use super::impls;
-        use super::Shim;
-        pub const RegCloseKey: Shim = Shim {
+    const SHIMS: [Shim; 8usize] = [
+        Shim {
             name: "RegCloseKey",
-            func: impls::RegCloseKey,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const RegCreateKeyA: Shim = Shim {
+            func: Handler::Sync(wrappers::RegCloseKey),
+        },
+        Shim {
             name: "RegCreateKeyA",
-            func: impls::RegCreateKeyA,
-            stack_consumed: 12u32,
-            is_async: false,
-        };
-        pub const RegCreateKeyExW: Shim = Shim {
+            func: Handler::Sync(wrappers::RegCreateKeyA),
+        },
+        Shim {
             name: "RegCreateKeyExW",
-            func: impls::RegCreateKeyExW,
-            stack_consumed: 36u32,
-            is_async: false,
-        };
-        pub const RegQueryValueExA: Shim = Shim {
+            func: Handler::Sync(wrappers::RegCreateKeyExW),
+        },
+        Shim {
+            name: "RegOpenKeyExA",
+            func: Handler::Sync(wrappers::RegOpenKeyExA),
+        },
+        Shim {
             name: "RegQueryValueExA",
-            func: impls::RegQueryValueExA,
-            stack_consumed: 24u32,
-            is_async: false,
-        };
-        pub const RegQueryValueExW: Shim = Shim {
+            func: Handler::Sync(wrappers::RegQueryValueExA),
+        },
+        Shim {
             name: "RegQueryValueExW",
-            func: impls::RegQueryValueExW,
-            stack_consumed: 24u32,
-            is_async: false,
-        };
-        pub const RegSetValueExA: Shim = Shim {
+            func: Handler::Sync(wrappers::RegQueryValueExW),
+        },
+        Shim {
             name: "RegSetValueExA",
-            func: impls::RegSetValueExA,
-            stack_consumed: 24u32,
-            is_async: false,
-        };
-        pub const RegSetValueExW: Shim = Shim {
+            func: Handler::Sync(wrappers::RegSetValueExA),
+        },
+        Shim {
             name: "RegSetValueExW",
-            func: impls::RegSetValueExW,
-            stack_consumed: 24u32,
-            is_async: false,
-        };
-    }
-    const SHIMS: [Shim; 7usize] = [
-        shims::RegCloseKey,
-        shims::RegCreateKeyA,
-        shims::RegCreateKeyExW,
-        shims::RegQueryValueExA,
-        shims::RegQueryValueExW,
-        shims::RegSetValueExA,
-        shims::RegSetValueExW,
+            func: Handler::Sync(wrappers::RegSetValueExW),
+        },
     ];
     pub const DLL: BuiltinDLL = BuiltinDLL {
         file_name: "advapi32.dll",
@@ -197,98 +374,218 @@ pub mod advapi32 {
 }
 pub mod bass {
     use super::*;
-    mod impls {
+    mod wrappers {
         use crate::{
             machine::Machine,
             winapi::{self, stack_args::*, types::*},
         };
         use memory::Extensions;
         use winapi::bass::*;
-        pub unsafe fn BASS_ChannelGetPosition(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn BASS_ChannelGetPosition(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let mode = <u32>::from_stack(mem, esp + 4u32);
-            winapi::bass::BASS_ChannelGetPosition(machine, mode).to_raw()
+            let mode = <u32>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("bass") {
+                Some(crate::trace::trace_begin(
+                    "bass",
+                    "BASS_ChannelGetPosition",
+                    &[("mode", &mode)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::bass::BASS_ChannelGetPosition(machine, mode);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::bass::BASS_ChannelGetPosition_pos.0,
+                    winapi::bass::BASS_ChannelGetPosition_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn BASS_Init(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn BASS_Free(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let arg1 = <u32>::from_stack(mem, esp + 4u32);
-            let arg2 = <u32>::from_stack(mem, esp + 8u32);
-            let arg3 = <u32>::from_stack(mem, esp + 12u32);
-            let arg4 = <u32>::from_stack(mem, esp + 16u32);
-            winapi::bass::BASS_Init(machine, arg1, arg2, arg3, arg4).to_raw()
+            let arg1 = <u32>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("bass") {
+                Some(crate::trace::trace_begin(
+                    "bass",
+                    "BASS_Free",
+                    &[("arg1", &arg1)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::bass::BASS_Free(machine, arg1);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::bass::BASS_Free_pos.0,
+                    winapi::bass::BASS_Free_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn BASS_MusicLoad(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn BASS_Init(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let arg1 = <u32>::from_stack(mem, esp + 4u32);
-            let arg2 = <u32>::from_stack(mem, esp + 8u32);
-            let arg3 = <u32>::from_stack(mem, esp + 12u32);
-            let arg4 = <u32>::from_stack(mem, esp + 16u32);
-            let arg5 = <u32>::from_stack(mem, esp + 20u32);
-            winapi::bass::BASS_MusicLoad(machine, arg1, arg2, arg3, arg4, arg5).to_raw()
+            let arg1 = <u32>::from_stack(mem, stack_args + 0u32);
+            let arg2 = <u32>::from_stack(mem, stack_args + 4u32);
+            let arg3 = <u32>::from_stack(mem, stack_args + 8u32);
+            let arg4 = <u32>::from_stack(mem, stack_args + 12u32);
+            let __trace_context = if crate::trace::enabled("bass") {
+                Some(crate::trace::trace_begin(
+                    "bass",
+                    "BASS_Init",
+                    &[
+                        ("arg1", &arg1),
+                        ("arg2", &arg2),
+                        ("arg3", &arg3),
+                        ("arg4", &arg4),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::bass::BASS_Init(machine, arg1, arg2, arg3, arg4);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::bass::BASS_Init_pos.0,
+                    winapi::bass::BASS_Init_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn BASS_MusicPlay(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn BASS_MusicLoad(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let arg1 = <u32>::from_stack(mem, esp + 4u32);
-            winapi::bass::BASS_MusicPlay(machine, arg1).to_raw()
+            let arg1 = <u32>::from_stack(mem, stack_args + 0u32);
+            let arg2 = <u32>::from_stack(mem, stack_args + 4u32);
+            let arg3 = <u32>::from_stack(mem, stack_args + 8u32);
+            let arg4 = <u32>::from_stack(mem, stack_args + 12u32);
+            let arg5 = <u32>::from_stack(mem, stack_args + 16u32);
+            let __trace_context = if crate::trace::enabled("bass") {
+                Some(crate::trace::trace_begin(
+                    "bass",
+                    "BASS_MusicLoad",
+                    &[
+                        ("arg1", &arg1),
+                        ("arg2", &arg2),
+                        ("arg3", &arg3),
+                        ("arg4", &arg4),
+                        ("arg5", &arg5),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::bass::BASS_MusicLoad(machine, arg1, arg2, arg3, arg4, arg5);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::bass::BASS_MusicLoad_pos.0,
+                    winapi::bass::BASS_MusicLoad_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn BASS_MusicSetPositionScaler(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn BASS_MusicPlay(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let arg1 = <u32>::from_stack(mem, esp + 4u32);
-            let arg2 = <u32>::from_stack(mem, esp + 8u32);
-            winapi::bass::BASS_MusicSetPositionScaler(machine, arg1, arg2).to_raw()
+            let arg1 = <u32>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("bass") {
+                Some(crate::trace::trace_begin(
+                    "bass",
+                    "BASS_MusicPlay",
+                    &[("arg1", &arg1)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::bass::BASS_MusicPlay(machine, arg1);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::bass::BASS_MusicPlay_pos.0,
+                    winapi::bass::BASS_MusicPlay_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn BASS_Start(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn BASS_MusicSetPositionScaler(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            winapi::bass::BASS_Start(machine).to_raw()
+            let arg1 = <u32>::from_stack(mem, stack_args + 0u32);
+            let arg2 = <u32>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("bass") {
+                Some(crate::trace::trace_begin(
+                    "bass",
+                    "BASS_MusicSetPositionScaler",
+                    &[("arg1", &arg1), ("arg2", &arg2)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::bass::BASS_MusicSetPositionScaler(machine, arg1, arg2);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::bass::BASS_MusicSetPositionScaler_pos.0,
+                    winapi::bass::BASS_MusicSetPositionScaler_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn BASS_Start(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let __trace_context = if crate::trace::enabled("bass") {
+                Some(crate::trace::trace_begin("bass", "BASS_Start", &[]))
+            } else {
+                None
+            };
+            let result = winapi::bass::BASS_Start(machine);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::bass::BASS_Start_pos.0,
+                    winapi::bass::BASS_Start_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
     }
-    mod shims {
-        use super::impls;
-        use super::Shim;
-        pub const BASS_ChannelGetPosition: Shim = Shim {
+    const SHIMS: [Shim; 7usize] = [
+        Shim {
             name: "BASS_ChannelGetPosition",
-            func: impls::BASS_ChannelGetPosition,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const BASS_Init: Shim = Shim {
+            func: Handler::Sync(wrappers::BASS_ChannelGetPosition),
+        },
+        Shim {
+            name: "BASS_Free",
+            func: Handler::Sync(wrappers::BASS_Free),
+        },
+        Shim {
             name: "BASS_Init",
-            func: impls::BASS_Init,
-            stack_consumed: 16u32,
-            is_async: false,
-        };
-        pub const BASS_MusicLoad: Shim = Shim {
+            func: Handler::Sync(wrappers::BASS_Init),
+        },
+        Shim {
             name: "BASS_MusicLoad",
-            func: impls::BASS_MusicLoad,
-            stack_consumed: 20u32,
-            is_async: false,
-        };
-        pub const BASS_MusicPlay: Shim = Shim {
+            func: Handler::Sync(wrappers::BASS_MusicLoad),
+        },
+        Shim {
             name: "BASS_MusicPlay",
-            func: impls::BASS_MusicPlay,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const BASS_MusicSetPositionScaler: Shim = Shim {
+            func: Handler::Sync(wrappers::BASS_MusicPlay),
+        },
+        Shim {
             name: "BASS_MusicSetPositionScaler",
-            func: impls::BASS_MusicSetPositionScaler,
-            stack_consumed: 8u32,
-            is_async: false,
-        };
-        pub const BASS_Start: Shim = Shim {
+            func: Handler::Sync(wrappers::BASS_MusicSetPositionScaler),
+        },
+        Shim {
             name: "BASS_Start",
-            func: impls::BASS_Start,
-            stack_consumed: 0u32,
-            is_async: false,
-        };
-    }
-    const SHIMS: [Shim; 6usize] = [
-        shims::BASS_ChannelGetPosition,
-        shims::BASS_Init,
-        shims::BASS_MusicLoad,
-        shims::BASS_MusicPlay,
-        shims::BASS_MusicSetPositionScaler,
-        shims::BASS_Start,
+            func: Handler::Sync(wrappers::BASS_Start),
+        },
     ];
     pub const DLL: BuiltinDLL = BuiltinDLL {
         file_name: "bass.dll",
@@ -298,936 +595,1752 @@ pub mod bass {
 }
 pub mod ddraw {
     use super::*;
-    mod impls {
+    mod wrappers {
         use crate::{
             machine::Machine,
             winapi::{self, stack_args::*, types::*},
         };
         use memory::Extensions;
         use winapi::ddraw::*;
-        pub unsafe fn DirectDrawCreate(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn DirectDrawCreate(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let lpGuid = <Option<&GUID>>::from_stack(mem, esp + 4u32);
-            let lplpDD = <Option<&mut u32>>::from_stack(mem, esp + 8u32);
-            let pUnkOuter = <u32>::from_stack(mem, esp + 12u32);
-            winapi::ddraw::DirectDrawCreate(machine, lpGuid, lplpDD, pUnkOuter).to_raw()
+            let lpGuid = <Option<&GUID>>::from_stack(mem, stack_args + 0u32);
+            let lplpDD = <Option<&mut u32>>::from_stack(mem, stack_args + 4u32);
+            let pUnkOuter = <u32>::from_stack(mem, stack_args + 8u32);
+            let __trace_context = if crate::trace::enabled("ddraw/mod") {
+                Some(crate::trace::trace_begin(
+                    "ddraw/mod",
+                    "DirectDrawCreate",
+                    &[
+                        ("lpGuid", &lpGuid),
+                        ("lplpDD", &lplpDD),
+                        ("pUnkOuter", &pUnkOuter),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::ddraw::DirectDrawCreate(machine, lpGuid, lplpDD, pUnkOuter);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::ddraw::DirectDrawCreate_pos.0,
+                    winapi::ddraw::DirectDrawCreate_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn DirectDrawCreateClipper(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn DirectDrawCreateClipper(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let dwFlags = <u32>::from_stack(mem, esp + 4u32);
-            let lplpDDClipper = <Option<&mut u32>>::from_stack(mem, esp + 8u32);
-            let pUnkOuter = <u32>::from_stack(mem, esp + 12u32);
-            winapi::ddraw::DirectDrawCreateClipper(machine, dwFlags, lplpDDClipper, pUnkOuter)
-                .to_raw()
+            let dwFlags = <u32>::from_stack(mem, stack_args + 0u32);
+            let lplpDDClipper = <Option<&mut u32>>::from_stack(mem, stack_args + 4u32);
+            let pUnkOuter = <u32>::from_stack(mem, stack_args + 8u32);
+            let __trace_context = if crate::trace::enabled("ddraw/clipper") {
+                Some(crate::trace::trace_begin(
+                    "ddraw/clipper",
+                    "DirectDrawCreateClipper",
+                    &[
+                        ("dwFlags", &dwFlags),
+                        ("lplpDDClipper", &lplpDDClipper),
+                        ("pUnkOuter", &pUnkOuter),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result =
+                winapi::ddraw::DirectDrawCreateClipper(machine, dwFlags, lplpDDClipper, pUnkOuter);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::ddraw::DirectDrawCreateClipper_pos.0,
+                    winapi::ddraw::DirectDrawCreateClipper_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn DirectDrawCreateEx(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn DirectDrawCreateEx(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let lpGuid = <Option<&GUID>>::from_stack(mem, esp + 4u32);
-            let lplpDD = <Option<&mut u32>>::from_stack(mem, esp + 8u32);
-            let iid = <Option<&GUID>>::from_stack(mem, esp + 12u32);
-            let pUnkOuter = <u32>::from_stack(mem, esp + 16u32);
-            winapi::ddraw::DirectDrawCreateEx(machine, lpGuid, lplpDD, iid, pUnkOuter).to_raw()
+            let lpGuid = <Option<&GUID>>::from_stack(mem, stack_args + 0u32);
+            let lplpDD = <Option<&mut u32>>::from_stack(mem, stack_args + 4u32);
+            let iid = <Option<&GUID>>::from_stack(mem, stack_args + 8u32);
+            let pUnkOuter = <u32>::from_stack(mem, stack_args + 12u32);
+            let __trace_context = if crate::trace::enabled("ddraw/mod") {
+                Some(crate::trace::trace_begin(
+                    "ddraw/mod",
+                    "DirectDrawCreateEx",
+                    &[
+                        ("lpGuid", &lpGuid),
+                        ("lplpDD", &lplpDD),
+                        ("iid", &iid),
+                        ("pUnkOuter", &pUnkOuter),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::ddraw::DirectDrawCreateEx(machine, lpGuid, lplpDD, iid, pUnkOuter);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::ddraw::DirectDrawCreateEx_pos.0,
+                    winapi::ddraw::DirectDrawCreateEx_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn IDirectDraw2_CreateSurface(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn IDirectDraw2_CreateSurface(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let this = <u32>::from_stack(mem, esp + 4u32);
-            let desc = <Option<&DDSURFACEDESC>>::from_stack(mem, esp + 8u32);
-            let lplpDDSurface = <Option<&mut u32>>::from_stack(mem, esp + 12u32);
-            let pUnkOuter = <u32>::from_stack(mem, esp + 16u32);
-            winapi::ddraw::IDirectDraw2::CreateSurface(
+            let this = <u32>::from_stack(mem, stack_args + 0u32);
+            let desc = <Option<&DDSURFACEDESC>>::from_stack(mem, stack_args + 4u32);
+            let lplpDDSurface = <Option<&mut u32>>::from_stack(mem, stack_args + 8u32);
+            let pUnkOuter = <u32>::from_stack(mem, stack_args + 12u32);
+            let __trace_context = if crate::trace::enabled("ddraw/ddraw2") {
+                Some(crate::trace::trace_begin(
+                    "ddraw/ddraw2",
+                    "IDirectDraw2::CreateSurface",
+                    &[
+                        ("this", &this),
+                        ("desc", &desc),
+                        ("lplpDDSurface", &lplpDDSurface),
+                        ("pUnkOuter", &pUnkOuter),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::ddraw::IDirectDraw2::CreateSurface(
                 machine,
                 this,
                 desc,
                 lplpDDSurface,
                 pUnkOuter,
-            )
-            .to_raw()
-        }
-        pub unsafe fn IDirectDraw2_EnumDisplayModes(machine: &mut Machine, esp: u32) -> u32 {
-            let mem = machine.mem().detach();
-            let this = <u32>::from_stack(mem, esp + 4u32);
-            let dwFlags = <u32>::from_stack(mem, esp + 8u32);
-            let lpSurfaceDesc = <Option<&DDSURFACEDESC>>::from_stack(mem, esp + 12u32);
-            let lpContext = <u32>::from_stack(mem, esp + 16u32);
-            let lpEnumCallback = <u32>::from_stack(mem, esp + 20u32);
-            #[cfg(feature = "x86-emu")]
-            {
-                let m: *mut Machine = machine;
-                let result = async move {
-                    use memory::Extensions;
-                    let machine = unsafe { &mut *m };
-                    let result = winapi::ddraw::IDirectDraw2::EnumDisplayModes(
-                        machine,
-                        this,
-                        dwFlags,
-                        lpSurfaceDesc,
-                        lpContext,
-                        lpEnumCallback,
-                    )
-                    .await;
-                    let cpu = &mut machine.emu.x86.cpu_mut();
-                    cpu.regs.eip = x86::ops::pop(cpu, machine.emu.memory.mem());
-                    *cpu.regs.get32_mut(x86::Register::ESP) += 20u32;
-                    cpu.regs.set32(x86::Register::EAX, result.to_raw());
-                };
-                machine
-                    .emu
-                    .x86
-                    .cpu_mut()
-                    .call_async(machine.emu.memory.mem(), Box::pin(result));
-                0
+            );
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::ddraw::IDirectDraw2::CreateSurface_pos.0,
+                    winapi::ddraw::IDirectDraw2::CreateSurface_pos.1,
+                    &result,
+                );
             }
-            #[cfg(any(feature = "x86-64", feature = "x86-unicorn"))]
-            {
-                let pin = std::pin::pin!(winapi::ddraw::IDirectDraw2::EnumDisplayModes(
+            result.to_raw()
+        }
+        pub unsafe fn IDirectDraw2_EnumDisplayModes(
+            machine: &mut Machine,
+            stack_args: u32,
+        ) -> std::pin::Pin<Box<dyn std::future::Future<Output = u32>>> {
+            let mem = machine.mem().detach();
+            let this = <u32>::from_stack(mem, stack_args + 0u32);
+            let dwFlags = <u32>::from_stack(mem, stack_args + 4u32);
+            let lpSurfaceDesc = <Option<&DDSURFACEDESC>>::from_stack(mem, stack_args + 8u32);
+            let lpContext = <u32>::from_stack(mem, stack_args + 12u32);
+            let lpEnumCallback = <u32>::from_stack(mem, stack_args + 16u32);
+            let __trace_context = if crate::trace::enabled("ddraw/ddraw2") {
+                Some(crate::trace::trace_begin(
+                    "ddraw/ddraw2",
+                    "IDirectDraw2::EnumDisplayModes",
+                    &[
+                        ("this", &this),
+                        ("dwFlags", &dwFlags),
+                        ("lpSurfaceDesc", &lpSurfaceDesc),
+                        ("lpContext", &lpContext),
+                        ("lpEnumCallback", &lpEnumCallback),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let machine: *mut Machine = machine;
+            Box::pin(async move {
+                let machine = unsafe { &mut *machine };
+                let result = winapi::ddraw::IDirectDraw2::EnumDisplayModes(
                     machine,
                     this,
                     dwFlags,
                     lpSurfaceDesc,
                     lpContext,
-                    lpEnumCallback
-                ));
-                crate::shims::call_sync(pin).to_raw()
+                    lpEnumCallback,
+                )
+                .await;
+                if let Some(__trace_context) = __trace_context {
+                    crate::trace::trace_return(
+                        &__trace_context,
+                        winapi::ddraw::IDirectDraw2::EnumDisplayModes_pos.0,
+                        winapi::ddraw::IDirectDraw2::EnumDisplayModes_pos.1,
+                        &result,
+                    );
+                }
+                result.to_raw()
+            })
+        }
+        pub unsafe fn IDirectDraw2_GetDisplayMode(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let this = <u32>::from_stack(mem, stack_args + 0u32);
+            let lpDDSurfaceDesc = <Option<&mut DDSURFACEDESC>>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("ddraw/ddraw2") {
+                Some(crate::trace::trace_begin(
+                    "ddraw/ddraw2",
+                    "IDirectDraw2::GetDisplayMode",
+                    &[("this", &this), ("lpDDSurfaceDesc", &lpDDSurfaceDesc)],
+                ))
+            } else {
+                None
+            };
+            let result =
+                winapi::ddraw::IDirectDraw2::GetDisplayMode(machine, this, lpDDSurfaceDesc);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::ddraw::IDirectDraw2::GetDisplayMode_pos.0,
+                    winapi::ddraw::IDirectDraw2::GetDisplayMode_pos.1,
+                    &result,
+                );
             }
+            result.to_raw()
         }
-        pub unsafe fn IDirectDraw2_GetDisplayMode(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn IDirectDraw2_QueryInterface(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let this = <u32>::from_stack(mem, esp + 4u32);
-            let lpDDSurfaceDesc = <Option<&mut DDSURFACEDESC>>::from_stack(mem, esp + 8u32);
-            winapi::ddraw::IDirectDraw2::GetDisplayMode(machine, this, lpDDSurfaceDesc).to_raw()
+            let this = <u32>::from_stack(mem, stack_args + 0u32);
+            let riid = <Option<&GUID>>::from_stack(mem, stack_args + 4u32);
+            let ppvObject = <u32>::from_stack(mem, stack_args + 8u32);
+            let __trace_context = if crate::trace::enabled("ddraw/ddraw2") {
+                Some(crate::trace::trace_begin(
+                    "ddraw/ddraw2",
+                    "IDirectDraw2::QueryInterface",
+                    &[("this", &this), ("riid", &riid), ("ppvObject", &ppvObject)],
+                ))
+            } else {
+                None
+            };
+            let result =
+                winapi::ddraw::IDirectDraw2::QueryInterface(machine, this, riid, ppvObject);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::ddraw::IDirectDraw2::QueryInterface_pos.0,
+                    winapi::ddraw::IDirectDraw2::QueryInterface_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn IDirectDraw2_QueryInterface(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn IDirectDraw2_Release(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let this = <u32>::from_stack(mem, esp + 4u32);
-            let riid = <Option<&GUID>>::from_stack(mem, esp + 8u32);
-            let ppvObject = <u32>::from_stack(mem, esp + 12u32);
-            winapi::ddraw::IDirectDraw2::QueryInterface(machine, this, riid, ppvObject).to_raw()
+            let this = <u32>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("ddraw/ddraw2") {
+                Some(crate::trace::trace_begin(
+                    "ddraw/ddraw2",
+                    "IDirectDraw2::Release",
+                    &[("this", &this)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::ddraw::IDirectDraw2::Release(machine, this);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::ddraw::IDirectDraw2::Release_pos.0,
+                    winapi::ddraw::IDirectDraw2::Release_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn IDirectDraw2_Release(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn IDirectDraw2_SetDisplayMode(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let this = <u32>::from_stack(mem, esp + 4u32);
-            winapi::ddraw::IDirectDraw2::Release(machine, this).to_raw()
+            let this = <u32>::from_stack(mem, stack_args + 0u32);
+            let width = <u32>::from_stack(mem, stack_args + 4u32);
+            let height = <u32>::from_stack(mem, stack_args + 8u32);
+            let bpp = <u32>::from_stack(mem, stack_args + 12u32);
+            let __trace_context = if crate::trace::enabled("ddraw/ddraw2") {
+                Some(crate::trace::trace_begin(
+                    "ddraw/ddraw2",
+                    "IDirectDraw2::SetDisplayMode",
+                    &[
+                        ("this", &this),
+                        ("width", &width),
+                        ("height", &height),
+                        ("bpp", &bpp),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result =
+                winapi::ddraw::IDirectDraw2::SetDisplayMode(machine, this, width, height, bpp);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::ddraw::IDirectDraw2::SetDisplayMode_pos.0,
+                    winapi::ddraw::IDirectDraw2::SetDisplayMode_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn IDirectDraw2_SetDisplayMode(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn IDirectDraw7_CreatePalette(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let this = <u32>::from_stack(mem, esp + 4u32);
-            let width = <u32>::from_stack(mem, esp + 8u32);
-            let height = <u32>::from_stack(mem, esp + 12u32);
-            let bpp = <u32>::from_stack(mem, esp + 16u32);
-            winapi::ddraw::IDirectDraw2::SetDisplayMode(machine, this, width, height, bpp).to_raw()
-        }
-        pub unsafe fn IDirectDraw7_CreatePalette(machine: &mut Machine, esp: u32) -> u32 {
-            let mem = machine.mem().detach();
-            let this = <u32>::from_stack(mem, esp + 4u32);
-            let flags = <Result<DDPCAPS, u32>>::from_stack(mem, esp + 8u32);
-            let entries = <u32>::from_stack(mem, esp + 12u32);
-            let lplpPalette = <u32>::from_stack(mem, esp + 16u32);
-            let unused = <u32>::from_stack(mem, esp + 20u32);
-            winapi::ddraw::IDirectDraw7::CreatePalette(
+            let this = <u32>::from_stack(mem, stack_args + 0u32);
+            let flags = <Result<DDPCAPS, u32>>::from_stack(mem, stack_args + 4u32);
+            let entries = <u32>::from_stack(mem, stack_args + 8u32);
+            let lplpPalette = <u32>::from_stack(mem, stack_args + 12u32);
+            let unused = <u32>::from_stack(mem, stack_args + 16u32);
+            let __trace_context = if crate::trace::enabled("ddraw/ddraw7") {
+                Some(crate::trace::trace_begin(
+                    "ddraw/ddraw7",
+                    "IDirectDraw7::CreatePalette",
+                    &[
+                        ("this", &this),
+                        ("flags", &flags),
+                        ("entries", &entries),
+                        ("lplpPalette", &lplpPalette),
+                        ("unused", &unused),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::ddraw::IDirectDraw7::CreatePalette(
                 machine,
                 this,
                 flags,
                 entries,
                 lplpPalette,
                 unused,
-            )
-            .to_raw()
+            );
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::ddraw::IDirectDraw7::CreatePalette_pos.0,
+                    winapi::ddraw::IDirectDraw7::CreatePalette_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn IDirectDraw7_CreateSurface(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn IDirectDraw7_CreateSurface(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let this = <u32>::from_stack(mem, esp + 4u32);
-            let desc = <Option<&DDSURFACEDESC2>>::from_stack(mem, esp + 8u32);
-            let lpDirectDrawSurface7 = <Option<&mut u32>>::from_stack(mem, esp + 12u32);
-            let unused = <u32>::from_stack(mem, esp + 16u32);
-            winapi::ddraw::IDirectDraw7::CreateSurface(
+            let this = <u32>::from_stack(mem, stack_args + 0u32);
+            let desc = <Option<&DDSURFACEDESC2>>::from_stack(mem, stack_args + 4u32);
+            let lpDirectDrawSurface7 = <Option<&mut u32>>::from_stack(mem, stack_args + 8u32);
+            let unused = <u32>::from_stack(mem, stack_args + 12u32);
+            let __trace_context = if crate::trace::enabled("ddraw/ddraw7") {
+                Some(crate::trace::trace_begin(
+                    "ddraw/ddraw7",
+                    "IDirectDraw7::CreateSurface",
+                    &[
+                        ("this", &this),
+                        ("desc", &desc),
+                        ("lpDirectDrawSurface7", &lpDirectDrawSurface7),
+                        ("unused", &unused),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::ddraw::IDirectDraw7::CreateSurface(
                 machine,
                 this,
                 desc,
                 lpDirectDrawSurface7,
                 unused,
-            )
-            .to_raw()
-        }
-        pub unsafe fn IDirectDraw7_EnumDisplayModes(machine: &mut Machine, esp: u32) -> u32 {
-            let mem = machine.mem().detach();
-            let this = <u32>::from_stack(mem, esp + 4u32);
-            let dwFlags = <u32>::from_stack(mem, esp + 8u32);
-            let lpSurfaceDesc = <Option<&DDSURFACEDESC2>>::from_stack(mem, esp + 12u32);
-            let lpContext = <u32>::from_stack(mem, esp + 16u32);
-            let lpEnumCallback = <u32>::from_stack(mem, esp + 20u32);
-            #[cfg(feature = "x86-emu")]
-            {
-                let m: *mut Machine = machine;
-                let result = async move {
-                    use memory::Extensions;
-                    let machine = unsafe { &mut *m };
-                    let result = winapi::ddraw::IDirectDraw7::EnumDisplayModes(
-                        machine,
-                        this,
-                        dwFlags,
-                        lpSurfaceDesc,
-                        lpContext,
-                        lpEnumCallback,
-                    )
-                    .await;
-                    let cpu = &mut machine.emu.x86.cpu_mut();
-                    cpu.regs.eip = x86::ops::pop(cpu, machine.emu.memory.mem());
-                    *cpu.regs.get32_mut(x86::Register::ESP) += 20u32;
-                    cpu.regs.set32(x86::Register::EAX, result.to_raw());
-                };
-                machine
-                    .emu
-                    .x86
-                    .cpu_mut()
-                    .call_async(machine.emu.memory.mem(), Box::pin(result));
-                0
+            );
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::ddraw::IDirectDraw7::CreateSurface_pos.0,
+                    winapi::ddraw::IDirectDraw7::CreateSurface_pos.1,
+                    &result,
+                );
             }
-            #[cfg(any(feature = "x86-64", feature = "x86-unicorn"))]
-            {
-                let pin = std::pin::pin!(winapi::ddraw::IDirectDraw7::EnumDisplayModes(
+            result.to_raw()
+        }
+        pub unsafe fn IDirectDraw7_EnumDisplayModes(
+            machine: &mut Machine,
+            stack_args: u32,
+        ) -> std::pin::Pin<Box<dyn std::future::Future<Output = u32>>> {
+            let mem = machine.mem().detach();
+            let this = <u32>::from_stack(mem, stack_args + 0u32);
+            let dwFlags = <u32>::from_stack(mem, stack_args + 4u32);
+            let lpSurfaceDesc = <Option<&DDSURFACEDESC2>>::from_stack(mem, stack_args + 8u32);
+            let lpContext = <u32>::from_stack(mem, stack_args + 12u32);
+            let lpEnumCallback = <u32>::from_stack(mem, stack_args + 16u32);
+            let __trace_context = if crate::trace::enabled("ddraw/ddraw7") {
+                Some(crate::trace::trace_begin(
+                    "ddraw/ddraw7",
+                    "IDirectDraw7::EnumDisplayModes",
+                    &[
+                        ("this", &this),
+                        ("dwFlags", &dwFlags),
+                        ("lpSurfaceDesc", &lpSurfaceDesc),
+                        ("lpContext", &lpContext),
+                        ("lpEnumCallback", &lpEnumCallback),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let machine: *mut Machine = machine;
+            Box::pin(async move {
+                let machine = unsafe { &mut *machine };
+                let result = winapi::ddraw::IDirectDraw7::EnumDisplayModes(
                     machine,
                     this,
                     dwFlags,
                     lpSurfaceDesc,
                     lpContext,
-                    lpEnumCallback
-                ));
-                crate::shims::call_sync(pin).to_raw()
+                    lpEnumCallback,
+                )
+                .await;
+                if let Some(__trace_context) = __trace_context {
+                    crate::trace::trace_return(
+                        &__trace_context,
+                        winapi::ddraw::IDirectDraw7::EnumDisplayModes_pos.0,
+                        winapi::ddraw::IDirectDraw7::EnumDisplayModes_pos.1,
+                        &result,
+                    );
+                }
+                result.to_raw()
+            })
+        }
+        pub unsafe fn IDirectDraw7_GetDisplayMode(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let this = <u32>::from_stack(mem, stack_args + 0u32);
+            let lpDDSurfaceDesc = <Option<&mut DDSURFACEDESC2>>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("ddraw/ddraw7") {
+                Some(crate::trace::trace_begin(
+                    "ddraw/ddraw7",
+                    "IDirectDraw7::GetDisplayMode",
+                    &[("this", &this), ("lpDDSurfaceDesc", &lpDDSurfaceDesc)],
+                ))
+            } else {
+                None
+            };
+            let result =
+                winapi::ddraw::IDirectDraw7::GetDisplayMode(machine, this, lpDDSurfaceDesc);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::ddraw::IDirectDraw7::GetDisplayMode_pos.0,
+                    winapi::ddraw::IDirectDraw7::GetDisplayMode_pos.1,
+                    &result,
+                );
             }
+            result.to_raw()
         }
-        pub unsafe fn IDirectDraw7_GetDisplayMode(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn IDirectDraw7_Release(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let this = <u32>::from_stack(mem, esp + 4u32);
-            let lpDDSurfaceDesc = <Option<&mut DDSURFACEDESC2>>::from_stack(mem, esp + 8u32);
-            winapi::ddraw::IDirectDraw7::GetDisplayMode(machine, this, lpDDSurfaceDesc).to_raw()
+            let this = <u32>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("ddraw/ddraw7") {
+                Some(crate::trace::trace_begin(
+                    "ddraw/ddraw7",
+                    "IDirectDraw7::Release",
+                    &[("this", &this)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::ddraw::IDirectDraw7::Release(machine, this);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::ddraw::IDirectDraw7::Release_pos.0,
+                    winapi::ddraw::IDirectDraw7::Release_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn IDirectDraw7_Release(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn IDirectDraw7_RestoreDisplayMode(
+            machine: &mut Machine,
+            stack_args: u32,
+        ) -> u32 {
             let mem = machine.mem().detach();
-            let this = <u32>::from_stack(mem, esp + 4u32);
-            winapi::ddraw::IDirectDraw7::Release(machine, this).to_raw()
+            let this = <u32>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("ddraw/ddraw7") {
+                Some(crate::trace::trace_begin(
+                    "ddraw/ddraw7",
+                    "IDirectDraw7::RestoreDisplayMode",
+                    &[("this", &this)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::ddraw::IDirectDraw7::RestoreDisplayMode(machine, this);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::ddraw::IDirectDraw7::RestoreDisplayMode_pos.0,
+                    winapi::ddraw::IDirectDraw7::RestoreDisplayMode_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn IDirectDraw7_RestoreDisplayMode(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn IDirectDraw7_SetCooperativeLevel(
+            machine: &mut Machine,
+            stack_args: u32,
+        ) -> u32 {
             let mem = machine.mem().detach();
-            let this = <u32>::from_stack(mem, esp + 4u32);
-            winapi::ddraw::IDirectDraw7::RestoreDisplayMode(machine, this).to_raw()
+            let this = <u32>::from_stack(mem, stack_args + 0u32);
+            let hwnd = <HWND>::from_stack(mem, stack_args + 4u32);
+            let flags = <Result<DDSCL, u32>>::from_stack(mem, stack_args + 8u32);
+            let __trace_context = if crate::trace::enabled("ddraw/ddraw7") {
+                Some(crate::trace::trace_begin(
+                    "ddraw/ddraw7",
+                    "IDirectDraw7::SetCooperativeLevel",
+                    &[("this", &this), ("hwnd", &hwnd), ("flags", &flags)],
+                ))
+            } else {
+                None
+            };
+            let result =
+                winapi::ddraw::IDirectDraw7::SetCooperativeLevel(machine, this, hwnd, flags);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::ddraw::IDirectDraw7::SetCooperativeLevel_pos.0,
+                    winapi::ddraw::IDirectDraw7::SetCooperativeLevel_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn IDirectDraw7_SetCooperativeLevel(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn IDirectDraw7_SetDisplayMode(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let this = <u32>::from_stack(mem, esp + 4u32);
-            let hwnd = <HWND>::from_stack(mem, esp + 8u32);
-            let flags = <Result<DDSCL, u32>>::from_stack(mem, esp + 12u32);
-            winapi::ddraw::IDirectDraw7::SetCooperativeLevel(machine, this, hwnd, flags).to_raw()
-        }
-        pub unsafe fn IDirectDraw7_SetDisplayMode(machine: &mut Machine, esp: u32) -> u32 {
-            let mem = machine.mem().detach();
-            let this = <u32>::from_stack(mem, esp + 4u32);
-            let width = <u32>::from_stack(mem, esp + 8u32);
-            let height = <u32>::from_stack(mem, esp + 12u32);
-            let bpp = <u32>::from_stack(mem, esp + 16u32);
-            let refresh = <u32>::from_stack(mem, esp + 20u32);
-            let flags = <u32>::from_stack(mem, esp + 24u32);
-            winapi::ddraw::IDirectDraw7::SetDisplayMode(
+            let this = <u32>::from_stack(mem, stack_args + 0u32);
+            let width = <u32>::from_stack(mem, stack_args + 4u32);
+            let height = <u32>::from_stack(mem, stack_args + 8u32);
+            let bpp = <u32>::from_stack(mem, stack_args + 12u32);
+            let refresh = <u32>::from_stack(mem, stack_args + 16u32);
+            let flags = <u32>::from_stack(mem, stack_args + 20u32);
+            let __trace_context = if crate::trace::enabled("ddraw/ddraw7") {
+                Some(crate::trace::trace_begin(
+                    "ddraw/ddraw7",
+                    "IDirectDraw7::SetDisplayMode",
+                    &[
+                        ("this", &this),
+                        ("width", &width),
+                        ("height", &height),
+                        ("bpp", &bpp),
+                        ("refresh", &refresh),
+                        ("flags", &flags),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::ddraw::IDirectDraw7::SetDisplayMode(
                 machine, this, width, height, bpp, refresh, flags,
-            )
-            .to_raw()
+            );
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::ddraw::IDirectDraw7::SetDisplayMode_pos.0,
+                    winapi::ddraw::IDirectDraw7::SetDisplayMode_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn IDirectDraw7_WaitForVerticalBlank(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn IDirectDraw7_WaitForVerticalBlank(
+            machine: &mut Machine,
+            stack_args: u32,
+        ) -> u32 {
             let mem = machine.mem().detach();
-            let this = <u32>::from_stack(mem, esp + 4u32);
-            let flags = <u32>::from_stack(mem, esp + 8u32);
-            let _unused = <u32>::from_stack(mem, esp + 12u32);
-            winapi::ddraw::IDirectDraw7::WaitForVerticalBlank(machine, this, flags, _unused)
-                .to_raw()
+            let this = <u32>::from_stack(mem, stack_args + 0u32);
+            let flags = <u32>::from_stack(mem, stack_args + 4u32);
+            let _unused = <u32>::from_stack(mem, stack_args + 8u32);
+            let __trace_context = if crate::trace::enabled("ddraw/ddraw7") {
+                Some(crate::trace::trace_begin(
+                    "ddraw/ddraw7",
+                    "IDirectDraw7::WaitForVerticalBlank",
+                    &[("this", &this), ("flags", &flags), ("unused", &_unused)],
+                ))
+            } else {
+                None
+            };
+            let result =
+                winapi::ddraw::IDirectDraw7::WaitForVerticalBlank(machine, this, flags, _unused);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::ddraw::IDirectDraw7::WaitForVerticalBlank_pos.0,
+                    winapi::ddraw::IDirectDraw7::WaitForVerticalBlank_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn IDirectDrawClipper_Release(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn IDirectDrawClipper_Release(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let this = <u32>::from_stack(mem, esp + 4u32);
-            winapi::ddraw::IDirectDrawClipper::Release(machine, this).to_raw()
+            let this = <u32>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("ddraw/clipper") {
+                Some(crate::trace::trace_begin(
+                    "ddraw/clipper",
+                    "IDirectDrawClipper::Release",
+                    &[("this", &this)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::ddraw::IDirectDrawClipper::Release(machine, this);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::ddraw::IDirectDrawClipper::Release_pos.0,
+                    winapi::ddraw::IDirectDrawClipper::Release_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn IDirectDrawClipper_SetHWnd(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn IDirectDrawClipper_SetHWnd(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let this = <u32>::from_stack(mem, esp + 4u32);
-            let unused = <u32>::from_stack(mem, esp + 8u32);
-            let hwnd = <HWND>::from_stack(mem, esp + 12u32);
-            winapi::ddraw::IDirectDrawClipper::SetHWnd(machine, this, unused, hwnd).to_raw()
+            let this = <u32>::from_stack(mem, stack_args + 0u32);
+            let unused = <u32>::from_stack(mem, stack_args + 4u32);
+            let hwnd = <HWND>::from_stack(mem, stack_args + 8u32);
+            let __trace_context = if crate::trace::enabled("ddraw/clipper") {
+                Some(crate::trace::trace_begin(
+                    "ddraw/clipper",
+                    "IDirectDrawClipper::SetHWnd",
+                    &[("this", &this), ("unused", &unused), ("hwnd", &hwnd)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::ddraw::IDirectDrawClipper::SetHWnd(machine, this, unused, hwnd);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::ddraw::IDirectDrawClipper::SetHWnd_pos.0,
+                    winapi::ddraw::IDirectDrawClipper::SetHWnd_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn IDirectDrawPalette_Release(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn IDirectDrawPalette_Release(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let this = <u32>::from_stack(mem, esp + 4u32);
-            winapi::ddraw::IDirectDrawPalette::Release(machine, this).to_raw()
+            let this = <u32>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("ddraw/palette") {
+                Some(crate::trace::trace_begin(
+                    "ddraw/palette",
+                    "IDirectDrawPalette::Release",
+                    &[("this", &this)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::ddraw::IDirectDrawPalette::Release(machine, this);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::ddraw::IDirectDrawPalette::Release_pos.0,
+                    winapi::ddraw::IDirectDrawPalette::Release_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn IDirectDrawPalette_SetEntries(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn IDirectDrawPalette_SetEntries(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let this = <u32>::from_stack(mem, esp + 4u32);
-            let unused = <u32>::from_stack(mem, esp + 8u32);
-            let start = <u32>::from_stack(mem, esp + 12u32);
-            let count = <u32>::from_stack(mem, esp + 16u32);
-            let entries = <u32>::from_stack(mem, esp + 20u32);
-            winapi::ddraw::IDirectDrawPalette::SetEntries(
+            let this = <u32>::from_stack(mem, stack_args + 0u32);
+            let unused = <u32>::from_stack(mem, stack_args + 4u32);
+            let start = <u32>::from_stack(mem, stack_args + 8u32);
+            let count = <u32>::from_stack(mem, stack_args + 12u32);
+            let entries = <u32>::from_stack(mem, stack_args + 16u32);
+            let __trace_context = if crate::trace::enabled("ddraw/palette") {
+                Some(crate::trace::trace_begin(
+                    "ddraw/palette",
+                    "IDirectDrawPalette::SetEntries",
+                    &[
+                        ("this", &this),
+                        ("unused", &unused),
+                        ("start", &start),
+                        ("count", &count),
+                        ("entries", &entries),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::ddraw::IDirectDrawPalette::SetEntries(
                 machine, this, unused, start, count, entries,
-            )
-            .to_raw()
+            );
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::ddraw::IDirectDrawPalette::SetEntries_pos.0,
+                    winapi::ddraw::IDirectDrawPalette::SetEntries_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
         pub unsafe fn IDirectDrawSurface2_GetAttachedSurface(
             machine: &mut Machine,
-            esp: u32,
+            stack_args: u32,
         ) -> u32 {
             let mem = machine.mem().detach();
-            let this = <u32>::from_stack(mem, esp + 4u32);
-            let lpDDSCaps = <Option<&DDSCAPS>>::from_stack(mem, esp + 8u32);
-            let lpDirectDrawSurface = <Option<&mut u32>>::from_stack(mem, esp + 12u32);
-            winapi::ddraw::IDirectDrawSurface2::GetAttachedSurface(
+            let this = <u32>::from_stack(mem, stack_args + 0u32);
+            let lpDDSCaps = <Option<&DDSCAPS>>::from_stack(mem, stack_args + 4u32);
+            let lpDirectDrawSurface = <Option<&mut u32>>::from_stack(mem, stack_args + 8u32);
+            let __trace_context = if crate::trace::enabled("ddraw/ddraw2") {
+                Some(crate::trace::trace_begin(
+                    "ddraw/ddraw2",
+                    "IDirectDrawSurface2::GetAttachedSurface",
+                    &[
+                        ("this", &this),
+                        ("lpDDSCaps", &lpDDSCaps),
+                        ("lpDirectDrawSurface", &lpDirectDrawSurface),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::ddraw::IDirectDrawSurface2::GetAttachedSurface(
                 machine,
                 this,
                 lpDDSCaps,
                 lpDirectDrawSurface,
-            )
-            .to_raw()
+            );
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::ddraw::IDirectDrawSurface2::GetAttachedSurface_pos.0,
+                    winapi::ddraw::IDirectDrawSurface2::GetAttachedSurface_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn IDirectDrawSurface2_GetCaps(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn IDirectDrawSurface2_GetCaps(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let this = <u32>::from_stack(mem, esp + 4u32);
-            let lpDDSCAPS = <Option<&mut DDSCAPS>>::from_stack(mem, esp + 8u32);
-            winapi::ddraw::IDirectDrawSurface2::GetCaps(machine, this, lpDDSCAPS).to_raw()
+            let this = <u32>::from_stack(mem, stack_args + 0u32);
+            let lpDDSCAPS = <Option<&mut DDSCAPS>>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("ddraw/ddraw2") {
+                Some(crate::trace::trace_begin(
+                    "ddraw/ddraw2",
+                    "IDirectDrawSurface2::GetCaps",
+                    &[("this", &this), ("lpDDSCAPS", &lpDDSCAPS)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::ddraw::IDirectDrawSurface2::GetCaps(machine, this, lpDDSCAPS);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::ddraw::IDirectDrawSurface2::GetCaps_pos.0,
+                    winapi::ddraw::IDirectDrawSurface2::GetCaps_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn IDirectDrawSurface2_GetSurfaceDesc(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn IDirectDrawSurface2_GetSurfaceDesc(
+            machine: &mut Machine,
+            stack_args: u32,
+        ) -> u32 {
             let mem = machine.mem().detach();
-            let this = <u32>::from_stack(mem, esp + 4u32);
-            let desc = <Option<&mut DDSURFACEDESC>>::from_stack(mem, esp + 8u32);
-            winapi::ddraw::IDirectDrawSurface2::GetSurfaceDesc(machine, this, desc).to_raw()
+            let this = <u32>::from_stack(mem, stack_args + 0u32);
+            let desc = <Option<&mut DDSURFACEDESC>>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("ddraw/ddraw2") {
+                Some(crate::trace::trace_begin(
+                    "ddraw/ddraw2",
+                    "IDirectDrawSurface2::GetSurfaceDesc",
+                    &[("this", &this), ("desc", &desc)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::ddraw::IDirectDrawSurface2::GetSurfaceDesc(machine, this, desc);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::ddraw::IDirectDrawSurface2::GetSurfaceDesc_pos.0,
+                    winapi::ddraw::IDirectDrawSurface2::GetSurfaceDesc_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn IDirectDrawSurface2_Lock(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn IDirectDrawSurface2_Lock(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let this = <u32>::from_stack(mem, esp + 4u32);
-            let rect = <Option<&RECT>>::from_stack(mem, esp + 8u32);
-            let desc = <Option<&mut DDSURFACEDESC>>::from_stack(mem, esp + 12u32);
-            let flags = <Result<DDLOCK, u32>>::from_stack(mem, esp + 16u32);
-            let event = <u32>::from_stack(mem, esp + 20u32);
-            winapi::ddraw::IDirectDrawSurface2::Lock(machine, this, rect, desc, flags, event)
-                .to_raw()
+            let this = <u32>::from_stack(mem, stack_args + 0u32);
+            let rect = <Option<&RECT>>::from_stack(mem, stack_args + 4u32);
+            let desc = <Option<&mut DDSURFACEDESC>>::from_stack(mem, stack_args + 8u32);
+            let flags = <Result<DDLOCK, u32>>::from_stack(mem, stack_args + 12u32);
+            let event = <u32>::from_stack(mem, stack_args + 16u32);
+            let __trace_context = if crate::trace::enabled("ddraw/ddraw2") {
+                Some(crate::trace::trace_begin(
+                    "ddraw/ddraw2",
+                    "IDirectDrawSurface2::Lock",
+                    &[
+                        ("this", &this),
+                        ("rect", &rect),
+                        ("desc", &desc),
+                        ("flags", &flags),
+                        ("event", &event),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result =
+                winapi::ddraw::IDirectDrawSurface2::Lock(machine, this, rect, desc, flags, event);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::ddraw::IDirectDrawSurface2::Lock_pos.0,
+                    winapi::ddraw::IDirectDrawSurface2::Lock_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn IDirectDrawSurface2_Release(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn IDirectDrawSurface2_Release(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let this = <u32>::from_stack(mem, esp + 4u32);
-            winapi::ddraw::IDirectDrawSurface2::Release(machine, this).to_raw()
+            let this = <u32>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("ddraw/ddraw2") {
+                Some(crate::trace::trace_begin(
+                    "ddraw/ddraw2",
+                    "IDirectDrawSurface2::Release",
+                    &[("this", &this)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::ddraw::IDirectDrawSurface2::Release(machine, this);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::ddraw::IDirectDrawSurface2::Release_pos.0,
+                    winapi::ddraw::IDirectDrawSurface2::Release_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn IDirectDrawSurface2_Unlock(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn IDirectDrawSurface2_Unlock(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let this = <u32>::from_stack(mem, esp + 4u32);
-            let ptr = <u32>::from_stack(mem, esp + 8u32);
-            winapi::ddraw::IDirectDrawSurface2::Unlock(machine, this, ptr).to_raw()
+            let this = <u32>::from_stack(mem, stack_args + 0u32);
+            let ptr = <u32>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("ddraw/ddraw2") {
+                Some(crate::trace::trace_begin(
+                    "ddraw/ddraw2",
+                    "IDirectDrawSurface2::Unlock",
+                    &[("this", &this), ("ptr", &ptr)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::ddraw::IDirectDrawSurface2::Unlock(machine, this, ptr);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::ddraw::IDirectDrawSurface2::Unlock_pos.0,
+                    winapi::ddraw::IDirectDrawSurface2::Unlock_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn IDirectDrawSurface7_Blt(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn IDirectDrawSurface7_Blt(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let this = <u32>::from_stack(mem, esp + 4u32);
-            let lpDstRect = <Option<&RECT>>::from_stack(mem, esp + 8u32);
-            let lpSrc = <u32>::from_stack(mem, esp + 12u32);
-            let lpSrcRect = <Option<&RECT>>::from_stack(mem, esp + 16u32);
-            let flags = <Result<DDBLT, u32>>::from_stack(mem, esp + 20u32);
-            let lpDDBLTFX = <Option<&DDBLTFX>>::from_stack(mem, esp + 24u32);
-            winapi::ddraw::IDirectDrawSurface7::Blt(
+            let this = <u32>::from_stack(mem, stack_args + 0u32);
+            let lpDstRect = <Option<&RECT>>::from_stack(mem, stack_args + 4u32);
+            let lpSrc = <u32>::from_stack(mem, stack_args + 8u32);
+            let lpSrcRect = <Option<&RECT>>::from_stack(mem, stack_args + 12u32);
+            let flags = <Result<DDBLT, u32>>::from_stack(mem, stack_args + 16u32);
+            let lpDDBLTFX = <Option<&DDBLTFX>>::from_stack(mem, stack_args + 20u32);
+            let __trace_context = if crate::trace::enabled("ddraw/ddraw7") {
+                Some(crate::trace::trace_begin(
+                    "ddraw/ddraw7",
+                    "IDirectDrawSurface7::Blt",
+                    &[
+                        ("this", &this),
+                        ("lpDstRect", &lpDstRect),
+                        ("lpSrc", &lpSrc),
+                        ("lpSrcRect", &lpSrcRect),
+                        ("flags", &flags),
+                        ("lpDDBLTFX", &lpDDBLTFX),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::ddraw::IDirectDrawSurface7::Blt(
                 machine, this, lpDstRect, lpSrc, lpSrcRect, flags, lpDDBLTFX,
-            )
-            .to_raw()
+            );
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::ddraw::IDirectDrawSurface7::Blt_pos.0,
+                    winapi::ddraw::IDirectDrawSurface7::Blt_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn IDirectDrawSurface7_BltFast(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn IDirectDrawSurface7_BltFast(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let this = <u32>::from_stack(mem, esp + 4u32);
-            let x = <u32>::from_stack(mem, esp + 8u32);
-            let y = <u32>::from_stack(mem, esp + 12u32);
-            let lpSrc = <u32>::from_stack(mem, esp + 16u32);
-            let lpRect = <Option<&RECT>>::from_stack(mem, esp + 20u32);
-            let flags = <u32>::from_stack(mem, esp + 24u32);
-            winapi::ddraw::IDirectDrawSurface7::BltFast(machine, this, x, y, lpSrc, lpRect, flags)
-                .to_raw()
+            let this = <u32>::from_stack(mem, stack_args + 0u32);
+            let x = <u32>::from_stack(mem, stack_args + 4u32);
+            let y = <u32>::from_stack(mem, stack_args + 8u32);
+            let lpSrc = <u32>::from_stack(mem, stack_args + 12u32);
+            let lpRect = <Option<&RECT>>::from_stack(mem, stack_args + 16u32);
+            let flags = <u32>::from_stack(mem, stack_args + 20u32);
+            let __trace_context = if crate::trace::enabled("ddraw/ddraw7") {
+                Some(crate::trace::trace_begin(
+                    "ddraw/ddraw7",
+                    "IDirectDrawSurface7::BltFast",
+                    &[
+                        ("this", &this),
+                        ("x", &x),
+                        ("y", &y),
+                        ("lpSrc", &lpSrc),
+                        ("lpRect", &lpRect),
+                        ("flags", &flags),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::ddraw::IDirectDrawSurface7::BltFast(
+                machine, this, x, y, lpSrc, lpRect, flags,
+            );
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::ddraw::IDirectDrawSurface7::BltFast_pos.0,
+                    winapi::ddraw::IDirectDrawSurface7::BltFast_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn IDirectDrawSurface7_Flip(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn IDirectDrawSurface7_Flip(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let this = <u32>::from_stack(mem, esp + 4u32);
-            let lpSurf = <u32>::from_stack(mem, esp + 8u32);
-            let flags = <Result<DDFLIP, u32>>::from_stack(mem, esp + 12u32);
-            winapi::ddraw::IDirectDrawSurface7::Flip(machine, this, lpSurf, flags).to_raw()
+            let this = <u32>::from_stack(mem, stack_args + 0u32);
+            let lpSurf = <u32>::from_stack(mem, stack_args + 4u32);
+            let flags = <Result<DDFLIP, u32>>::from_stack(mem, stack_args + 8u32);
+            let __trace_context = if crate::trace::enabled("ddraw/ddraw7") {
+                Some(crate::trace::trace_begin(
+                    "ddraw/ddraw7",
+                    "IDirectDrawSurface7::Flip",
+                    &[("this", &this), ("lpSurf", &lpSurf), ("flags", &flags)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::ddraw::IDirectDrawSurface7::Flip(machine, this, lpSurf, flags);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::ddraw::IDirectDrawSurface7::Flip_pos.0,
+                    winapi::ddraw::IDirectDrawSurface7::Flip_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
         pub unsafe fn IDirectDrawSurface7_GetAttachedSurface(
             machine: &mut Machine,
-            esp: u32,
+            stack_args: u32,
         ) -> u32 {
             let mem = machine.mem().detach();
-            let this = <u32>::from_stack(mem, esp + 4u32);
-            let lpDDSCaps2 = <Option<&DDSCAPS2>>::from_stack(mem, esp + 8u32);
-            let lpDirectDrawSurface7 = <Option<&mut u32>>::from_stack(mem, esp + 12u32);
-            winapi::ddraw::IDirectDrawSurface7::GetAttachedSurface(
+            let this = <u32>::from_stack(mem, stack_args + 0u32);
+            let lpDDSCaps2 = <Option<&DDSCAPS2>>::from_stack(mem, stack_args + 4u32);
+            let lpDirectDrawSurface7 = <Option<&mut u32>>::from_stack(mem, stack_args + 8u32);
+            let __trace_context = if crate::trace::enabled("ddraw/ddraw7") {
+                Some(crate::trace::trace_begin(
+                    "ddraw/ddraw7",
+                    "IDirectDrawSurface7::GetAttachedSurface",
+                    &[
+                        ("this", &this),
+                        ("lpDDSCaps2", &lpDDSCaps2),
+                        ("lpDirectDrawSurface7", &lpDirectDrawSurface7),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::ddraw::IDirectDrawSurface7::GetAttachedSurface(
                 machine,
                 this,
                 lpDDSCaps2,
                 lpDirectDrawSurface7,
-            )
-            .to_raw()
+            );
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::ddraw::IDirectDrawSurface7::GetAttachedSurface_pos.0,
+                    winapi::ddraw::IDirectDrawSurface7::GetAttachedSurface_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn IDirectDrawSurface7_GetCaps(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn IDirectDrawSurface7_GetCaps(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let this = <u32>::from_stack(mem, esp + 4u32);
-            let lpDDSCAPS2 = <Option<&mut DDSCAPS2>>::from_stack(mem, esp + 8u32);
-            winapi::ddraw::IDirectDrawSurface7::GetCaps(machine, this, lpDDSCAPS2).to_raw()
+            let this = <u32>::from_stack(mem, stack_args + 0u32);
+            let lpDDSCAPS2 = <Option<&mut DDSCAPS2>>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("ddraw/ddraw7") {
+                Some(crate::trace::trace_begin(
+                    "ddraw/ddraw7",
+                    "IDirectDrawSurface7::GetCaps",
+                    &[("this", &this), ("lpDDSCAPS2", &lpDDSCAPS2)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::ddraw::IDirectDrawSurface7::GetCaps(machine, this, lpDDSCAPS2);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::ddraw::IDirectDrawSurface7::GetCaps_pos.0,
+                    winapi::ddraw::IDirectDrawSurface7::GetCaps_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn IDirectDrawSurface7_GetDC(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn IDirectDrawSurface7_GetDC(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let this = <u32>::from_stack(mem, esp + 4u32);
-            let lpHDC = <u32>::from_stack(mem, esp + 8u32);
-            winapi::ddraw::IDirectDrawSurface7::GetDC(machine, this, lpHDC).to_raw()
+            let this = <u32>::from_stack(mem, stack_args + 0u32);
+            let lpHDC = <u32>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("ddraw/ddraw7") {
+                Some(crate::trace::trace_begin(
+                    "ddraw/ddraw7",
+                    "IDirectDrawSurface7::GetDC",
+                    &[("this", &this), ("lpHDC", &lpHDC)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::ddraw::IDirectDrawSurface7::GetDC(machine, this, lpHDC);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::ddraw::IDirectDrawSurface7::GetDC_pos.0,
+                    winapi::ddraw::IDirectDrawSurface7::GetDC_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn IDirectDrawSurface7_GetPixelFormat(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn IDirectDrawSurface7_GetPixelFormat(
+            machine: &mut Machine,
+            stack_args: u32,
+        ) -> u32 {
             let mem = machine.mem().detach();
-            let this = <u32>::from_stack(mem, esp + 4u32);
-            let fmt = <Option<&mut DDPIXELFORMAT>>::from_stack(mem, esp + 8u32);
-            winapi::ddraw::IDirectDrawSurface7::GetPixelFormat(machine, this, fmt).to_raw()
+            let this = <u32>::from_stack(mem, stack_args + 0u32);
+            let fmt = <Option<&mut DDPIXELFORMAT>>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("ddraw/ddraw7") {
+                Some(crate::trace::trace_begin(
+                    "ddraw/ddraw7",
+                    "IDirectDrawSurface7::GetPixelFormat",
+                    &[("this", &this), ("fmt", &fmt)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::ddraw::IDirectDrawSurface7::GetPixelFormat(machine, this, fmt);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::ddraw::IDirectDrawSurface7::GetPixelFormat_pos.0,
+                    winapi::ddraw::IDirectDrawSurface7::GetPixelFormat_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn IDirectDrawSurface7_GetSurfaceDesc(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn IDirectDrawSurface7_GetSurfaceDesc(
+            machine: &mut Machine,
+            stack_args: u32,
+        ) -> u32 {
             let mem = machine.mem().detach();
-            let this = <u32>::from_stack(mem, esp + 4u32);
-            let lpDesc = <Option<&mut DDSURFACEDESC2>>::from_stack(mem, esp + 8u32);
-            winapi::ddraw::IDirectDrawSurface7::GetSurfaceDesc(machine, this, lpDesc).to_raw()
+            let this = <u32>::from_stack(mem, stack_args + 0u32);
+            let lpDesc = <Option<&mut DDSURFACEDESC2>>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("ddraw/ddraw7") {
+                Some(crate::trace::trace_begin(
+                    "ddraw/ddraw7",
+                    "IDirectDrawSurface7::GetSurfaceDesc",
+                    &[("this", &this), ("lpDesc", &lpDesc)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::ddraw::IDirectDrawSurface7::GetSurfaceDesc(machine, this, lpDesc);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::ddraw::IDirectDrawSurface7::GetSurfaceDesc_pos.0,
+                    winapi::ddraw::IDirectDrawSurface7::GetSurfaceDesc_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn IDirectDrawSurface7_Lock(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn IDirectDrawSurface7_Lock(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let this = <u32>::from_stack(mem, esp + 4u32);
-            let rect = <Option<&RECT>>::from_stack(mem, esp + 8u32);
-            let desc = <Option<&mut DDSURFACEDESC2>>::from_stack(mem, esp + 12u32);
-            let flags = <Result<DDLOCK, u32>>::from_stack(mem, esp + 16u32);
-            let unused = <u32>::from_stack(mem, esp + 20u32);
-            winapi::ddraw::IDirectDrawSurface7::Lock(machine, this, rect, desc, flags, unused)
-                .to_raw()
+            let this = <u32>::from_stack(mem, stack_args + 0u32);
+            let rect = <Option<&RECT>>::from_stack(mem, stack_args + 4u32);
+            let desc = <Option<&mut DDSURFACEDESC2>>::from_stack(mem, stack_args + 8u32);
+            let flags = <Result<DDLOCK, u32>>::from_stack(mem, stack_args + 12u32);
+            let unused = <u32>::from_stack(mem, stack_args + 16u32);
+            let __trace_context = if crate::trace::enabled("ddraw/ddraw7") {
+                Some(crate::trace::trace_begin(
+                    "ddraw/ddraw7",
+                    "IDirectDrawSurface7::Lock",
+                    &[
+                        ("this", &this),
+                        ("rect", &rect),
+                        ("desc", &desc),
+                        ("flags", &flags),
+                        ("unused", &unused),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result =
+                winapi::ddraw::IDirectDrawSurface7::Lock(machine, this, rect, desc, flags, unused);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::ddraw::IDirectDrawSurface7::Lock_pos.0,
+                    winapi::ddraw::IDirectDrawSurface7::Lock_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn IDirectDrawSurface7_Release(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn IDirectDrawSurface7_Release(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let this = <u32>::from_stack(mem, esp + 4u32);
-            winapi::ddraw::IDirectDrawSurface7::Release(machine, this).to_raw()
+            let this = <u32>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("ddraw/ddraw7") {
+                Some(crate::trace::trace_begin(
+                    "ddraw/ddraw7",
+                    "IDirectDrawSurface7::Release",
+                    &[("this", &this)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::ddraw::IDirectDrawSurface7::Release(machine, this);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::ddraw::IDirectDrawSurface7::Release_pos.0,
+                    winapi::ddraw::IDirectDrawSurface7::Release_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn IDirectDrawSurface7_ReleaseDC(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn IDirectDrawSurface7_ReleaseDC(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let _this = <u32>::from_stack(mem, esp + 4u32);
-            let _hDC = <u32>::from_stack(mem, esp + 8u32);
-            winapi::ddraw::IDirectDrawSurface7::ReleaseDC(machine, _this, _hDC).to_raw()
+            let _this = <u32>::from_stack(mem, stack_args + 0u32);
+            let _hDC = <u32>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("ddraw/ddraw7") {
+                Some(crate::trace::trace_begin(
+                    "ddraw/ddraw7",
+                    "IDirectDrawSurface7::ReleaseDC",
+                    &[("this", &_this), ("hDC", &_hDC)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::ddraw::IDirectDrawSurface7::ReleaseDC(machine, _this, _hDC);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::ddraw::IDirectDrawSurface7::ReleaseDC_pos.0,
+                    winapi::ddraw::IDirectDrawSurface7::ReleaseDC_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn IDirectDrawSurface7_Restore(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn IDirectDrawSurface7_Restore(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let _this = <u32>::from_stack(mem, esp + 4u32);
-            winapi::ddraw::IDirectDrawSurface7::Restore(machine, _this).to_raw()
+            let _this = <u32>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("ddraw/ddraw7") {
+                Some(crate::trace::trace_begin(
+                    "ddraw/ddraw7",
+                    "IDirectDrawSurface7::Restore",
+                    &[("this", &_this)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::ddraw::IDirectDrawSurface7::Restore(machine, _this);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::ddraw::IDirectDrawSurface7::Restore_pos.0,
+                    winapi::ddraw::IDirectDrawSurface7::Restore_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn IDirectDrawSurface7_SetClipper(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn IDirectDrawSurface7_SetClipper(
+            machine: &mut Machine,
+            stack_args: u32,
+        ) -> u32 {
             let mem = machine.mem().detach();
-            let this = <u32>::from_stack(mem, esp + 4u32);
-            let clipper = <u32>::from_stack(mem, esp + 8u32);
-            winapi::ddraw::IDirectDrawSurface7::SetClipper(machine, this, clipper).to_raw()
+            let this = <u32>::from_stack(mem, stack_args + 0u32);
+            let clipper = <u32>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("ddraw/ddraw7") {
+                Some(crate::trace::trace_begin(
+                    "ddraw/ddraw7",
+                    "IDirectDrawSurface7::SetClipper",
+                    &[("this", &this), ("clipper", &clipper)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::ddraw::IDirectDrawSurface7::SetClipper(machine, this, clipper);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::ddraw::IDirectDrawSurface7::SetClipper_pos.0,
+                    winapi::ddraw::IDirectDrawSurface7::SetClipper_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn IDirectDrawSurface7_SetPalette(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn IDirectDrawSurface7_SetPalette(
+            machine: &mut Machine,
+            stack_args: u32,
+        ) -> u32 {
             let mem = machine.mem().detach();
-            let this = <u32>::from_stack(mem, esp + 4u32);
-            let palette = <u32>::from_stack(mem, esp + 8u32);
-            winapi::ddraw::IDirectDrawSurface7::SetPalette(machine, this, palette).to_raw()
+            let this = <u32>::from_stack(mem, stack_args + 0u32);
+            let palette = <u32>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("ddraw/ddraw7") {
+                Some(crate::trace::trace_begin(
+                    "ddraw/ddraw7",
+                    "IDirectDrawSurface7::SetPalette",
+                    &[("this", &this), ("palette", &palette)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::ddraw::IDirectDrawSurface7::SetPalette(machine, this, palette);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::ddraw::IDirectDrawSurface7::SetPalette_pos.0,
+                    winapi::ddraw::IDirectDrawSurface7::SetPalette_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn IDirectDrawSurface7_Unlock(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn IDirectDrawSurface7_Unlock(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let this = <u32>::from_stack(mem, esp + 4u32);
-            let rect = <Option<&mut RECT>>::from_stack(mem, esp + 8u32);
-            winapi::ddraw::IDirectDrawSurface7::Unlock(machine, this, rect).to_raw()
+            let this = <u32>::from_stack(mem, stack_args + 0u32);
+            let rect = <Option<&mut RECT>>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("ddraw/ddraw7") {
+                Some(crate::trace::trace_begin(
+                    "ddraw/ddraw7",
+                    "IDirectDrawSurface7::Unlock",
+                    &[("this", &this), ("rect", &rect)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::ddraw::IDirectDrawSurface7::Unlock(machine, this, rect);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::ddraw::IDirectDrawSurface7::Unlock_pos.0,
+                    winapi::ddraw::IDirectDrawSurface7::Unlock_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
         pub unsafe fn IDirectDrawSurface_GetAttachedSurface(
             machine: &mut Machine,
-            esp: u32,
+            stack_args: u32,
         ) -> u32 {
             let mem = machine.mem().detach();
-            let this = <u32>::from_stack(mem, esp + 4u32);
-            let lpDDSCaps = <Option<&DDSCAPS>>::from_stack(mem, esp + 8u32);
-            let lpDirectDrawSurface = <Option<&mut u32>>::from_stack(mem, esp + 12u32);
-            winapi::ddraw::IDirectDrawSurface::GetAttachedSurface(
+            let this = <u32>::from_stack(mem, stack_args + 0u32);
+            let lpDDSCaps = <Option<&DDSCAPS>>::from_stack(mem, stack_args + 4u32);
+            let lpDirectDrawSurface = <Option<&mut u32>>::from_stack(mem, stack_args + 8u32);
+            let __trace_context = if crate::trace::enabled("ddraw/ddraw1") {
+                Some(crate::trace::trace_begin(
+                    "ddraw/ddraw1",
+                    "IDirectDrawSurface::GetAttachedSurface",
+                    &[
+                        ("this", &this),
+                        ("lpDDSCaps", &lpDDSCaps),
+                        ("lpDirectDrawSurface", &lpDirectDrawSurface),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::ddraw::IDirectDrawSurface::GetAttachedSurface(
                 machine,
                 this,
                 lpDDSCaps,
                 lpDirectDrawSurface,
-            )
-            .to_raw()
-        }
-        pub unsafe fn IDirectDrawSurface_GetCaps(machine: &mut Machine, esp: u32) -> u32 {
-            let mem = machine.mem().detach();
-            let this = <u32>::from_stack(mem, esp + 4u32);
-            let lpDDSCAPS = <Option<&mut DDSCAPS>>::from_stack(mem, esp + 8u32);
-            winapi::ddraw::IDirectDrawSurface::GetCaps(machine, this, lpDDSCAPS).to_raw()
-        }
-        pub unsafe fn IDirectDrawSurface_Lock(machine: &mut Machine, esp: u32) -> u32 {
-            let mem = machine.mem().detach();
-            let this = <u32>::from_stack(mem, esp + 4u32);
-            let rect = <Option<&RECT>>::from_stack(mem, esp + 8u32);
-            let desc = <Option<&mut DDSURFACEDESC>>::from_stack(mem, esp + 12u32);
-            let flags = <Result<DDLOCK, u32>>::from_stack(mem, esp + 16u32);
-            let event = <u32>::from_stack(mem, esp + 20u32);
-            winapi::ddraw::IDirectDrawSurface::Lock(machine, this, rect, desc, flags, event)
-                .to_raw()
-        }
-        pub unsafe fn IDirectDrawSurface_Release(machine: &mut Machine, esp: u32) -> u32 {
-            let mem = machine.mem().detach();
-            let this = <u32>::from_stack(mem, esp + 4u32);
-            winapi::ddraw::IDirectDrawSurface::Release(machine, this).to_raw()
-        }
-        pub unsafe fn IDirectDrawSurface_Unlock(machine: &mut Machine, esp: u32) -> u32 {
-            let mem = machine.mem().detach();
-            let this = <u32>::from_stack(mem, esp + 4u32);
-            let ptr = <u32>::from_stack(mem, esp + 8u32);
-            winapi::ddraw::IDirectDrawSurface::Unlock(machine, this, ptr).to_raw()
-        }
-        pub unsafe fn IDirectDraw_CreateSurface(machine: &mut Machine, esp: u32) -> u32 {
-            let mem = machine.mem().detach();
-            let this = <u32>::from_stack(mem, esp + 4u32);
-            let desc = <Option<&DDSURFACEDESC>>::from_stack(mem, esp + 8u32);
-            let lplpDDSurface = <Option<&mut u32>>::from_stack(mem, esp + 12u32);
-            let pUnkOuter = <u32>::from_stack(mem, esp + 16u32);
-            winapi::ddraw::IDirectDraw::CreateSurface(machine, this, desc, lplpDDSurface, pUnkOuter)
-                .to_raw()
-        }
-        pub unsafe fn IDirectDraw_EnumDisplayModes(machine: &mut Machine, esp: u32) -> u32 {
-            let mem = machine.mem().detach();
-            let this = <u32>::from_stack(mem, esp + 4u32);
-            let dwFlags = <u32>::from_stack(mem, esp + 8u32);
-            let lpSurfaceDesc = <Option<&DDSURFACEDESC>>::from_stack(mem, esp + 12u32);
-            let lpContext = <u32>::from_stack(mem, esp + 16u32);
-            let lpEnumCallback = <u32>::from_stack(mem, esp + 20u32);
-            #[cfg(feature = "x86-emu")]
-            {
-                let m: *mut Machine = machine;
-                let result = async move {
-                    use memory::Extensions;
-                    let machine = unsafe { &mut *m };
-                    let result = winapi::ddraw::IDirectDraw::EnumDisplayModes(
-                        machine,
-                        this,
-                        dwFlags,
-                        lpSurfaceDesc,
-                        lpContext,
-                        lpEnumCallback,
-                    )
-                    .await;
-                    let cpu = &mut machine.emu.x86.cpu_mut();
-                    cpu.regs.eip = x86::ops::pop(cpu, machine.emu.memory.mem());
-                    *cpu.regs.get32_mut(x86::Register::ESP) += 20u32;
-                    cpu.regs.set32(x86::Register::EAX, result.to_raw());
-                };
-                machine
-                    .emu
-                    .x86
-                    .cpu_mut()
-                    .call_async(machine.emu.memory.mem(), Box::pin(result));
-                0
+            );
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::ddraw::IDirectDrawSurface::GetAttachedSurface_pos.0,
+                    winapi::ddraw::IDirectDrawSurface::GetAttachedSurface_pos.1,
+                    &result,
+                );
             }
-            #[cfg(any(feature = "x86-64", feature = "x86-unicorn"))]
-            {
-                let pin = std::pin::pin!(winapi::ddraw::IDirectDraw::EnumDisplayModes(
-                    machine,
-                    this,
-                    dwFlags,
-                    lpSurfaceDesc,
-                    lpContext,
-                    lpEnumCallback
-                ));
-                crate::shims::call_sync(pin).to_raw()
+            result.to_raw()
+        }
+        pub unsafe fn IDirectDrawSurface_GetCaps(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let this = <u32>::from_stack(mem, stack_args + 0u32);
+            let lpDDSCAPS = <Option<&mut DDSCAPS>>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("ddraw/ddraw1") {
+                Some(crate::trace::trace_begin(
+                    "ddraw/ddraw1",
+                    "IDirectDrawSurface::GetCaps",
+                    &[("this", &this), ("lpDDSCAPS", &lpDDSCAPS)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::ddraw::IDirectDrawSurface::GetCaps(machine, this, lpDDSCAPS);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::ddraw::IDirectDrawSurface::GetCaps_pos.0,
+                    winapi::ddraw::IDirectDrawSurface::GetCaps_pos.1,
+                    &result,
+                );
             }
+            result.to_raw()
         }
-        pub unsafe fn IDirectDraw_QueryInterface(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn IDirectDrawSurface_Lock(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let this = <u32>::from_stack(mem, esp + 4u32);
-            let riid = <Option<&GUID>>::from_stack(mem, esp + 8u32);
-            let ppvObject = <Option<&mut u32>>::from_stack(mem, esp + 12u32);
-            winapi::ddraw::IDirectDraw::QueryInterface(machine, this, riid, ppvObject).to_raw()
+            let this = <u32>::from_stack(mem, stack_args + 0u32);
+            let rect = <Option<&RECT>>::from_stack(mem, stack_args + 4u32);
+            let desc = <Option<&mut DDSURFACEDESC>>::from_stack(mem, stack_args + 8u32);
+            let flags = <Result<DDLOCK, u32>>::from_stack(mem, stack_args + 12u32);
+            let event = <u32>::from_stack(mem, stack_args + 16u32);
+            let __trace_context = if crate::trace::enabled("ddraw/ddraw1") {
+                Some(crate::trace::trace_begin(
+                    "ddraw/ddraw1",
+                    "IDirectDrawSurface::Lock",
+                    &[
+                        ("this", &this),
+                        ("rect", &rect),
+                        ("desc", &desc),
+                        ("flags", &flags),
+                        ("event", &event),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result =
+                winapi::ddraw::IDirectDrawSurface::Lock(machine, this, rect, desc, flags, event);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::ddraw::IDirectDrawSurface::Lock_pos.0,
+                    winapi::ddraw::IDirectDrawSurface::Lock_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn IDirectDraw_Release(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn IDirectDrawSurface_Release(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let this = <u32>::from_stack(mem, esp + 4u32);
-            winapi::ddraw::IDirectDraw::Release(machine, this).to_raw()
+            let this = <u32>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("ddraw/ddraw1") {
+                Some(crate::trace::trace_begin(
+                    "ddraw/ddraw1",
+                    "IDirectDrawSurface::Release",
+                    &[("this", &this)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::ddraw::IDirectDrawSurface::Release(machine, this);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::ddraw::IDirectDrawSurface::Release_pos.0,
+                    winapi::ddraw::IDirectDrawSurface::Release_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn IDirectDraw_SetDisplayMode(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn IDirectDrawSurface_Unlock(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let this = <u32>::from_stack(mem, esp + 4u32);
-            let width = <u32>::from_stack(mem, esp + 8u32);
-            let height = <u32>::from_stack(mem, esp + 12u32);
-            let bpp = <u32>::from_stack(mem, esp + 16u32);
-            winapi::ddraw::IDirectDraw::SetDisplayMode(machine, this, width, height, bpp).to_raw()
+            let this = <u32>::from_stack(mem, stack_args + 0u32);
+            let ptr = <u32>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("ddraw/ddraw1") {
+                Some(crate::trace::trace_begin(
+                    "ddraw/ddraw1",
+                    "IDirectDrawSurface::Unlock",
+                    &[("this", &this), ("ptr", &ptr)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::ddraw::IDirectDrawSurface::Unlock(machine, this, ptr);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::ddraw::IDirectDrawSurface::Unlock_pos.0,
+                    winapi::ddraw::IDirectDrawSurface::Unlock_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn IDirectDraw_CreateSurface(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let this = <u32>::from_stack(mem, stack_args + 0u32);
+            let desc = <Option<&DDSURFACEDESC>>::from_stack(mem, stack_args + 4u32);
+            let lplpDDSurface = <Option<&mut u32>>::from_stack(mem, stack_args + 8u32);
+            let pUnkOuter = <u32>::from_stack(mem, stack_args + 12u32);
+            let __trace_context = if crate::trace::enabled("ddraw/ddraw1") {
+                Some(crate::trace::trace_begin(
+                    "ddraw/ddraw1",
+                    "IDirectDraw::CreateSurface",
+                    &[
+                        ("this", &this),
+                        ("desc", &desc),
+                        ("lplpDDSurface", &lplpDDSurface),
+                        ("pUnkOuter", &pUnkOuter),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::ddraw::IDirectDraw::CreateSurface(
+                machine,
+                this,
+                desc,
+                lplpDDSurface,
+                pUnkOuter,
+            );
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::ddraw::IDirectDraw::CreateSurface_pos.0,
+                    winapi::ddraw::IDirectDraw::CreateSurface_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn IDirectDraw_QueryInterface(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let this = <u32>::from_stack(mem, stack_args + 0u32);
+            let riid = <Option<&GUID>>::from_stack(mem, stack_args + 4u32);
+            let ppvObject = <Option<&mut u32>>::from_stack(mem, stack_args + 8u32);
+            let __trace_context = if crate::trace::enabled("ddraw/ddraw1") {
+                Some(crate::trace::trace_begin(
+                    "ddraw/ddraw1",
+                    "IDirectDraw::QueryInterface",
+                    &[("this", &this), ("riid", &riid), ("ppvObject", &ppvObject)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::ddraw::IDirectDraw::QueryInterface(machine, this, riid, ppvObject);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::ddraw::IDirectDraw::QueryInterface_pos.0,
+                    winapi::ddraw::IDirectDraw::QueryInterface_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn IDirectDraw_Release(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let this = <u32>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("ddraw/ddraw1") {
+                Some(crate::trace::trace_begin(
+                    "ddraw/ddraw1",
+                    "IDirectDraw::Release",
+                    &[("this", &this)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::ddraw::IDirectDraw::Release(machine, this);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::ddraw::IDirectDraw::Release_pos.0,
+                    winapi::ddraw::IDirectDraw::Release_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn IDirectDraw_SetDisplayMode(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let this = <u32>::from_stack(mem, stack_args + 0u32);
+            let width = <u32>::from_stack(mem, stack_args + 4u32);
+            let height = <u32>::from_stack(mem, stack_args + 8u32);
+            let bpp = <u32>::from_stack(mem, stack_args + 12u32);
+            let __trace_context = if crate::trace::enabled("ddraw/ddraw1") {
+                Some(crate::trace::trace_begin(
+                    "ddraw/ddraw1",
+                    "IDirectDraw::SetDisplayMode",
+                    &[
+                        ("this", &this),
+                        ("width", &width),
+                        ("height", &height),
+                        ("bpp", &bpp),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result =
+                winapi::ddraw::IDirectDraw::SetDisplayMode(machine, this, width, height, bpp);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::ddraw::IDirectDraw::SetDisplayMode_pos.0,
+                    winapi::ddraw::IDirectDraw::SetDisplayMode_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
     }
-    mod shims {
-        use super::impls;
-        use super::Shim;
-        pub const DirectDrawCreate: Shim = Shim {
+    const SHIMS: [Shim; 52usize] = [
+        Shim {
             name: "DirectDrawCreate",
-            func: impls::DirectDrawCreate,
-            stack_consumed: 12u32,
-            is_async: false,
-        };
-        pub const DirectDrawCreateClipper: Shim = Shim {
+            func: Handler::Sync(wrappers::DirectDrawCreate),
+        },
+        Shim {
             name: "DirectDrawCreateClipper",
-            func: impls::DirectDrawCreateClipper,
-            stack_consumed: 12u32,
-            is_async: false,
-        };
-        pub const DirectDrawCreateEx: Shim = Shim {
+            func: Handler::Sync(wrappers::DirectDrawCreateClipper),
+        },
+        Shim {
             name: "DirectDrawCreateEx",
-            func: impls::DirectDrawCreateEx,
-            stack_consumed: 16u32,
-            is_async: false,
-        };
-        pub const IDirectDraw2_CreateSurface: Shim = Shim {
+            func: Handler::Sync(wrappers::DirectDrawCreateEx),
+        },
+        Shim {
             name: "IDirectDraw2::CreateSurface",
-            func: impls::IDirectDraw2_CreateSurface,
-            stack_consumed: 16u32,
-            is_async: false,
-        };
-        pub const IDirectDraw2_EnumDisplayModes: Shim = Shim {
+            func: Handler::Sync(wrappers::IDirectDraw2_CreateSurface),
+        },
+        Shim {
             name: "IDirectDraw2::EnumDisplayModes",
-            func: impls::IDirectDraw2_EnumDisplayModes,
-            stack_consumed: 20u32,
-            is_async: true,
-        };
-        pub const IDirectDraw2_GetDisplayMode: Shim = Shim {
+            func: Handler::Async(wrappers::IDirectDraw2_EnumDisplayModes),
+        },
+        Shim {
             name: "IDirectDraw2::GetDisplayMode",
-            func: impls::IDirectDraw2_GetDisplayMode,
-            stack_consumed: 8u32,
-            is_async: false,
-        };
-        pub const IDirectDraw2_QueryInterface: Shim = Shim {
+            func: Handler::Sync(wrappers::IDirectDraw2_GetDisplayMode),
+        },
+        Shim {
             name: "IDirectDraw2::QueryInterface",
-            func: impls::IDirectDraw2_QueryInterface,
-            stack_consumed: 12u32,
-            is_async: false,
-        };
-        pub const IDirectDraw2_Release: Shim = Shim {
+            func: Handler::Sync(wrappers::IDirectDraw2_QueryInterface),
+        },
+        Shim {
             name: "IDirectDraw2::Release",
-            func: impls::IDirectDraw2_Release,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const IDirectDraw2_SetDisplayMode: Shim = Shim {
+            func: Handler::Sync(wrappers::IDirectDraw2_Release),
+        },
+        Shim {
             name: "IDirectDraw2::SetDisplayMode",
-            func: impls::IDirectDraw2_SetDisplayMode,
-            stack_consumed: 16u32,
-            is_async: false,
-        };
-        pub const IDirectDraw7_CreatePalette: Shim = Shim {
+            func: Handler::Sync(wrappers::IDirectDraw2_SetDisplayMode),
+        },
+        Shim {
             name: "IDirectDraw7::CreatePalette",
-            func: impls::IDirectDraw7_CreatePalette,
-            stack_consumed: 20u32,
-            is_async: false,
-        };
-        pub const IDirectDraw7_CreateSurface: Shim = Shim {
+            func: Handler::Sync(wrappers::IDirectDraw7_CreatePalette),
+        },
+        Shim {
             name: "IDirectDraw7::CreateSurface",
-            func: impls::IDirectDraw7_CreateSurface,
-            stack_consumed: 16u32,
-            is_async: false,
-        };
-        pub const IDirectDraw7_EnumDisplayModes: Shim = Shim {
+            func: Handler::Sync(wrappers::IDirectDraw7_CreateSurface),
+        },
+        Shim {
             name: "IDirectDraw7::EnumDisplayModes",
-            func: impls::IDirectDraw7_EnumDisplayModes,
-            stack_consumed: 20u32,
-            is_async: true,
-        };
-        pub const IDirectDraw7_GetDisplayMode: Shim = Shim {
+            func: Handler::Async(wrappers::IDirectDraw7_EnumDisplayModes),
+        },
+        Shim {
             name: "IDirectDraw7::GetDisplayMode",
-            func: impls::IDirectDraw7_GetDisplayMode,
-            stack_consumed: 8u32,
-            is_async: false,
-        };
-        pub const IDirectDraw7_Release: Shim = Shim {
+            func: Handler::Sync(wrappers::IDirectDraw7_GetDisplayMode),
+        },
+        Shim {
             name: "IDirectDraw7::Release",
-            func: impls::IDirectDraw7_Release,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const IDirectDraw7_RestoreDisplayMode: Shim = Shim {
+            func: Handler::Sync(wrappers::IDirectDraw7_Release),
+        },
+        Shim {
             name: "IDirectDraw7::RestoreDisplayMode",
-            func: impls::IDirectDraw7_RestoreDisplayMode,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const IDirectDraw7_SetCooperativeLevel: Shim = Shim {
+            func: Handler::Sync(wrappers::IDirectDraw7_RestoreDisplayMode),
+        },
+        Shim {
             name: "IDirectDraw7::SetCooperativeLevel",
-            func: impls::IDirectDraw7_SetCooperativeLevel,
-            stack_consumed: 12u32,
-            is_async: false,
-        };
-        pub const IDirectDraw7_SetDisplayMode: Shim = Shim {
+            func: Handler::Sync(wrappers::IDirectDraw7_SetCooperativeLevel),
+        },
+        Shim {
             name: "IDirectDraw7::SetDisplayMode",
-            func: impls::IDirectDraw7_SetDisplayMode,
-            stack_consumed: 24u32,
-            is_async: false,
-        };
-        pub const IDirectDraw7_WaitForVerticalBlank: Shim = Shim {
+            func: Handler::Sync(wrappers::IDirectDraw7_SetDisplayMode),
+        },
+        Shim {
             name: "IDirectDraw7::WaitForVerticalBlank",
-            func: impls::IDirectDraw7_WaitForVerticalBlank,
-            stack_consumed: 12u32,
-            is_async: false,
-        };
-        pub const IDirectDrawClipper_Release: Shim = Shim {
+            func: Handler::Sync(wrappers::IDirectDraw7_WaitForVerticalBlank),
+        },
+        Shim {
             name: "IDirectDrawClipper::Release",
-            func: impls::IDirectDrawClipper_Release,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const IDirectDrawClipper_SetHWnd: Shim = Shim {
+            func: Handler::Sync(wrappers::IDirectDrawClipper_Release),
+        },
+        Shim {
             name: "IDirectDrawClipper::SetHWnd",
-            func: impls::IDirectDrawClipper_SetHWnd,
-            stack_consumed: 12u32,
-            is_async: false,
-        };
-        pub const IDirectDrawPalette_Release: Shim = Shim {
+            func: Handler::Sync(wrappers::IDirectDrawClipper_SetHWnd),
+        },
+        Shim {
             name: "IDirectDrawPalette::Release",
-            func: impls::IDirectDrawPalette_Release,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const IDirectDrawPalette_SetEntries: Shim = Shim {
+            func: Handler::Sync(wrappers::IDirectDrawPalette_Release),
+        },
+        Shim {
             name: "IDirectDrawPalette::SetEntries",
-            func: impls::IDirectDrawPalette_SetEntries,
-            stack_consumed: 20u32,
-            is_async: false,
-        };
-        pub const IDirectDrawSurface2_GetAttachedSurface: Shim = Shim {
+            func: Handler::Sync(wrappers::IDirectDrawPalette_SetEntries),
+        },
+        Shim {
             name: "IDirectDrawSurface2::GetAttachedSurface",
-            func: impls::IDirectDrawSurface2_GetAttachedSurface,
-            stack_consumed: 12u32,
-            is_async: false,
-        };
-        pub const IDirectDrawSurface2_GetCaps: Shim = Shim {
+            func: Handler::Sync(wrappers::IDirectDrawSurface2_GetAttachedSurface),
+        },
+        Shim {
             name: "IDirectDrawSurface2::GetCaps",
-            func: impls::IDirectDrawSurface2_GetCaps,
-            stack_consumed: 8u32,
-            is_async: false,
-        };
-        pub const IDirectDrawSurface2_GetSurfaceDesc: Shim = Shim {
+            func: Handler::Sync(wrappers::IDirectDrawSurface2_GetCaps),
+        },
+        Shim {
             name: "IDirectDrawSurface2::GetSurfaceDesc",
-            func: impls::IDirectDrawSurface2_GetSurfaceDesc,
-            stack_consumed: 8u32,
-            is_async: false,
-        };
-        pub const IDirectDrawSurface2_Lock: Shim = Shim {
+            func: Handler::Sync(wrappers::IDirectDrawSurface2_GetSurfaceDesc),
+        },
+        Shim {
             name: "IDirectDrawSurface2::Lock",
-            func: impls::IDirectDrawSurface2_Lock,
-            stack_consumed: 20u32,
-            is_async: false,
-        };
-        pub const IDirectDrawSurface2_Release: Shim = Shim {
+            func: Handler::Sync(wrappers::IDirectDrawSurface2_Lock),
+        },
+        Shim {
             name: "IDirectDrawSurface2::Release",
-            func: impls::IDirectDrawSurface2_Release,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const IDirectDrawSurface2_Unlock: Shim = Shim {
+            func: Handler::Sync(wrappers::IDirectDrawSurface2_Release),
+        },
+        Shim {
             name: "IDirectDrawSurface2::Unlock",
-            func: impls::IDirectDrawSurface2_Unlock,
-            stack_consumed: 8u32,
-            is_async: false,
-        };
-        pub const IDirectDrawSurface7_Blt: Shim = Shim {
+            func: Handler::Sync(wrappers::IDirectDrawSurface2_Unlock),
+        },
+        Shim {
             name: "IDirectDrawSurface7::Blt",
-            func: impls::IDirectDrawSurface7_Blt,
-            stack_consumed: 24u32,
-            is_async: false,
-        };
-        pub const IDirectDrawSurface7_BltFast: Shim = Shim {
+            func: Handler::Sync(wrappers::IDirectDrawSurface7_Blt),
+        },
+        Shim {
             name: "IDirectDrawSurface7::BltFast",
-            func: impls::IDirectDrawSurface7_BltFast,
-            stack_consumed: 24u32,
-            is_async: false,
-        };
-        pub const IDirectDrawSurface7_Flip: Shim = Shim {
+            func: Handler::Sync(wrappers::IDirectDrawSurface7_BltFast),
+        },
+        Shim {
             name: "IDirectDrawSurface7::Flip",
-            func: impls::IDirectDrawSurface7_Flip,
-            stack_consumed: 12u32,
-            is_async: false,
-        };
-        pub const IDirectDrawSurface7_GetAttachedSurface: Shim = Shim {
+            func: Handler::Sync(wrappers::IDirectDrawSurface7_Flip),
+        },
+        Shim {
             name: "IDirectDrawSurface7::GetAttachedSurface",
-            func: impls::IDirectDrawSurface7_GetAttachedSurface,
-            stack_consumed: 12u32,
-            is_async: false,
-        };
-        pub const IDirectDrawSurface7_GetCaps: Shim = Shim {
+            func: Handler::Sync(wrappers::IDirectDrawSurface7_GetAttachedSurface),
+        },
+        Shim {
             name: "IDirectDrawSurface7::GetCaps",
-            func: impls::IDirectDrawSurface7_GetCaps,
-            stack_consumed: 8u32,
-            is_async: false,
-        };
-        pub const IDirectDrawSurface7_GetDC: Shim = Shim {
+            func: Handler::Sync(wrappers::IDirectDrawSurface7_GetCaps),
+        },
+        Shim {
             name: "IDirectDrawSurface7::GetDC",
-            func: impls::IDirectDrawSurface7_GetDC,
-            stack_consumed: 8u32,
-            is_async: false,
-        };
-        pub const IDirectDrawSurface7_GetPixelFormat: Shim = Shim {
+            func: Handler::Sync(wrappers::IDirectDrawSurface7_GetDC),
+        },
+        Shim {
             name: "IDirectDrawSurface7::GetPixelFormat",
-            func: impls::IDirectDrawSurface7_GetPixelFormat,
-            stack_consumed: 8u32,
-            is_async: false,
-        };
-        pub const IDirectDrawSurface7_GetSurfaceDesc: Shim = Shim {
+            func: Handler::Sync(wrappers::IDirectDrawSurface7_GetPixelFormat),
+        },
+        Shim {
             name: "IDirectDrawSurface7::GetSurfaceDesc",
-            func: impls::IDirectDrawSurface7_GetSurfaceDesc,
-            stack_consumed: 8u32,
-            is_async: false,
-        };
-        pub const IDirectDrawSurface7_Lock: Shim = Shim {
+            func: Handler::Sync(wrappers::IDirectDrawSurface7_GetSurfaceDesc),
+        },
+        Shim {
             name: "IDirectDrawSurface7::Lock",
-            func: impls::IDirectDrawSurface7_Lock,
-            stack_consumed: 20u32,
-            is_async: false,
-        };
-        pub const IDirectDrawSurface7_Release: Shim = Shim {
+            func: Handler::Sync(wrappers::IDirectDrawSurface7_Lock),
+        },
+        Shim {
             name: "IDirectDrawSurface7::Release",
-            func: impls::IDirectDrawSurface7_Release,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const IDirectDrawSurface7_ReleaseDC: Shim = Shim {
+            func: Handler::Sync(wrappers::IDirectDrawSurface7_Release),
+        },
+        Shim {
             name: "IDirectDrawSurface7::ReleaseDC",
-            func: impls::IDirectDrawSurface7_ReleaseDC,
-            stack_consumed: 8u32,
-            is_async: false,
-        };
-        pub const IDirectDrawSurface7_Restore: Shim = Shim {
+            func: Handler::Sync(wrappers::IDirectDrawSurface7_ReleaseDC),
+        },
+        Shim {
             name: "IDirectDrawSurface7::Restore",
-            func: impls::IDirectDrawSurface7_Restore,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const IDirectDrawSurface7_SetClipper: Shim = Shim {
+            func: Handler::Sync(wrappers::IDirectDrawSurface7_Restore),
+        },
+        Shim {
             name: "IDirectDrawSurface7::SetClipper",
-            func: impls::IDirectDrawSurface7_SetClipper,
-            stack_consumed: 8u32,
-            is_async: false,
-        };
-        pub const IDirectDrawSurface7_SetPalette: Shim = Shim {
+            func: Handler::Sync(wrappers::IDirectDrawSurface7_SetClipper),
+        },
+        Shim {
             name: "IDirectDrawSurface7::SetPalette",
-            func: impls::IDirectDrawSurface7_SetPalette,
-            stack_consumed: 8u32,
-            is_async: false,
-        };
-        pub const IDirectDrawSurface7_Unlock: Shim = Shim {
+            func: Handler::Sync(wrappers::IDirectDrawSurface7_SetPalette),
+        },
+        Shim {
             name: "IDirectDrawSurface7::Unlock",
-            func: impls::IDirectDrawSurface7_Unlock,
-            stack_consumed: 8u32,
-            is_async: false,
-        };
-        pub const IDirectDrawSurface_GetAttachedSurface: Shim = Shim {
+            func: Handler::Sync(wrappers::IDirectDrawSurface7_Unlock),
+        },
+        Shim {
             name: "IDirectDrawSurface::GetAttachedSurface",
-            func: impls::IDirectDrawSurface_GetAttachedSurface,
-            stack_consumed: 12u32,
-            is_async: false,
-        };
-        pub const IDirectDrawSurface_GetCaps: Shim = Shim {
+            func: Handler::Sync(wrappers::IDirectDrawSurface_GetAttachedSurface),
+        },
+        Shim {
             name: "IDirectDrawSurface::GetCaps",
-            func: impls::IDirectDrawSurface_GetCaps,
-            stack_consumed: 8u32,
-            is_async: false,
-        };
-        pub const IDirectDrawSurface_Lock: Shim = Shim {
+            func: Handler::Sync(wrappers::IDirectDrawSurface_GetCaps),
+        },
+        Shim {
             name: "IDirectDrawSurface::Lock",
-            func: impls::IDirectDrawSurface_Lock,
-            stack_consumed: 20u32,
-            is_async: false,
-        };
-        pub const IDirectDrawSurface_Release: Shim = Shim {
+            func: Handler::Sync(wrappers::IDirectDrawSurface_Lock),
+        },
+        Shim {
             name: "IDirectDrawSurface::Release",
-            func: impls::IDirectDrawSurface_Release,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const IDirectDrawSurface_Unlock: Shim = Shim {
+            func: Handler::Sync(wrappers::IDirectDrawSurface_Release),
+        },
+        Shim {
             name: "IDirectDrawSurface::Unlock",
-            func: impls::IDirectDrawSurface_Unlock,
-            stack_consumed: 8u32,
-            is_async: false,
-        };
-        pub const IDirectDraw_CreateSurface: Shim = Shim {
+            func: Handler::Sync(wrappers::IDirectDrawSurface_Unlock),
+        },
+        Shim {
             name: "IDirectDraw::CreateSurface",
-            func: impls::IDirectDraw_CreateSurface,
-            stack_consumed: 16u32,
-            is_async: false,
-        };
-        pub const IDirectDraw_EnumDisplayModes: Shim = Shim {
-            name: "IDirectDraw::EnumDisplayModes",
-            func: impls::IDirectDraw_EnumDisplayModes,
-            stack_consumed: 20u32,
-            is_async: true,
-        };
-        pub const IDirectDraw_QueryInterface: Shim = Shim {
+            func: Handler::Sync(wrappers::IDirectDraw_CreateSurface),
+        },
+        Shim {
             name: "IDirectDraw::QueryInterface",
-            func: impls::IDirectDraw_QueryInterface,
-            stack_consumed: 12u32,
-            is_async: false,
-        };
-        pub const IDirectDraw_Release: Shim = Shim {
+            func: Handler::Sync(wrappers::IDirectDraw_QueryInterface),
+        },
+        Shim {
             name: "IDirectDraw::Release",
-            func: impls::IDirectDraw_Release,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const IDirectDraw_SetDisplayMode: Shim = Shim {
+            func: Handler::Sync(wrappers::IDirectDraw_Release),
+        },
+        Shim {
             name: "IDirectDraw::SetDisplayMode",
-            func: impls::IDirectDraw_SetDisplayMode,
-            stack_consumed: 16u32,
-            is_async: false,
-        };
-    }
-    const SHIMS: [Shim; 53usize] = [
-        shims::DirectDrawCreate,
-        shims::DirectDrawCreateClipper,
-        shims::DirectDrawCreateEx,
-        shims::IDirectDraw2_CreateSurface,
-        shims::IDirectDraw2_EnumDisplayModes,
-        shims::IDirectDraw2_GetDisplayMode,
-        shims::IDirectDraw2_QueryInterface,
-        shims::IDirectDraw2_Release,
-        shims::IDirectDraw2_SetDisplayMode,
-        shims::IDirectDraw7_CreatePalette,
-        shims::IDirectDraw7_CreateSurface,
-        shims::IDirectDraw7_EnumDisplayModes,
-        shims::IDirectDraw7_GetDisplayMode,
-        shims::IDirectDraw7_Release,
-        shims::IDirectDraw7_RestoreDisplayMode,
-        shims::IDirectDraw7_SetCooperativeLevel,
-        shims::IDirectDraw7_SetDisplayMode,
-        shims::IDirectDraw7_WaitForVerticalBlank,
-        shims::IDirectDrawClipper_Release,
-        shims::IDirectDrawClipper_SetHWnd,
-        shims::IDirectDrawPalette_Release,
-        shims::IDirectDrawPalette_SetEntries,
-        shims::IDirectDrawSurface2_GetAttachedSurface,
-        shims::IDirectDrawSurface2_GetCaps,
-        shims::IDirectDrawSurface2_GetSurfaceDesc,
-        shims::IDirectDrawSurface2_Lock,
-        shims::IDirectDrawSurface2_Release,
-        shims::IDirectDrawSurface2_Unlock,
-        shims::IDirectDrawSurface7_Blt,
-        shims::IDirectDrawSurface7_BltFast,
-        shims::IDirectDrawSurface7_Flip,
-        shims::IDirectDrawSurface7_GetAttachedSurface,
-        shims::IDirectDrawSurface7_GetCaps,
-        shims::IDirectDrawSurface7_GetDC,
-        shims::IDirectDrawSurface7_GetPixelFormat,
-        shims::IDirectDrawSurface7_GetSurfaceDesc,
-        shims::IDirectDrawSurface7_Lock,
-        shims::IDirectDrawSurface7_Release,
-        shims::IDirectDrawSurface7_ReleaseDC,
-        shims::IDirectDrawSurface7_Restore,
-        shims::IDirectDrawSurface7_SetClipper,
-        shims::IDirectDrawSurface7_SetPalette,
-        shims::IDirectDrawSurface7_Unlock,
-        shims::IDirectDrawSurface_GetAttachedSurface,
-        shims::IDirectDrawSurface_GetCaps,
-        shims::IDirectDrawSurface_Lock,
-        shims::IDirectDrawSurface_Release,
-        shims::IDirectDrawSurface_Unlock,
-        shims::IDirectDraw_CreateSurface,
-        shims::IDirectDraw_EnumDisplayModes,
-        shims::IDirectDraw_QueryInterface,
-        shims::IDirectDraw_Release,
-        shims::IDirectDraw_SetDisplayMode,
+            func: Handler::Sync(wrappers::IDirectDraw_SetDisplayMode),
+        },
     ];
     pub const DLL: BuiltinDLL = BuiltinDLL {
         file_name: "ddraw.dll",
@@ -1237,59 +2350,160 @@ pub mod ddraw {
 }
 pub mod dsound {
     use super::*;
-    mod impls {
+    mod wrappers {
         use crate::{
             machine::Machine,
             winapi::{self, stack_args::*, types::*},
         };
         use memory::Extensions;
         use winapi::dsound::*;
-        pub unsafe fn DirectSoundCreate(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn DirectSoundCreate(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let lpGuid = <Option<&GUID>>::from_stack(mem, esp + 4u32);
-            let ppDS = <Option<&mut u32>>::from_stack(mem, esp + 8u32);
-            let pUnkOuter = <u32>::from_stack(mem, esp + 12u32);
-            winapi::dsound::DirectSoundCreate(machine, lpGuid, ppDS, pUnkOuter).to_raw()
+            let lpGuid = <Option<&GUID>>::from_stack(mem, stack_args + 0u32);
+            let ppDS = <Option<&mut u32>>::from_stack(mem, stack_args + 4u32);
+            let pUnkOuter = <u32>::from_stack(mem, stack_args + 8u32);
+            let __trace_context = if crate::trace::enabled("dsound") {
+                Some(crate::trace::trace_begin(
+                    "dsound",
+                    "DirectSoundCreate",
+                    &[
+                        ("lpGuid", &lpGuid),
+                        ("ppDS", &ppDS),
+                        ("pUnkOuter", &pUnkOuter),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::dsound::DirectSoundCreate(machine, lpGuid, ppDS, pUnkOuter);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::dsound::DirectSoundCreate_pos.0,
+                    winapi::dsound::DirectSoundCreate_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn DirectSoundEnumerateA(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn DirectSoundEnumerateA(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let lpDSEnumCallback = <u32>::from_stack(mem, esp + 4u32);
-            let lpContext = <u32>::from_stack(mem, esp + 8u32);
-            winapi::dsound::DirectSoundEnumerateA(machine, lpDSEnumCallback, lpContext).to_raw()
+            let lpDSEnumCallback = <u32>::from_stack(mem, stack_args + 0u32);
+            let lpContext = <u32>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("dsound") {
+                Some(crate::trace::trace_begin(
+                    "dsound",
+                    "DirectSoundEnumerateA",
+                    &[
+                        ("lpDSEnumCallback", &lpDSEnumCallback),
+                        ("lpContext", &lpContext),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result =
+                winapi::dsound::DirectSoundEnumerateA(machine, lpDSEnumCallback, lpContext);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::dsound::DirectSoundEnumerateA_pos.0,
+                    winapi::dsound::DirectSoundEnumerateA_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
         pub unsafe fn IDirectSoundBuffer_GetCurrentPosition(
             machine: &mut Machine,
-            esp: u32,
+            stack_args: u32,
         ) -> u32 {
             let mem = machine.mem().detach();
-            let this = <u32>::from_stack(mem, esp + 4u32);
-            let lpdwCurrentPlayCursor = <Option<&mut u32>>::from_stack(mem, esp + 8u32);
-            let lpdwCurrentWriteCursor = <Option<&mut u32>>::from_stack(mem, esp + 12u32);
-            winapi::dsound::IDirectSoundBuffer::GetCurrentPosition(
+            let this = <u32>::from_stack(mem, stack_args + 0u32);
+            let lpdwCurrentPlayCursor = <Option<&mut u32>>::from_stack(mem, stack_args + 4u32);
+            let lpdwCurrentWriteCursor = <Option<&mut u32>>::from_stack(mem, stack_args + 8u32);
+            let __trace_context = if crate::trace::enabled("dsound") {
+                Some(crate::trace::trace_begin(
+                    "dsound",
+                    "IDirectSoundBuffer::GetCurrentPosition",
+                    &[
+                        ("this", &this),
+                        ("lpdwCurrentPlayCursor", &lpdwCurrentPlayCursor),
+                        ("lpdwCurrentWriteCursor", &lpdwCurrentWriteCursor),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::dsound::IDirectSoundBuffer::GetCurrentPosition(
                 machine,
                 this,
                 lpdwCurrentPlayCursor,
                 lpdwCurrentWriteCursor,
-            )
-            .to_raw()
+            );
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::dsound::IDirectSoundBuffer::GetCurrentPosition_pos.0,
+                    winapi::dsound::IDirectSoundBuffer::GetCurrentPosition_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn IDirectSoundBuffer_GetStatus(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn IDirectSoundBuffer_GetStatus(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let this = <u32>::from_stack(mem, esp + 4u32);
-            let lpdwStatus = <Option<&mut u32>>::from_stack(mem, esp + 8u32);
-            winapi::dsound::IDirectSoundBuffer::GetStatus(machine, this, lpdwStatus).to_raw()
+            let this = <u32>::from_stack(mem, stack_args + 0u32);
+            let lpdwStatus = <Option<&mut u32>>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("dsound") {
+                Some(crate::trace::trace_begin(
+                    "dsound",
+                    "IDirectSoundBuffer::GetStatus",
+                    &[("this", &this), ("lpdwStatus", &lpdwStatus)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::dsound::IDirectSoundBuffer::GetStatus(machine, this, lpdwStatus);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::dsound::IDirectSoundBuffer::GetStatus_pos.0,
+                    winapi::dsound::IDirectSoundBuffer::GetStatus_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn IDirectSoundBuffer_Lock(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn IDirectSoundBuffer_Lock(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let this = <u32>::from_stack(mem, esp + 4u32);
-            let dwWriteCursor = <u32>::from_stack(mem, esp + 8u32);
-            let dwWriteBytes = <u32>::from_stack(mem, esp + 12u32);
-            let lplpvAudioPtr1 = <Option<&mut u32>>::from_stack(mem, esp + 16u32);
-            let lpdwAudioBytes1 = <Option<&mut u32>>::from_stack(mem, esp + 20u32);
-            let lplpvAudioPtr2 = <Option<&mut u32>>::from_stack(mem, esp + 24u32);
-            let lpdwAudioBytes2 = <Option<&mut u32>>::from_stack(mem, esp + 28u32);
-            let dwFlags = <Result<DSBLOCK, u32>>::from_stack(mem, esp + 32u32);
-            winapi::dsound::IDirectSoundBuffer::Lock(
+            let this = <u32>::from_stack(mem, stack_args + 0u32);
+            let dwWriteCursor = <u32>::from_stack(mem, stack_args + 4u32);
+            let dwWriteBytes = <u32>::from_stack(mem, stack_args + 8u32);
+            let lplpvAudioPtr1 = <Option<&mut u32>>::from_stack(mem, stack_args + 12u32);
+            let lpdwAudioBytes1 = <Option<&mut u32>>::from_stack(mem, stack_args + 16u32);
+            let lplpvAudioPtr2 = <Option<&mut u32>>::from_stack(mem, stack_args + 20u32);
+            let lpdwAudioBytes2 = <Option<&mut u32>>::from_stack(mem, stack_args + 24u32);
+            let dwFlags = <Result<DSBLOCK, u32>>::from_stack(mem, stack_args + 28u32);
+            let __trace_context = if crate::trace::enabled("dsound") {
+                Some(crate::trace::trace_begin(
+                    "dsound",
+                    "IDirectSoundBuffer::Lock",
+                    &[
+                        ("this", &this),
+                        ("dwWriteCursor", &dwWriteCursor),
+                        ("dwWriteBytes", &dwWriteBytes),
+                        ("lplpvAudioPtr1", &lplpvAudioPtr1),
+                        ("lpdwAudioBytes1", &lpdwAudioBytes1),
+                        ("lplpvAudioPtr2", &lplpvAudioPtr2),
+                        ("lpdwAudioBytes2", &lpdwAudioBytes2),
+                        ("dwFlags", &dwFlags),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::dsound::IDirectSoundBuffer::Lock(
                 machine,
                 this,
                 dwWriteCursor,
@@ -1299,169 +2513,283 @@ pub mod dsound {
                 lplpvAudioPtr2,
                 lpdwAudioBytes2,
                 dwFlags,
-            )
-            .to_raw()
+            );
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::dsound::IDirectSoundBuffer::Lock_pos.0,
+                    winapi::dsound::IDirectSoundBuffer::Lock_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn IDirectSoundBuffer_Play(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn IDirectSoundBuffer_Play(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let this = <u32>::from_stack(mem, esp + 4u32);
-            let dwReserved1 = <u32>::from_stack(mem, esp + 8u32);
-            let dwReserved2 = <u32>::from_stack(mem, esp + 12u32);
-            let dwFlags = <u32>::from_stack(mem, esp + 16u32);
-            winapi::dsound::IDirectSoundBuffer::Play(
+            let this = <u32>::from_stack(mem, stack_args + 0u32);
+            let dwReserved1 = <u32>::from_stack(mem, stack_args + 4u32);
+            let dwReserved2 = <u32>::from_stack(mem, stack_args + 8u32);
+            let dwFlags = <u32>::from_stack(mem, stack_args + 12u32);
+            let __trace_context = if crate::trace::enabled("dsound") {
+                Some(crate::trace::trace_begin(
+                    "dsound",
+                    "IDirectSoundBuffer::Play",
+                    &[
+                        ("this", &this),
+                        ("dwReserved1", &dwReserved1),
+                        ("dwReserved2", &dwReserved2),
+                        ("dwFlags", &dwFlags),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::dsound::IDirectSoundBuffer::Play(
                 machine,
                 this,
                 dwReserved1,
                 dwReserved2,
                 dwFlags,
-            )
-            .to_raw()
+            );
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::dsound::IDirectSoundBuffer::Play_pos.0,
+                    winapi::dsound::IDirectSoundBuffer::Play_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn IDirectSoundBuffer_Release(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn IDirectSoundBuffer_Release(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let this = <u32>::from_stack(mem, esp + 4u32);
-            winapi::dsound::IDirectSoundBuffer::Release(machine, this).to_raw()
+            let this = <u32>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("dsound") {
+                Some(crate::trace::trace_begin(
+                    "dsound",
+                    "IDirectSoundBuffer::Release",
+                    &[("this", &this)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::dsound::IDirectSoundBuffer::Release(machine, this);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::dsound::IDirectSoundBuffer::Release_pos.0,
+                    winapi::dsound::IDirectSoundBuffer::Release_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn IDirectSoundBuffer_SetFormat(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn IDirectSoundBuffer_SetFormat(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let this = <u32>::from_stack(mem, esp + 4u32);
-            let lpcfxFormat = <Option<&WAVEFORMATEX>>::from_stack(mem, esp + 8u32);
-            winapi::dsound::IDirectSoundBuffer::SetFormat(machine, this, lpcfxFormat).to_raw()
+            let this = <u32>::from_stack(mem, stack_args + 0u32);
+            let lpcfxFormat = <Option<&WAVEFORMATEX>>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("dsound") {
+                Some(crate::trace::trace_begin(
+                    "dsound",
+                    "IDirectSoundBuffer::SetFormat",
+                    &[("this", &this), ("lpcfxFormat", &lpcfxFormat)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::dsound::IDirectSoundBuffer::SetFormat(machine, this, lpcfxFormat);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::dsound::IDirectSoundBuffer::SetFormat_pos.0,
+                    winapi::dsound::IDirectSoundBuffer::SetFormat_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn IDirectSoundBuffer_Unlock(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn IDirectSoundBuffer_Unlock(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let this = <u32>::from_stack(mem, esp + 4u32);
-            let lpvAudioPtr1 = <u32>::from_stack(mem, esp + 8u32);
-            let dwAudioBytes1 = <u32>::from_stack(mem, esp + 12u32);
-            let lpvAudioPtr2 = <u32>::from_stack(mem, esp + 16u32);
-            let dwAudioBytes2 = <u32>::from_stack(mem, esp + 20u32);
-            winapi::dsound::IDirectSoundBuffer::Unlock(
+            let this = <u32>::from_stack(mem, stack_args + 0u32);
+            let lpvAudioPtr1 = <u32>::from_stack(mem, stack_args + 4u32);
+            let dwAudioBytes1 = <u32>::from_stack(mem, stack_args + 8u32);
+            let lpvAudioPtr2 = <u32>::from_stack(mem, stack_args + 12u32);
+            let dwAudioBytes2 = <u32>::from_stack(mem, stack_args + 16u32);
+            let __trace_context = if crate::trace::enabled("dsound") {
+                Some(crate::trace::trace_begin(
+                    "dsound",
+                    "IDirectSoundBuffer::Unlock",
+                    &[
+                        ("this", &this),
+                        ("lpvAudioPtr1", &lpvAudioPtr1),
+                        ("dwAudioBytes1", &dwAudioBytes1),
+                        ("lpvAudioPtr2", &lpvAudioPtr2),
+                        ("dwAudioBytes2", &dwAudioBytes2),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::dsound::IDirectSoundBuffer::Unlock(
                 machine,
                 this,
                 lpvAudioPtr1,
                 dwAudioBytes1,
                 lpvAudioPtr2,
                 dwAudioBytes2,
-            )
-            .to_raw()
+            );
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::dsound::IDirectSoundBuffer::Unlock_pos.0,
+                    winapi::dsound::IDirectSoundBuffer::Unlock_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn IDirectSound_CreateSoundBuffer(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn IDirectSound_CreateSoundBuffer(
+            machine: &mut Machine,
+            stack_args: u32,
+        ) -> u32 {
             let mem = machine.mem().detach();
-            let this = <u32>::from_stack(mem, esp + 4u32);
-            let lpcDSBufferDesc = <Option<&DSBUFFERDESC>>::from_stack(mem, esp + 8u32);
-            let lplpDirectSoundBuffer = <Option<&mut u32>>::from_stack(mem, esp + 12u32);
-            let pUnkOuter = <u32>::from_stack(mem, esp + 16u32);
-            winapi::dsound::IDirectSound::CreateSoundBuffer(
+            let this = <u32>::from_stack(mem, stack_args + 0u32);
+            let lpcDSBufferDesc = <Option<&DSBUFFERDESC>>::from_stack(mem, stack_args + 4u32);
+            let lplpDirectSoundBuffer = <Option<&mut u32>>::from_stack(mem, stack_args + 8u32);
+            let pUnkOuter = <u32>::from_stack(mem, stack_args + 12u32);
+            let __trace_context = if crate::trace::enabled("dsound") {
+                Some(crate::trace::trace_begin(
+                    "dsound",
+                    "IDirectSound::CreateSoundBuffer",
+                    &[
+                        ("this", &this),
+                        ("lpcDSBufferDesc", &lpcDSBufferDesc),
+                        ("lplpDirectSoundBuffer", &lplpDirectSoundBuffer),
+                        ("pUnkOuter", &pUnkOuter),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::dsound::IDirectSound::CreateSoundBuffer(
                 machine,
                 this,
                 lpcDSBufferDesc,
                 lplpDirectSoundBuffer,
                 pUnkOuter,
-            )
-            .to_raw()
+            );
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::dsound::IDirectSound::CreateSoundBuffer_pos.0,
+                    winapi::dsound::IDirectSound::CreateSoundBuffer_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn IDirectSound_Release(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn IDirectSound_Release(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let this = <u32>::from_stack(mem, esp + 4u32);
-            winapi::dsound::IDirectSound::Release(machine, this).to_raw()
+            let this = <u32>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("dsound") {
+                Some(crate::trace::trace_begin(
+                    "dsound",
+                    "IDirectSound::Release",
+                    &[("this", &this)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::dsound::IDirectSound::Release(machine, this);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::dsound::IDirectSound::Release_pos.0,
+                    winapi::dsound::IDirectSound::Release_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn IDirectSound_SetCooperativeLevel(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn IDirectSound_SetCooperativeLevel(
+            machine: &mut Machine,
+            stack_args: u32,
+        ) -> u32 {
             let mem = machine.mem().detach();
-            let this = <u32>::from_stack(mem, esp + 4u32);
-            let hwnd = <u32>::from_stack(mem, esp + 8u32);
-            let dwLevel = <u32>::from_stack(mem, esp + 12u32);
-            winapi::dsound::IDirectSound::SetCooperativeLevel(machine, this, hwnd, dwLevel).to_raw()
+            let this = <u32>::from_stack(mem, stack_args + 0u32);
+            let hwnd = <u32>::from_stack(mem, stack_args + 4u32);
+            let dwLevel = <u32>::from_stack(mem, stack_args + 8u32);
+            let __trace_context = if crate::trace::enabled("dsound") {
+                Some(crate::trace::trace_begin(
+                    "dsound",
+                    "IDirectSound::SetCooperativeLevel",
+                    &[("this", &this), ("hwnd", &hwnd), ("dwLevel", &dwLevel)],
+                ))
+            } else {
+                None
+            };
+            let result =
+                winapi::dsound::IDirectSound::SetCooperativeLevel(machine, this, hwnd, dwLevel);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::dsound::IDirectSound::SetCooperativeLevel_pos.0,
+                    winapi::dsound::IDirectSound::SetCooperativeLevel_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-    }
-    mod shims {
-        use super::impls;
-        use super::Shim;
-        pub const DirectSoundCreate: Shim = Shim {
-            name: "DirectSoundCreate",
-            func: impls::DirectSoundCreate,
-            stack_consumed: 12u32,
-            is_async: false,
-        };
-        pub const DirectSoundEnumerateA: Shim = Shim {
-            name: "DirectSoundEnumerateA",
-            func: impls::DirectSoundEnumerateA,
-            stack_consumed: 8u32,
-            is_async: false,
-        };
-        pub const IDirectSoundBuffer_GetCurrentPosition: Shim = Shim {
-            name: "IDirectSoundBuffer::GetCurrentPosition",
-            func: impls::IDirectSoundBuffer_GetCurrentPosition,
-            stack_consumed: 12u32,
-            is_async: false,
-        };
-        pub const IDirectSoundBuffer_GetStatus: Shim = Shim {
-            name: "IDirectSoundBuffer::GetStatus",
-            func: impls::IDirectSoundBuffer_GetStatus,
-            stack_consumed: 8u32,
-            is_async: false,
-        };
-        pub const IDirectSoundBuffer_Lock: Shim = Shim {
-            name: "IDirectSoundBuffer::Lock",
-            func: impls::IDirectSoundBuffer_Lock,
-            stack_consumed: 32u32,
-            is_async: false,
-        };
-        pub const IDirectSoundBuffer_Play: Shim = Shim {
-            name: "IDirectSoundBuffer::Play",
-            func: impls::IDirectSoundBuffer_Play,
-            stack_consumed: 16u32,
-            is_async: false,
-        };
-        pub const IDirectSoundBuffer_Release: Shim = Shim {
-            name: "IDirectSoundBuffer::Release",
-            func: impls::IDirectSoundBuffer_Release,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const IDirectSoundBuffer_SetFormat: Shim = Shim {
-            name: "IDirectSoundBuffer::SetFormat",
-            func: impls::IDirectSoundBuffer_SetFormat,
-            stack_consumed: 8u32,
-            is_async: false,
-        };
-        pub const IDirectSoundBuffer_Unlock: Shim = Shim {
-            name: "IDirectSoundBuffer::Unlock",
-            func: impls::IDirectSoundBuffer_Unlock,
-            stack_consumed: 20u32,
-            is_async: false,
-        };
-        pub const IDirectSound_CreateSoundBuffer: Shim = Shim {
-            name: "IDirectSound::CreateSoundBuffer",
-            func: impls::IDirectSound_CreateSoundBuffer,
-            stack_consumed: 16u32,
-            is_async: false,
-        };
-        pub const IDirectSound_Release: Shim = Shim {
-            name: "IDirectSound::Release",
-            func: impls::IDirectSound_Release,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const IDirectSound_SetCooperativeLevel: Shim = Shim {
-            name: "IDirectSound::SetCooperativeLevel",
-            func: impls::IDirectSound_SetCooperativeLevel,
-            stack_consumed: 12u32,
-            is_async: false,
-        };
     }
     const SHIMS: [Shim; 12usize] = [
-        shims::DirectSoundCreate,
-        shims::DirectSoundEnumerateA,
-        shims::IDirectSoundBuffer_GetCurrentPosition,
-        shims::IDirectSoundBuffer_GetStatus,
-        shims::IDirectSoundBuffer_Lock,
-        shims::IDirectSoundBuffer_Play,
-        shims::IDirectSoundBuffer_Release,
-        shims::IDirectSoundBuffer_SetFormat,
-        shims::IDirectSoundBuffer_Unlock,
-        shims::IDirectSound_CreateSoundBuffer,
-        shims::IDirectSound_Release,
-        shims::IDirectSound_SetCooperativeLevel,
+        Shim {
+            name: "DirectSoundCreate",
+            func: Handler::Sync(wrappers::DirectSoundCreate),
+        },
+        Shim {
+            name: "DirectSoundEnumerateA",
+            func: Handler::Sync(wrappers::DirectSoundEnumerateA),
+        },
+        Shim {
+            name: "IDirectSoundBuffer::GetCurrentPosition",
+            func: Handler::Sync(wrappers::IDirectSoundBuffer_GetCurrentPosition),
+        },
+        Shim {
+            name: "IDirectSoundBuffer::GetStatus",
+            func: Handler::Sync(wrappers::IDirectSoundBuffer_GetStatus),
+        },
+        Shim {
+            name: "IDirectSoundBuffer::Lock",
+            func: Handler::Sync(wrappers::IDirectSoundBuffer_Lock),
+        },
+        Shim {
+            name: "IDirectSoundBuffer::Play",
+            func: Handler::Sync(wrappers::IDirectSoundBuffer_Play),
+        },
+        Shim {
+            name: "IDirectSoundBuffer::Release",
+            func: Handler::Sync(wrappers::IDirectSoundBuffer_Release),
+        },
+        Shim {
+            name: "IDirectSoundBuffer::SetFormat",
+            func: Handler::Sync(wrappers::IDirectSoundBuffer_SetFormat),
+        },
+        Shim {
+            name: "IDirectSoundBuffer::Unlock",
+            func: Handler::Sync(wrappers::IDirectSoundBuffer_Unlock),
+        },
+        Shim {
+            name: "IDirectSound::CreateSoundBuffer",
+            func: Handler::Sync(wrappers::IDirectSound_CreateSoundBuffer),
+        },
+        Shim {
+            name: "IDirectSound::Release",
+            func: Handler::Sync(wrappers::IDirectSound_Release),
+        },
+        Shim {
+            name: "IDirectSound::SetCooperativeLevel",
+            func: Handler::Sync(wrappers::IDirectSound_SetCooperativeLevel),
+        },
     ];
     pub const DLL: BuiltinDLL = BuiltinDLL {
         file_name: "dsound.dll",
@@ -1471,76 +2799,215 @@ pub mod dsound {
 }
 pub mod gdi32 {
     use super::*;
-    mod impls {
+    mod wrappers {
         use crate::{
             machine::Machine,
             winapi::{self, stack_args::*, types::*},
         };
         use memory::Extensions;
         use winapi::gdi32::*;
-        pub unsafe fn BitBlt(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn BitBlt(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hdc = <HDC>::from_stack(mem, esp + 4u32);
-            let x = <i32>::from_stack(mem, esp + 8u32);
-            let y = <i32>::from_stack(mem, esp + 12u32);
-            let cx = <u32>::from_stack(mem, esp + 16u32);
-            let cy = <u32>::from_stack(mem, esp + 20u32);
-            let hdcSrc = <HDC>::from_stack(mem, esp + 24u32);
-            let x1 = <i32>::from_stack(mem, esp + 28u32);
-            let y1 = <i32>::from_stack(mem, esp + 32u32);
-            let rop = <u32>::from_stack(mem, esp + 36u32);
-            winapi::gdi32::BitBlt(machine, hdc, x, y, cx, cy, hdcSrc, x1, y1, rop).to_raw()
+            let hdcDst = <HDC>::from_stack(mem, stack_args + 0u32);
+            let xDst = <i32>::from_stack(mem, stack_args + 4u32);
+            let yDst = <i32>::from_stack(mem, stack_args + 8u32);
+            let w = <i32>::from_stack(mem, stack_args + 12u32);
+            let h = <i32>::from_stack(mem, stack_args + 16u32);
+            let hdcSrc = <HDC>::from_stack(mem, stack_args + 20u32);
+            let xSrc = <i32>::from_stack(mem, stack_args + 24u32);
+            let ySrc = <i32>::from_stack(mem, stack_args + 28u32);
+            let rop = <Result<RasterOp, u32>>::from_stack(mem, stack_args + 32u32);
+            let __trace_context = if crate::trace::enabled("gdi32/bitmap") {
+                Some(crate::trace::trace_begin(
+                    "gdi32/bitmap",
+                    "BitBlt",
+                    &[
+                        ("hdcDst", &hdcDst),
+                        ("xDst", &xDst),
+                        ("yDst", &yDst),
+                        ("w", &w),
+                        ("h", &h),
+                        ("hdcSrc", &hdcSrc),
+                        ("xSrc", &xSrc),
+                        ("ySrc", &ySrc),
+                        ("rop", &rop),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result =
+                winapi::gdi32::BitBlt(machine, hdcDst, xDst, yDst, w, h, hdcSrc, xSrc, ySrc, rop);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::gdi32::BitBlt_pos.0,
+                    winapi::gdi32::BitBlt_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn CreateBitmap(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn CreateBitmap(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let nWidth = <u32>::from_stack(mem, esp + 4u32);
-            let nHeight = <u32>::from_stack(mem, esp + 8u32);
-            let nPlanes = <u32>::from_stack(mem, esp + 12u32);
-            let nBitCount = <u32>::from_stack(mem, esp + 16u32);
-            let lpBits = <u32>::from_stack(mem, esp + 20u32);
-            winapi::gdi32::CreateBitmap(machine, nWidth, nHeight, nPlanes, nBitCount, lpBits)
-                .to_raw()
+            let nWidth = <u32>::from_stack(mem, stack_args + 0u32);
+            let nHeight = <u32>::from_stack(mem, stack_args + 4u32);
+            let nPlanes = <u32>::from_stack(mem, stack_args + 8u32);
+            let nBitCount = <u32>::from_stack(mem, stack_args + 12u32);
+            let lpBits = <u32>::from_stack(mem, stack_args + 16u32);
+            let __trace_context = if crate::trace::enabled("gdi32/bitmap") {
+                Some(crate::trace::trace_begin(
+                    "gdi32/bitmap",
+                    "CreateBitmap",
+                    &[
+                        ("nWidth", &nWidth),
+                        ("nHeight", &nHeight),
+                        ("nPlanes", &nPlanes),
+                        ("nBitCount", &nBitCount),
+                        ("lpBits", &lpBits),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result =
+                winapi::gdi32::CreateBitmap(machine, nWidth, nHeight, nPlanes, nBitCount, lpBits);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::gdi32::CreateBitmap_pos.0,
+                    winapi::gdi32::CreateBitmap_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn CreateCompatibleBitmap(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn CreateCompatibleBitmap(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hdc = <HDC>::from_stack(mem, esp + 4u32);
-            let cx = <u32>::from_stack(mem, esp + 8u32);
-            let cy = <u32>::from_stack(mem, esp + 12u32);
-            winapi::gdi32::CreateCompatibleBitmap(machine, hdc, cx, cy).to_raw()
+            let hdc = <HDC>::from_stack(mem, stack_args + 0u32);
+            let cx = <u32>::from_stack(mem, stack_args + 4u32);
+            let cy = <u32>::from_stack(mem, stack_args + 8u32);
+            let __trace_context = if crate::trace::enabled("gdi32/bitmap") {
+                Some(crate::trace::trace_begin(
+                    "gdi32/bitmap",
+                    "CreateCompatibleBitmap",
+                    &[("hdc", &hdc), ("cx", &cx), ("cy", &cy)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::gdi32::CreateCompatibleBitmap(machine, hdc, cx, cy);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::gdi32::CreateCompatibleBitmap_pos.0,
+                    winapi::gdi32::CreateCompatibleBitmap_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn CreateCompatibleDC(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn CreateCompatibleDC(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hdc = <HDC>::from_stack(mem, esp + 4u32);
-            winapi::gdi32::CreateCompatibleDC(machine, hdc).to_raw()
+            let hdc = <HDC>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("gdi32/dc") {
+                Some(crate::trace::trace_begin(
+                    "gdi32/dc",
+                    "CreateCompatibleDC",
+                    &[("hdc", &hdc)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::gdi32::CreateCompatibleDC(machine, hdc);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::gdi32::CreateCompatibleDC_pos.0,
+                    winapi::gdi32::CreateCompatibleDC_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn CreateDIBSection(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn CreateDIBSection(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hdc = <HDC>::from_stack(mem, esp + 4u32);
-            let pbmi = <Option<&BITMAPINFOHEADER>>::from_stack(mem, esp + 8u32);
-            let usage = <u32>::from_stack(mem, esp + 12u32);
-            let ppvBits = <Option<&mut u32>>::from_stack(mem, esp + 16u32);
-            let hSection = <u32>::from_stack(mem, esp + 20u32);
-            let offset = <u32>::from_stack(mem, esp + 24u32);
-            winapi::gdi32::CreateDIBSection(machine, hdc, pbmi, usage, ppvBits, hSection, offset)
-                .to_raw()
+            let hdc = <HDC>::from_stack(mem, stack_args + 0u32);
+            let pbmi = <Option<&BITMAPINFOHEADER>>::from_stack(mem, stack_args + 4u32);
+            let usage = <u32>::from_stack(mem, stack_args + 8u32);
+            let ppvBits = <Option<&mut u32>>::from_stack(mem, stack_args + 12u32);
+            let hSection = <u32>::from_stack(mem, stack_args + 16u32);
+            let offset = <u32>::from_stack(mem, stack_args + 20u32);
+            let __trace_context = if crate::trace::enabled("gdi32/bitmap") {
+                Some(crate::trace::trace_begin(
+                    "gdi32/bitmap",
+                    "CreateDIBSection",
+                    &[
+                        ("hdc", &hdc),
+                        ("pbmi", &pbmi),
+                        ("usage", &usage),
+                        ("ppvBits", &ppvBits),
+                        ("hSection", &hSection),
+                        ("offset", &offset),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::gdi32::CreateDIBSection(
+                machine, hdc, pbmi, usage, ppvBits, hSection, offset,
+            );
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::gdi32::CreateDIBSection_pos.0,
+                    winapi::gdi32::CreateDIBSection_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn CreateFontA(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn CreateFontA(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let cHeight = <i32>::from_stack(mem, esp + 4u32);
-            let cWidth = <i32>::from_stack(mem, esp + 8u32);
-            let cEscapement = <i32>::from_stack(mem, esp + 12u32);
-            let cOrientation = <i32>::from_stack(mem, esp + 16u32);
-            let cWeight = <u32>::from_stack(mem, esp + 20u32);
-            let bItalic = <u32>::from_stack(mem, esp + 24u32);
-            let bUnderline = <u32>::from_stack(mem, esp + 28u32);
-            let bStrikeOut = <u32>::from_stack(mem, esp + 32u32);
-            let iCharSet = <u32>::from_stack(mem, esp + 36u32);
-            let iOutPrecision = <u32>::from_stack(mem, esp + 40u32);
-            let iClipPrecision = <u32>::from_stack(mem, esp + 44u32);
-            let iQuality = <u32>::from_stack(mem, esp + 48u32);
-            let iPitchAndFamily = <u32>::from_stack(mem, esp + 52u32);
-            let pszFaceName = <Option<&str>>::from_stack(mem, esp + 56u32);
-            winapi::gdi32::CreateFontA(
+            let cHeight = <i32>::from_stack(mem, stack_args + 0u32);
+            let cWidth = <i32>::from_stack(mem, stack_args + 4u32);
+            let cEscapement = <i32>::from_stack(mem, stack_args + 8u32);
+            let cOrientation = <i32>::from_stack(mem, stack_args + 12u32);
+            let cWeight = <u32>::from_stack(mem, stack_args + 16u32);
+            let bItalic = <u32>::from_stack(mem, stack_args + 20u32);
+            let bUnderline = <u32>::from_stack(mem, stack_args + 24u32);
+            let bStrikeOut = <u32>::from_stack(mem, stack_args + 28u32);
+            let iCharSet = <u32>::from_stack(mem, stack_args + 32u32);
+            let iOutPrecision = <u32>::from_stack(mem, stack_args + 36u32);
+            let iClipPrecision = <u32>::from_stack(mem, stack_args + 40u32);
+            let iQuality = <u32>::from_stack(mem, stack_args + 44u32);
+            let iPitchAndFamily = <u32>::from_stack(mem, stack_args + 48u32);
+            let pszFaceName = <Option<&str>>::from_stack(mem, stack_args + 52u32);
+            let __trace_context = if crate::trace::enabled("gdi32/text") {
+                Some(crate::trace::trace_begin(
+                    "gdi32/text",
+                    "CreateFontA",
+                    &[
+                        ("cHeight", &cHeight),
+                        ("cWidth", &cWidth),
+                        ("cEscapement", &cEscapement),
+                        ("cOrientation", &cOrientation),
+                        ("cWeight", &cWeight),
+                        ("bItalic", &bItalic),
+                        ("bUnderline", &bUnderline),
+                        ("bStrikeOut", &bStrikeOut),
+                        ("iCharSet", &iCharSet),
+                        ("iOutPrecision", &iOutPrecision),
+                        ("iClipPrecision", &iClipPrecision),
+                        ("iQuality", &iQuality),
+                        ("iPitchAndFamily", &iPitchAndFamily),
+                        ("pszFaceName", &pszFaceName),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::gdi32::CreateFontA(
                 machine,
                 cHeight,
                 cWidth,
@@ -1556,523 +3023,1117 @@ pub mod gdi32 {
                 iQuality,
                 iPitchAndFamily,
                 pszFaceName,
-            )
-            .to_raw()
+            );
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::gdi32::CreateFontA_pos.0,
+                    winapi::gdi32::CreateFontA_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn CreatePen(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn CreatePalette(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let iStyle = <Result<PS, u32>>::from_stack(mem, esp + 4u32);
-            let cWidth = <u32>::from_stack(mem, esp + 8u32);
-            let color = <u32>::from_stack(mem, esp + 12u32);
-            winapi::gdi32::CreatePen(machine, iStyle, cWidth, color).to_raw()
+            let plpal = <u32>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("gdi32/palette") {
+                Some(crate::trace::trace_begin(
+                    "gdi32/palette",
+                    "CreatePalette",
+                    &[("plpal", &plpal)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::gdi32::CreatePalette(machine, plpal);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::gdi32::CreatePalette_pos.0,
+                    winapi::gdi32::CreatePalette_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn CreateSolidBrush(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn CreatePen(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let color = <u32>::from_stack(mem, esp + 4u32);
-            winapi::gdi32::CreateSolidBrush(machine, color).to_raw()
+            let iStyle = <Result<PS, u32>>::from_stack(mem, stack_args + 0u32);
+            let cWidth = <u32>::from_stack(mem, stack_args + 4u32);
+            let color = <COLORREF>::from_stack(mem, stack_args + 8u32);
+            let __trace_context = if crate::trace::enabled("gdi32/draw") {
+                Some(crate::trace::trace_begin(
+                    "gdi32/draw",
+                    "CreatePen",
+                    &[("iStyle", &iStyle), ("cWidth", &cWidth), ("color", &color)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::gdi32::CreatePen(machine, iStyle, cWidth, color);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::gdi32::CreatePen_pos.0,
+                    winapi::gdi32::CreatePen_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn DeleteDC(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn CreateSolidBrush(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hdc = <u32>::from_stack(mem, esp + 4u32);
-            winapi::gdi32::DeleteDC(machine, hdc).to_raw()
+            let color = <COLORREF>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("gdi32/draw") {
+                Some(crate::trace::trace_begin(
+                    "gdi32/draw",
+                    "CreateSolidBrush",
+                    &[("color", &color)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::gdi32::CreateSolidBrush(machine, color);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::gdi32::CreateSolidBrush_pos.0,
+                    winapi::gdi32::CreateSolidBrush_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn DeleteObject(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn DeleteDC(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let handle = <HGDIOBJ>::from_stack(mem, esp + 4u32);
-            winapi::gdi32::DeleteObject(machine, handle).to_raw()
+            let hdc = <u32>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("gdi32/dc") {
+                Some(crate::trace::trace_begin(
+                    "gdi32/dc",
+                    "DeleteDC",
+                    &[("hdc", &hdc)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::gdi32::DeleteDC(machine, hdc);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::gdi32::DeleteDC_pos.0,
+                    winapi::gdi32::DeleteDC_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn GetDCOrgEx(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn DeleteObject(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hdc = <HDC>::from_stack(mem, esp + 4u32);
-            let lpPoint = <Option<&mut POINT>>::from_stack(mem, esp + 8u32);
-            winapi::gdi32::GetDCOrgEx(machine, hdc, lpPoint).to_raw()
+            let handle = <HGDIOBJ>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("gdi32/object") {
+                Some(crate::trace::trace_begin(
+                    "gdi32/object",
+                    "DeleteObject",
+                    &[("handle", &handle)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::gdi32::DeleteObject(machine, handle);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::gdi32::DeleteObject_pos.0,
+                    winapi::gdi32::DeleteObject_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn GetDeviceCaps(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn GetDCOrgEx(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hdc = <HDC>::from_stack(mem, esp + 4u32);
-            let index = <Result<GetDeviceCapsArg, u32>>::from_stack(mem, esp + 8u32);
-            winapi::gdi32::GetDeviceCaps(machine, hdc, index).to_raw()
+            let hdc = <HDC>::from_stack(mem, stack_args + 0u32);
+            let lpPoint = <Option<&mut POINT>>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("gdi32/dc") {
+                Some(crate::trace::trace_begin(
+                    "gdi32/dc",
+                    "GetDCOrgEx",
+                    &[("hdc", &hdc), ("lpPoint", &lpPoint)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::gdi32::GetDCOrgEx(machine, hdc, lpPoint);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::gdi32::GetDCOrgEx_pos.0,
+                    winapi::gdi32::GetDCOrgEx_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn GetLayout(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn GetDeviceCaps(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hdc = <HDC>::from_stack(mem, esp + 4u32);
-            winapi::gdi32::GetLayout(machine, hdc).to_raw()
+            let hdc = <HDC>::from_stack(mem, stack_args + 0u32);
+            let index = <Result<GetDeviceCapsArg, u32>>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("gdi32/dc") {
+                Some(crate::trace::trace_begin(
+                    "gdi32/dc",
+                    "GetDeviceCaps",
+                    &[("hdc", &hdc), ("index", &index)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::gdi32::GetDeviceCaps(machine, hdc, index);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::gdi32::GetDeviceCaps_pos.0,
+                    winapi::gdi32::GetDeviceCaps_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn GetObjectA(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn GetLayout(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let handle = <HGDIOBJ>::from_stack(mem, esp + 4u32);
-            let bytes = <u32>::from_stack(mem, esp + 8u32);
-            let out = <u32>::from_stack(mem, esp + 12u32);
-            winapi::gdi32::GetObjectA(machine, handle, bytes, out).to_raw()
+            let hdc = <HDC>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("gdi32/dc") {
+                Some(crate::trace::trace_begin(
+                    "gdi32/dc",
+                    "GetLayout",
+                    &[("hdc", &hdc)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::gdi32::GetLayout(machine, hdc);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::gdi32::GetLayout_pos.0,
+                    winapi::gdi32::GetLayout_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn GetPixel(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn GetObjectA(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hdc = <HDC>::from_stack(mem, esp + 4u32);
-            let x = <u32>::from_stack(mem, esp + 8u32);
-            let y = <u32>::from_stack(mem, esp + 12u32);
-            winapi::gdi32::GetPixel(machine, hdc, x, y).to_raw()
+            let handle = <HGDIOBJ>::from_stack(mem, stack_args + 0u32);
+            let bytes = <u32>::from_stack(mem, stack_args + 4u32);
+            let out = <u32>::from_stack(mem, stack_args + 8u32);
+            let __trace_context = if crate::trace::enabled("gdi32/object") {
+                Some(crate::trace::trace_begin(
+                    "gdi32/object",
+                    "GetObjectA",
+                    &[("handle", &handle), ("bytes", &bytes), ("out", &out)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::gdi32::GetObjectA(machine, handle, bytes, out);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::gdi32::GetObjectA_pos.0,
+                    winapi::gdi32::GetObjectA_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn GetStockObject(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn GetPixel(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let i = <Result<GetStockObjectArg, u32>>::from_stack(mem, esp + 4u32);
-            winapi::gdi32::GetStockObject(machine, i).to_raw()
+            let hdc = <HDC>::from_stack(mem, stack_args + 0u32);
+            let x = <u32>::from_stack(mem, stack_args + 4u32);
+            let y = <u32>::from_stack(mem, stack_args + 8u32);
+            let __trace_context = if crate::trace::enabled("gdi32/draw") {
+                Some(crate::trace::trace_begin(
+                    "gdi32/draw",
+                    "GetPixel",
+                    &[("hdc", &hdc), ("x", &x), ("y", &y)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::gdi32::GetPixel(machine, hdc, x, y);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::gdi32::GetPixel_pos.0,
+                    winapi::gdi32::GetPixel_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn GetTextExtentPoint32A(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn GetStockObject(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hdc = <HDC>::from_stack(mem, esp + 4u32);
-            let lpString = <Option<&str>>::from_stack(mem, esp + 8u32);
-            let c = <i32>::from_stack(mem, esp + 12u32);
-            let psizl = <Option<&mut SIZE>>::from_stack(mem, esp + 16u32);
-            winapi::gdi32::GetTextExtentPoint32A(machine, hdc, lpString, c, psizl).to_raw()
+            let i = <Result<GetStockObjectArg, u32>>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("gdi32/object") {
+                Some(crate::trace::trace_begin(
+                    "gdi32/object",
+                    "GetStockObject",
+                    &[("i", &i)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::gdi32::GetStockObject(machine, i);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::gdi32::GetStockObject_pos.0,
+                    winapi::gdi32::GetStockObject_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn GetTextExtentPoint32W(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn GetTextExtentPoint32A(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hdc = <HDC>::from_stack(mem, esp + 4u32);
-            let lpString = <Option<&str>>::from_stack(mem, esp + 8u32);
-            let c = <i32>::from_stack(mem, esp + 12u32);
-            let psizl = <Option<&mut SIZE>>::from_stack(mem, esp + 16u32);
-            winapi::gdi32::GetTextExtentPoint32W(machine, hdc, lpString, c, psizl).to_raw()
+            let hdc = <HDC>::from_stack(mem, stack_args + 0u32);
+            let lpString = <Option<&str>>::from_stack(mem, stack_args + 4u32);
+            let c = <i32>::from_stack(mem, stack_args + 8u32);
+            let psizl = <Option<&mut SIZE>>::from_stack(mem, stack_args + 12u32);
+            let __trace_context = if crate::trace::enabled("gdi32/text") {
+                Some(crate::trace::trace_begin(
+                    "gdi32/text",
+                    "GetTextExtentPoint32A",
+                    &[
+                        ("hdc", &hdc),
+                        ("lpString", &lpString),
+                        ("c", &c),
+                        ("psizl", &psizl),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::gdi32::GetTextExtentPoint32A(machine, hdc, lpString, c, psizl);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::gdi32::GetTextExtentPoint32A_pos.0,
+                    winapi::gdi32::GetTextExtentPoint32A_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn GetTextMetricsA(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn GetTextExtentPoint32W(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hdc = <HDC>::from_stack(mem, esp + 4u32);
-            let lptm = <Option<&mut TEXTMETRICA>>::from_stack(mem, esp + 8u32);
-            winapi::gdi32::GetTextMetricsA(machine, hdc, lptm).to_raw()
+            let hdc = <HDC>::from_stack(mem, stack_args + 0u32);
+            let lpString = <Option<&str>>::from_stack(mem, stack_args + 4u32);
+            let c = <i32>::from_stack(mem, stack_args + 8u32);
+            let psizl = <Option<&mut SIZE>>::from_stack(mem, stack_args + 12u32);
+            let __trace_context = if crate::trace::enabled("gdi32/text") {
+                Some(crate::trace::trace_begin(
+                    "gdi32/text",
+                    "GetTextExtentPoint32W",
+                    &[
+                        ("hdc", &hdc),
+                        ("lpString", &lpString),
+                        ("c", &c),
+                        ("psizl", &psizl),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::gdi32::GetTextExtentPoint32W(machine, hdc, lpString, c, psizl);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::gdi32::GetTextExtentPoint32W_pos.0,
+                    winapi::gdi32::GetTextExtentPoint32W_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn GetTextMetricsW(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn GetTextMetricsA(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hdc = <HDC>::from_stack(mem, esp + 4u32);
-            let lptm = <Option<&mut TEXTMETRICW>>::from_stack(mem, esp + 8u32);
-            winapi::gdi32::GetTextMetricsW(machine, hdc, lptm).to_raw()
+            let hdc = <HDC>::from_stack(mem, stack_args + 0u32);
+            let lptm = <Option<&mut TEXTMETRICA>>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("gdi32/text") {
+                Some(crate::trace::trace_begin(
+                    "gdi32/text",
+                    "GetTextMetricsA",
+                    &[("hdc", &hdc), ("lptm", &lptm)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::gdi32::GetTextMetricsA(machine, hdc, lptm);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::gdi32::GetTextMetricsA_pos.0,
+                    winapi::gdi32::GetTextMetricsA_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn LineDDA(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn GetTextMetricsW(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let xStart = <i32>::from_stack(mem, esp + 4u32);
-            let yStart = <i32>::from_stack(mem, esp + 8u32);
-            let xEnd = <i32>::from_stack(mem, esp + 12u32);
-            let yEnd = <i32>::from_stack(mem, esp + 16u32);
-            let lpProc = <u32>::from_stack(mem, esp + 20u32);
-            let data = <u32>::from_stack(mem, esp + 24u32);
-            winapi::gdi32::LineDDA(machine, xStart, yStart, xEnd, yEnd, lpProc, data).to_raw()
+            let hdc = <HDC>::from_stack(mem, stack_args + 0u32);
+            let lptm = <Option<&mut TEXTMETRICW>>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("gdi32/text") {
+                Some(crate::trace::trace_begin(
+                    "gdi32/text",
+                    "GetTextMetricsW",
+                    &[("hdc", &hdc), ("lptm", &lptm)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::gdi32::GetTextMetricsW(machine, hdc, lptm);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::gdi32::GetTextMetricsW_pos.0,
+                    winapi::gdi32::GetTextMetricsW_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn LineTo(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn LineDDA(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hdc = <HDC>::from_stack(mem, esp + 4u32);
-            let x = <u32>::from_stack(mem, esp + 8u32);
-            let y = <u32>::from_stack(mem, esp + 12u32);
-            winapi::gdi32::LineTo(machine, hdc, x, y).to_raw()
+            let xStart = <i32>::from_stack(mem, stack_args + 0u32);
+            let yStart = <i32>::from_stack(mem, stack_args + 4u32);
+            let xEnd = <i32>::from_stack(mem, stack_args + 8u32);
+            let yEnd = <i32>::from_stack(mem, stack_args + 12u32);
+            let lpProc = <u32>::from_stack(mem, stack_args + 16u32);
+            let data = <u32>::from_stack(mem, stack_args + 20u32);
+            let __trace_context = if crate::trace::enabled("gdi32/draw") {
+                Some(crate::trace::trace_begin(
+                    "gdi32/draw",
+                    "LineDDA",
+                    &[
+                        ("xStart", &xStart),
+                        ("yStart", &yStart),
+                        ("xEnd", &xEnd),
+                        ("yEnd", &yEnd),
+                        ("lpProc", &lpProc),
+                        ("data", &data),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::gdi32::LineDDA(machine, xStart, yStart, xEnd, yEnd, lpProc, data);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::gdi32::LineDDA_pos.0,
+                    winapi::gdi32::LineDDA_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn MoveToEx(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn LineTo(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hdc = <HDC>::from_stack(mem, esp + 4u32);
-            let x = <u32>::from_stack(mem, esp + 8u32);
-            let y = <u32>::from_stack(mem, esp + 12u32);
-            let lppt = <Option<&mut POINT>>::from_stack(mem, esp + 16u32);
-            winapi::gdi32::MoveToEx(machine, hdc, x, y, lppt).to_raw()
+            let hdc = <HDC>::from_stack(mem, stack_args + 0u32);
+            let x = <i32>::from_stack(mem, stack_args + 4u32);
+            let y = <i32>::from_stack(mem, stack_args + 8u32);
+            let __trace_context = if crate::trace::enabled("gdi32/draw") {
+                Some(crate::trace::trace_begin(
+                    "gdi32/draw",
+                    "LineTo",
+                    &[("hdc", &hdc), ("x", &x), ("y", &y)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::gdi32::LineTo(machine, hdc, x, y);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::gdi32::LineTo_pos.0,
+                    winapi::gdi32::LineTo_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn PatBlt(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn MoveToEx(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hdc = <HDC>::from_stack(mem, esp + 4u32);
-            let x = <i32>::from_stack(mem, esp + 8u32);
-            let y = <i32>::from_stack(mem, esp + 12u32);
-            let w = <i32>::from_stack(mem, esp + 16u32);
-            let h = <i32>::from_stack(mem, esp + 20u32);
-            let rop = <u32>::from_stack(mem, esp + 24u32);
-            winapi::gdi32::PatBlt(machine, hdc, x, y, w, h, rop).to_raw()
+            let hdc = <HDC>::from_stack(mem, stack_args + 0u32);
+            let x = <i32>::from_stack(mem, stack_args + 4u32);
+            let y = <i32>::from_stack(mem, stack_args + 8u32);
+            let lppt = <Option<&mut POINT>>::from_stack(mem, stack_args + 12u32);
+            let __trace_context = if crate::trace::enabled("gdi32/draw") {
+                Some(crate::trace::trace_begin(
+                    "gdi32/draw",
+                    "MoveToEx",
+                    &[("hdc", &hdc), ("x", &x), ("y", &y), ("lppt", &lppt)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::gdi32::MoveToEx(machine, hdc, x, y, lppt);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::gdi32::MoveToEx_pos.0,
+                    winapi::gdi32::MoveToEx_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn PtVisible(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn PatBlt(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hdc = <HDC>::from_stack(mem, esp + 4u32);
-            let x = <i32>::from_stack(mem, esp + 8u32);
-            let y = <i32>::from_stack(mem, esp + 12u32);
-            winapi::gdi32::PtVisible(machine, hdc, x, y).to_raw()
+            let hdc = <HDC>::from_stack(mem, stack_args + 0u32);
+            let x = <i32>::from_stack(mem, stack_args + 4u32);
+            let y = <i32>::from_stack(mem, stack_args + 8u32);
+            let w = <i32>::from_stack(mem, stack_args + 12u32);
+            let h = <i32>::from_stack(mem, stack_args + 16u32);
+            let rop = <Result<RasterOp, u32>>::from_stack(mem, stack_args + 20u32);
+            let __trace_context = if crate::trace::enabled("gdi32/bitmap") {
+                Some(crate::trace::trace_begin(
+                    "gdi32/bitmap",
+                    "PatBlt",
+                    &[
+                        ("hdc", &hdc),
+                        ("x", &x),
+                        ("y", &y),
+                        ("w", &w),
+                        ("h", &h),
+                        ("rop", &rop),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::gdi32::PatBlt(machine, hdc, x, y, w, h, rop);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::gdi32::PatBlt_pos.0,
+                    winapi::gdi32::PatBlt_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn SelectObject(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn PtVisible(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hdc = <HDC>::from_stack(mem, esp + 4u32);
-            let hGdiObj = <HGDIOBJ>::from_stack(mem, esp + 8u32);
-            winapi::gdi32::SelectObject(machine, hdc, hGdiObj).to_raw()
+            let hdc = <HDC>::from_stack(mem, stack_args + 0u32);
+            let x = <i32>::from_stack(mem, stack_args + 4u32);
+            let y = <i32>::from_stack(mem, stack_args + 8u32);
+            let __trace_context = if crate::trace::enabled("gdi32/draw") {
+                Some(crate::trace::trace_begin(
+                    "gdi32/draw",
+                    "PtVisible",
+                    &[("hdc", &hdc), ("x", &x), ("y", &y)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::gdi32::PtVisible(machine, hdc, x, y);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::gdi32::PtVisible_pos.0,
+                    winapi::gdi32::PtVisible_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn SetBkColor(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn SelectObject(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hdc = <HDC>::from_stack(mem, esp + 4u32);
-            let color = <u32>::from_stack(mem, esp + 8u32);
-            winapi::gdi32::SetBkColor(machine, hdc, color).to_raw()
+            let hdc = <HDC>::from_stack(mem, stack_args + 0u32);
+            let hGdiObj = <HGDIOBJ>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("gdi32/object") {
+                Some(crate::trace::trace_begin(
+                    "gdi32/object",
+                    "SelectObject",
+                    &[("hdc", &hdc), ("hGdiObj", &hGdiObj)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::gdi32::SelectObject(machine, hdc, hGdiObj);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::gdi32::SelectObject_pos.0,
+                    winapi::gdi32::SelectObject_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn SetBkMode(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn SetBkColor(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hdc = <HDC>::from_stack(mem, esp + 4u32);
-            let mode = <i32>::from_stack(mem, esp + 8u32);
-            winapi::gdi32::SetBkMode(machine, hdc, mode).to_raw()
+            let hdc = <HDC>::from_stack(mem, stack_args + 0u32);
+            let color = <COLORREF>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("gdi32/draw") {
+                Some(crate::trace::trace_begin(
+                    "gdi32/draw",
+                    "SetBkColor",
+                    &[("hdc", &hdc), ("color", &color)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::gdi32::SetBkColor(machine, hdc, color);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::gdi32::SetBkColor_pos.0,
+                    winapi::gdi32::SetBkColor_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn SetBrushOrgEx(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn SetBkMode(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hdc = <HDC>::from_stack(mem, esp + 4u32);
-            let x = <i32>::from_stack(mem, esp + 8u32);
-            let y = <i32>::from_stack(mem, esp + 12u32);
-            let lppt = <Option<&mut POINT>>::from_stack(mem, esp + 16u32);
-            winapi::gdi32::SetBrushOrgEx(machine, hdc, x, y, lppt).to_raw()
+            let hdc = <HDC>::from_stack(mem, stack_args + 0u32);
+            let mode = <i32>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("gdi32/draw") {
+                Some(crate::trace::trace_begin(
+                    "gdi32/draw",
+                    "SetBkMode",
+                    &[("hdc", &hdc), ("mode", &mode)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::gdi32::SetBkMode(machine, hdc, mode);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::gdi32::SetBkMode_pos.0,
+                    winapi::gdi32::SetBkMode_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn SetDIBitsToDevice(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn SetBrushOrgEx(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hdc = <HDC>::from_stack(mem, esp + 4u32);
-            let xDest = <u32>::from_stack(mem, esp + 8u32);
-            let yDest = <u32>::from_stack(mem, esp + 12u32);
-            let w = <u32>::from_stack(mem, esp + 16u32);
-            let h = <u32>::from_stack(mem, esp + 20u32);
-            let xSrc = <u32>::from_stack(mem, esp + 24u32);
-            let ySrc = <u32>::from_stack(mem, esp + 28u32);
-            let StartScan = <u32>::from_stack(mem, esp + 32u32);
-            let cLines = <u32>::from_stack(mem, esp + 36u32);
-            let lpvBits = <u32>::from_stack(mem, esp + 40u32);
-            let lpbmi = <u32>::from_stack(mem, esp + 44u32);
-            let ColorUse = <u32>::from_stack(mem, esp + 48u32);
-            winapi::gdi32::SetDIBitsToDevice(
-                machine, hdc, xDest, yDest, w, h, xSrc, ySrc, StartScan, cLines, lpvBits, lpbmi,
-                ColorUse,
-            )
-            .to_raw()
+            let hdc = <HDC>::from_stack(mem, stack_args + 0u32);
+            let x = <i32>::from_stack(mem, stack_args + 4u32);
+            let y = <i32>::from_stack(mem, stack_args + 8u32);
+            let lppt = <Option<&mut POINT>>::from_stack(mem, stack_args + 12u32);
+            let __trace_context = if crate::trace::enabled("gdi32/draw") {
+                Some(crate::trace::trace_begin(
+                    "gdi32/draw",
+                    "SetBrushOrgEx",
+                    &[("hdc", &hdc), ("x", &x), ("y", &y), ("lppt", &lppt)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::gdi32::SetBrushOrgEx(machine, hdc, x, y, lppt);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::gdi32::SetBrushOrgEx_pos.0,
+                    winapi::gdi32::SetBrushOrgEx_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn SetPixel(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn SetDIBitsToDevice(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hdc = <HDC>::from_stack(mem, esp + 4u32);
-            let x = <u32>::from_stack(mem, esp + 8u32);
-            let y = <u32>::from_stack(mem, esp + 12u32);
-            let color = <u32>::from_stack(mem, esp + 16u32);
-            winapi::gdi32::SetPixel(machine, hdc, x, y, color).to_raw()
+            let hdc = <HDC>::from_stack(mem, stack_args + 0u32);
+            let xDst = <i32>::from_stack(mem, stack_args + 4u32);
+            let yDst = <i32>::from_stack(mem, stack_args + 8u32);
+            let w = <i32>::from_stack(mem, stack_args + 12u32);
+            let h = <i32>::from_stack(mem, stack_args + 16u32);
+            let xSrc = <i32>::from_stack(mem, stack_args + 20u32);
+            let ySrc = <i32>::from_stack(mem, stack_args + 24u32);
+            let StartScan = <u32>::from_stack(mem, stack_args + 28u32);
+            let cLines = <u32>::from_stack(mem, stack_args + 32u32);
+            let lpBits = <u32>::from_stack(mem, stack_args + 36u32);
+            let lpBmi = <u32>::from_stack(mem, stack_args + 40u32);
+            let iUsage = <u32>::from_stack(mem, stack_args + 44u32);
+            let __trace_context = if crate::trace::enabled("gdi32/bitmap") {
+                Some(crate::trace::trace_begin(
+                    "gdi32/bitmap",
+                    "SetDIBitsToDevice",
+                    &[
+                        ("hdc", &hdc),
+                        ("xDst", &xDst),
+                        ("yDst", &yDst),
+                        ("w", &w),
+                        ("h", &h),
+                        ("xSrc", &xSrc),
+                        ("ySrc", &ySrc),
+                        ("StartScan", &StartScan),
+                        ("cLines", &cLines),
+                        ("lpBits", &lpBits),
+                        ("lpBmi", &lpBmi),
+                        ("iUsage", &iUsage),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::gdi32::SetDIBitsToDevice(
+                machine, hdc, xDst, yDst, w, h, xSrc, ySrc, StartScan, cLines, lpBits, lpBmi,
+                iUsage,
+            );
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::gdi32::SetDIBitsToDevice_pos.0,
+                    winapi::gdi32::SetDIBitsToDevice_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn SetROP2(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn SetLayout(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hdc = <HDC>::from_stack(mem, esp + 4u32);
-            let rop2 = <Result<R2, u32>>::from_stack(mem, esp + 8u32);
-            winapi::gdi32::SetROP2(machine, hdc, rop2).to_raw()
+            let hdc = <HDC>::from_stack(mem, stack_args + 0u32);
+            let l = <u32>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("gdi32/dc") {
+                Some(crate::trace::trace_begin(
+                    "gdi32/dc",
+                    "SetLayout",
+                    &[("hdc", &hdc), ("l", &l)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::gdi32::SetLayout(machine, hdc, l);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::gdi32::SetLayout_pos.0,
+                    winapi::gdi32::SetLayout_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn SetTextColor(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn SetPixel(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hdc = <HDC>::from_stack(mem, esp + 4u32);
-            let color = <u32>::from_stack(mem, esp + 8u32);
-            winapi::gdi32::SetTextColor(machine, hdc, color).to_raw()
+            let hdc = <HDC>::from_stack(mem, stack_args + 0u32);
+            let x = <u32>::from_stack(mem, stack_args + 4u32);
+            let y = <u32>::from_stack(mem, stack_args + 8u32);
+            let color = <COLORREF>::from_stack(mem, stack_args + 12u32);
+            let __trace_context = if crate::trace::enabled("gdi32/draw") {
+                Some(crate::trace::trace_begin(
+                    "gdi32/draw",
+                    "SetPixel",
+                    &[("hdc", &hdc), ("x", &x), ("y", &y), ("color", &color)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::gdi32::SetPixel(machine, hdc, x, y, color);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::gdi32::SetPixel_pos.0,
+                    winapi::gdi32::SetPixel_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn StretchBlt(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn SetROP2(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hdcDest = <HDC>::from_stack(mem, esp + 4u32);
-            let xDest = <i32>::from_stack(mem, esp + 8u32);
-            let yDest = <i32>::from_stack(mem, esp + 12u32);
-            let wDest = <u32>::from_stack(mem, esp + 16u32);
-            let hDest = <u32>::from_stack(mem, esp + 20u32);
-            let hdcSrc = <HDC>::from_stack(mem, esp + 24u32);
-            let xSrc = <i32>::from_stack(mem, esp + 28u32);
-            let ySrc = <i32>::from_stack(mem, esp + 32u32);
-            let wSrc = <u32>::from_stack(mem, esp + 36u32);
-            let hSrc = <u32>::from_stack(mem, esp + 40u32);
-            let rop = <u32>::from_stack(mem, esp + 44u32);
-            winapi::gdi32::StretchBlt(
-                machine, hdcDest, xDest, yDest, wDest, hDest, hdcSrc, xSrc, ySrc, wSrc, hSrc, rop,
-            )
-            .to_raw()
+            let hdc = <HDC>::from_stack(mem, stack_args + 0u32);
+            let rop2 = <Result<R2, u32>>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("gdi32/draw") {
+                Some(crate::trace::trace_begin(
+                    "gdi32/draw",
+                    "SetROP2",
+                    &[("hdc", &hdc), ("rop2", &rop2)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::gdi32::SetROP2(machine, hdc, rop2);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::gdi32::SetROP2_pos.0,
+                    winapi::gdi32::SetROP2_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn StretchDIBits(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn SetTextAlign(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hdc = <HDC>::from_stack(mem, esp + 4u32);
-            let xDest = <u32>::from_stack(mem, esp + 8u32);
-            let yDest = <u32>::from_stack(mem, esp + 12u32);
-            let DestWidth = <u32>::from_stack(mem, esp + 16u32);
-            let DestHeight = <u32>::from_stack(mem, esp + 20u32);
-            let xSrc = <u32>::from_stack(mem, esp + 24u32);
-            let ySrc = <u32>::from_stack(mem, esp + 28u32);
-            let SrcWidth = <u32>::from_stack(mem, esp + 32u32);
-            let SrcHeight = <u32>::from_stack(mem, esp + 36u32);
-            let lpBits = <u32>::from_stack(mem, esp + 40u32);
-            let lpbmi = <u32>::from_stack(mem, esp + 44u32);
-            let iUsage = <u32>::from_stack(mem, esp + 48u32);
-            let rop = <Result<RasterOp, u32>>::from_stack(mem, esp + 52u32);
-            winapi::gdi32::StretchDIBits(
-                machine, hdc, xDest, yDest, DestWidth, DestHeight, xSrc, ySrc, SrcWidth, SrcHeight,
-                lpBits, lpbmi, iUsage, rop,
-            )
-            .to_raw()
+            let hdc = <HDC>::from_stack(mem, stack_args + 0u32);
+            let fMode = <u32>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("gdi32/text") {
+                Some(crate::trace::trace_begin(
+                    "gdi32/text",
+                    "SetTextAlign",
+                    &[("hdc", &hdc), ("fMode", &fMode)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::gdi32::SetTextAlign(machine, hdc, fMode);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::gdi32::SetTextAlign_pos.0,
+                    winapi::gdi32::SetTextAlign_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn TextOutA(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn SetTextColor(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hdc = <HDC>::from_stack(mem, esp + 4u32);
-            let x = <u32>::from_stack(mem, esp + 8u32);
-            let y = <u32>::from_stack(mem, esp + 12u32);
-            let lpString = <ArrayWithSize<u8>>::from_stack(mem, esp + 16u32);
-            winapi::gdi32::TextOutA(machine, hdc, x, y, lpString).to_raw()
+            let hdc = <HDC>::from_stack(mem, stack_args + 0u32);
+            let color = <COLORREF>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("gdi32/text") {
+                Some(crate::trace::trace_begin(
+                    "gdi32/text",
+                    "SetTextColor",
+                    &[("hdc", &hdc), ("color", &color)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::gdi32::SetTextColor(machine, hdc, color);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::gdi32::SetTextColor_pos.0,
+                    winapi::gdi32::SetTextColor_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn TextOutW(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn StretchBlt(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hdc = <HDC>::from_stack(mem, esp + 4u32);
-            let x = <u32>::from_stack(mem, esp + 8u32);
-            let y = <u32>::from_stack(mem, esp + 12u32);
-            let lpString = <ArrayWithSize<u16>>::from_stack(mem, esp + 16u32);
-            winapi::gdi32::TextOutW(machine, hdc, x, y, lpString).to_raw()
+            let hdcDst = <HDC>::from_stack(mem, stack_args + 0u32);
+            let xDst = <i32>::from_stack(mem, stack_args + 4u32);
+            let yDst = <i32>::from_stack(mem, stack_args + 8u32);
+            let wDst = <i32>::from_stack(mem, stack_args + 12u32);
+            let hDst = <i32>::from_stack(mem, stack_args + 16u32);
+            let hdcSrc = <HDC>::from_stack(mem, stack_args + 20u32);
+            let xSrc = <i32>::from_stack(mem, stack_args + 24u32);
+            let ySrc = <i32>::from_stack(mem, stack_args + 28u32);
+            let wSrc = <i32>::from_stack(mem, stack_args + 32u32);
+            let hSrc = <i32>::from_stack(mem, stack_args + 36u32);
+            let rop = <Result<RasterOp, u32>>::from_stack(mem, stack_args + 40u32);
+            let __trace_context = if crate::trace::enabled("gdi32/bitmap") {
+                Some(crate::trace::trace_begin(
+                    "gdi32/bitmap",
+                    "StretchBlt",
+                    &[
+                        ("hdcDst", &hdcDst),
+                        ("xDst", &xDst),
+                        ("yDst", &yDst),
+                        ("wDst", &wDst),
+                        ("hDst", &hDst),
+                        ("hdcSrc", &hdcSrc),
+                        ("xSrc", &xSrc),
+                        ("ySrc", &ySrc),
+                        ("wSrc", &wSrc),
+                        ("hSrc", &hSrc),
+                        ("rop", &rop),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::gdi32::StretchBlt(
+                machine, hdcDst, xDst, yDst, wDst, hDst, hdcSrc, xSrc, ySrc, wSrc, hSrc, rop,
+            );
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::gdi32::StretchBlt_pos.0,
+                    winapi::gdi32::StretchBlt_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn StretchDIBits(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let hdc = <HDC>::from_stack(mem, stack_args + 0u32);
+            let xDst = <i32>::from_stack(mem, stack_args + 4u32);
+            let yDst = <i32>::from_stack(mem, stack_args + 8u32);
+            let wDst = <i32>::from_stack(mem, stack_args + 12u32);
+            let hDst = <i32>::from_stack(mem, stack_args + 16u32);
+            let xSrc = <i32>::from_stack(mem, stack_args + 20u32);
+            let ySrc = <i32>::from_stack(mem, stack_args + 24u32);
+            let wSrc = <i32>::from_stack(mem, stack_args + 28u32);
+            let hSrc = <i32>::from_stack(mem, stack_args + 32u32);
+            let lpBits = <u32>::from_stack(mem, stack_args + 36u32);
+            let lpBmi = <u32>::from_stack(mem, stack_args + 40u32);
+            let iUsage = <u32>::from_stack(mem, stack_args + 44u32);
+            let rop = <Result<RasterOp, u32>>::from_stack(mem, stack_args + 48u32);
+            let __trace_context = if crate::trace::enabled("gdi32/bitmap") {
+                Some(crate::trace::trace_begin(
+                    "gdi32/bitmap",
+                    "StretchDIBits",
+                    &[
+                        ("hdc", &hdc),
+                        ("xDst", &xDst),
+                        ("yDst", &yDst),
+                        ("wDst", &wDst),
+                        ("hDst", &hDst),
+                        ("xSrc", &xSrc),
+                        ("ySrc", &ySrc),
+                        ("wSrc", &wSrc),
+                        ("hSrc", &hSrc),
+                        ("lpBits", &lpBits),
+                        ("lpBmi", &lpBmi),
+                        ("iUsage", &iUsage),
+                        ("rop", &rop),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::gdi32::StretchDIBits(
+                machine, hdc, xDst, yDst, wDst, hDst, xSrc, ySrc, wSrc, hSrc, lpBits, lpBmi,
+                iUsage, rop,
+            );
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::gdi32::StretchDIBits_pos.0,
+                    winapi::gdi32::StretchDIBits_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn TextOutA(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let hdc = <HDC>::from_stack(mem, stack_args + 0u32);
+            let x = <u32>::from_stack(mem, stack_args + 4u32);
+            let y = <u32>::from_stack(mem, stack_args + 8u32);
+            let lpString = <ArrayWithSize<u8>>::from_stack(mem, stack_args + 12u32);
+            let __trace_context = if crate::trace::enabled("gdi32/text") {
+                Some(crate::trace::trace_begin(
+                    "gdi32/text",
+                    "TextOutA",
+                    &[("hdc", &hdc), ("x", &x), ("y", &y), ("lpString", &lpString)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::gdi32::TextOutA(machine, hdc, x, y, lpString);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::gdi32::TextOutA_pos.0,
+                    winapi::gdi32::TextOutA_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn TextOutW(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let hdc = <HDC>::from_stack(mem, stack_args + 0u32);
+            let x = <u32>::from_stack(mem, stack_args + 4u32);
+            let y = <u32>::from_stack(mem, stack_args + 8u32);
+            let lpString = <ArrayWithSize<u16>>::from_stack(mem, stack_args + 12u32);
+            let __trace_context = if crate::trace::enabled("gdi32/text") {
+                Some(crate::trace::trace_begin(
+                    "gdi32/text",
+                    "TextOutW",
+                    &[("hdc", &hdc), ("x", &x), ("y", &y), ("lpString", &lpString)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::gdi32::TextOutW(machine, hdc, x, y, lpString);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::gdi32::TextOutW_pos.0,
+                    winapi::gdi32::TextOutW_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
     }
-    mod shims {
-        use super::impls;
-        use super::Shim;
-        pub const BitBlt: Shim = Shim {
+    const SHIMS: [Shim; 40usize] = [
+        Shim {
             name: "BitBlt",
-            func: impls::BitBlt,
-            stack_consumed: 36u32,
-            is_async: false,
-        };
-        pub const CreateBitmap: Shim = Shim {
+            func: Handler::Sync(wrappers::BitBlt),
+        },
+        Shim {
             name: "CreateBitmap",
-            func: impls::CreateBitmap,
-            stack_consumed: 20u32,
-            is_async: false,
-        };
-        pub const CreateCompatibleBitmap: Shim = Shim {
+            func: Handler::Sync(wrappers::CreateBitmap),
+        },
+        Shim {
             name: "CreateCompatibleBitmap",
-            func: impls::CreateCompatibleBitmap,
-            stack_consumed: 12u32,
-            is_async: false,
-        };
-        pub const CreateCompatibleDC: Shim = Shim {
+            func: Handler::Sync(wrappers::CreateCompatibleBitmap),
+        },
+        Shim {
             name: "CreateCompatibleDC",
-            func: impls::CreateCompatibleDC,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const CreateDIBSection: Shim = Shim {
+            func: Handler::Sync(wrappers::CreateCompatibleDC),
+        },
+        Shim {
             name: "CreateDIBSection",
-            func: impls::CreateDIBSection,
-            stack_consumed: 24u32,
-            is_async: false,
-        };
-        pub const CreateFontA: Shim = Shim {
+            func: Handler::Sync(wrappers::CreateDIBSection),
+        },
+        Shim {
             name: "CreateFontA",
-            func: impls::CreateFontA,
-            stack_consumed: 56u32,
-            is_async: false,
-        };
-        pub const CreatePen: Shim = Shim {
+            func: Handler::Sync(wrappers::CreateFontA),
+        },
+        Shim {
+            name: "CreatePalette",
+            func: Handler::Sync(wrappers::CreatePalette),
+        },
+        Shim {
             name: "CreatePen",
-            func: impls::CreatePen,
-            stack_consumed: 12u32,
-            is_async: false,
-        };
-        pub const CreateSolidBrush: Shim = Shim {
+            func: Handler::Sync(wrappers::CreatePen),
+        },
+        Shim {
             name: "CreateSolidBrush",
-            func: impls::CreateSolidBrush,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const DeleteDC: Shim = Shim {
+            func: Handler::Sync(wrappers::CreateSolidBrush),
+        },
+        Shim {
             name: "DeleteDC",
-            func: impls::DeleteDC,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const DeleteObject: Shim = Shim {
+            func: Handler::Sync(wrappers::DeleteDC),
+        },
+        Shim {
             name: "DeleteObject",
-            func: impls::DeleteObject,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const GetDCOrgEx: Shim = Shim {
+            func: Handler::Sync(wrappers::DeleteObject),
+        },
+        Shim {
             name: "GetDCOrgEx",
-            func: impls::GetDCOrgEx,
-            stack_consumed: 8u32,
-            is_async: false,
-        };
-        pub const GetDeviceCaps: Shim = Shim {
+            func: Handler::Sync(wrappers::GetDCOrgEx),
+        },
+        Shim {
             name: "GetDeviceCaps",
-            func: impls::GetDeviceCaps,
-            stack_consumed: 8u32,
-            is_async: false,
-        };
-        pub const GetLayout: Shim = Shim {
+            func: Handler::Sync(wrappers::GetDeviceCaps),
+        },
+        Shim {
             name: "GetLayout",
-            func: impls::GetLayout,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const GetObjectA: Shim = Shim {
+            func: Handler::Sync(wrappers::GetLayout),
+        },
+        Shim {
             name: "GetObjectA",
-            func: impls::GetObjectA,
-            stack_consumed: 12u32,
-            is_async: false,
-        };
-        pub const GetPixel: Shim = Shim {
+            func: Handler::Sync(wrappers::GetObjectA),
+        },
+        Shim {
             name: "GetPixel",
-            func: impls::GetPixel,
-            stack_consumed: 12u32,
-            is_async: false,
-        };
-        pub const GetStockObject: Shim = Shim {
+            func: Handler::Sync(wrappers::GetPixel),
+        },
+        Shim {
             name: "GetStockObject",
-            func: impls::GetStockObject,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const GetTextExtentPoint32A: Shim = Shim {
+            func: Handler::Sync(wrappers::GetStockObject),
+        },
+        Shim {
             name: "GetTextExtentPoint32A",
-            func: impls::GetTextExtentPoint32A,
-            stack_consumed: 16u32,
-            is_async: false,
-        };
-        pub const GetTextExtentPoint32W: Shim = Shim {
+            func: Handler::Sync(wrappers::GetTextExtentPoint32A),
+        },
+        Shim {
             name: "GetTextExtentPoint32W",
-            func: impls::GetTextExtentPoint32W,
-            stack_consumed: 16u32,
-            is_async: false,
-        };
-        pub const GetTextMetricsA: Shim = Shim {
+            func: Handler::Sync(wrappers::GetTextExtentPoint32W),
+        },
+        Shim {
             name: "GetTextMetricsA",
-            func: impls::GetTextMetricsA,
-            stack_consumed: 8u32,
-            is_async: false,
-        };
-        pub const GetTextMetricsW: Shim = Shim {
+            func: Handler::Sync(wrappers::GetTextMetricsA),
+        },
+        Shim {
             name: "GetTextMetricsW",
-            func: impls::GetTextMetricsW,
-            stack_consumed: 8u32,
-            is_async: false,
-        };
-        pub const LineDDA: Shim = Shim {
+            func: Handler::Sync(wrappers::GetTextMetricsW),
+        },
+        Shim {
             name: "LineDDA",
-            func: impls::LineDDA,
-            stack_consumed: 24u32,
-            is_async: false,
-        };
-        pub const LineTo: Shim = Shim {
+            func: Handler::Sync(wrappers::LineDDA),
+        },
+        Shim {
             name: "LineTo",
-            func: impls::LineTo,
-            stack_consumed: 12u32,
-            is_async: false,
-        };
-        pub const MoveToEx: Shim = Shim {
+            func: Handler::Sync(wrappers::LineTo),
+        },
+        Shim {
             name: "MoveToEx",
-            func: impls::MoveToEx,
-            stack_consumed: 16u32,
-            is_async: false,
-        };
-        pub const PatBlt: Shim = Shim {
+            func: Handler::Sync(wrappers::MoveToEx),
+        },
+        Shim {
             name: "PatBlt",
-            func: impls::PatBlt,
-            stack_consumed: 24u32,
-            is_async: false,
-        };
-        pub const PtVisible: Shim = Shim {
+            func: Handler::Sync(wrappers::PatBlt),
+        },
+        Shim {
             name: "PtVisible",
-            func: impls::PtVisible,
-            stack_consumed: 12u32,
-            is_async: false,
-        };
-        pub const SelectObject: Shim = Shim {
+            func: Handler::Sync(wrappers::PtVisible),
+        },
+        Shim {
             name: "SelectObject",
-            func: impls::SelectObject,
-            stack_consumed: 8u32,
-            is_async: false,
-        };
-        pub const SetBkColor: Shim = Shim {
+            func: Handler::Sync(wrappers::SelectObject),
+        },
+        Shim {
             name: "SetBkColor",
-            func: impls::SetBkColor,
-            stack_consumed: 8u32,
-            is_async: false,
-        };
-        pub const SetBkMode: Shim = Shim {
+            func: Handler::Sync(wrappers::SetBkColor),
+        },
+        Shim {
             name: "SetBkMode",
-            func: impls::SetBkMode,
-            stack_consumed: 8u32,
-            is_async: false,
-        };
-        pub const SetBrushOrgEx: Shim = Shim {
+            func: Handler::Sync(wrappers::SetBkMode),
+        },
+        Shim {
             name: "SetBrushOrgEx",
-            func: impls::SetBrushOrgEx,
-            stack_consumed: 16u32,
-            is_async: false,
-        };
-        pub const SetDIBitsToDevice: Shim = Shim {
+            func: Handler::Sync(wrappers::SetBrushOrgEx),
+        },
+        Shim {
             name: "SetDIBitsToDevice",
-            func: impls::SetDIBitsToDevice,
-            stack_consumed: 48u32,
-            is_async: false,
-        };
-        pub const SetPixel: Shim = Shim {
+            func: Handler::Sync(wrappers::SetDIBitsToDevice),
+        },
+        Shim {
+            name: "SetLayout",
+            func: Handler::Sync(wrappers::SetLayout),
+        },
+        Shim {
             name: "SetPixel",
-            func: impls::SetPixel,
-            stack_consumed: 16u32,
-            is_async: false,
-        };
-        pub const SetROP2: Shim = Shim {
+            func: Handler::Sync(wrappers::SetPixel),
+        },
+        Shim {
             name: "SetROP2",
-            func: impls::SetROP2,
-            stack_consumed: 8u32,
-            is_async: false,
-        };
-        pub const SetTextColor: Shim = Shim {
+            func: Handler::Sync(wrappers::SetROP2),
+        },
+        Shim {
+            name: "SetTextAlign",
+            func: Handler::Sync(wrappers::SetTextAlign),
+        },
+        Shim {
             name: "SetTextColor",
-            func: impls::SetTextColor,
-            stack_consumed: 8u32,
-            is_async: false,
-        };
-        pub const StretchBlt: Shim = Shim {
+            func: Handler::Sync(wrappers::SetTextColor),
+        },
+        Shim {
             name: "StretchBlt",
-            func: impls::StretchBlt,
-            stack_consumed: 44u32,
-            is_async: false,
-        };
-        pub const StretchDIBits: Shim = Shim {
+            func: Handler::Sync(wrappers::StretchBlt),
+        },
+        Shim {
             name: "StretchDIBits",
-            func: impls::StretchDIBits,
-            stack_consumed: 52u32,
-            is_async: false,
-        };
-        pub const TextOutA: Shim = Shim {
+            func: Handler::Sync(wrappers::StretchDIBits),
+        },
+        Shim {
             name: "TextOutA",
-            func: impls::TextOutA,
-            stack_consumed: 20u32,
-            is_async: false,
-        };
-        pub const TextOutW: Shim = Shim {
+            func: Handler::Sync(wrappers::TextOutA),
+        },
+        Shim {
             name: "TextOutW",
-            func: impls::TextOutW,
-            stack_consumed: 20u32,
-            is_async: false,
-        };
-    }
-    const SHIMS: [Shim; 37usize] = [
-        shims::BitBlt,
-        shims::CreateBitmap,
-        shims::CreateCompatibleBitmap,
-        shims::CreateCompatibleDC,
-        shims::CreateDIBSection,
-        shims::CreateFontA,
-        shims::CreatePen,
-        shims::CreateSolidBrush,
-        shims::DeleteDC,
-        shims::DeleteObject,
-        shims::GetDCOrgEx,
-        shims::GetDeviceCaps,
-        shims::GetLayout,
-        shims::GetObjectA,
-        shims::GetPixel,
-        shims::GetStockObject,
-        shims::GetTextExtentPoint32A,
-        shims::GetTextExtentPoint32W,
-        shims::GetTextMetricsA,
-        shims::GetTextMetricsW,
-        shims::LineDDA,
-        shims::LineTo,
-        shims::MoveToEx,
-        shims::PatBlt,
-        shims::PtVisible,
-        shims::SelectObject,
-        shims::SetBkColor,
-        shims::SetBkMode,
-        shims::SetBrushOrgEx,
-        shims::SetDIBitsToDevice,
-        shims::SetPixel,
-        shims::SetROP2,
-        shims::SetTextColor,
-        shims::StretchBlt,
-        shims::StretchDIBits,
-        shims::TextOutA,
-        shims::TextOutW,
+            func: Handler::Sync(wrappers::TextOutW),
+        },
     ];
     pub const DLL: BuiltinDLL = BuiltinDLL {
         file_name: "gdi32.dll",
@@ -2082,221 +4143,689 @@ pub mod gdi32 {
 }
 pub mod kernel32 {
     use super::*;
-    mod impls {
+    mod wrappers {
         use crate::{
             machine::Machine,
             winapi::{self, stack_args::*, types::*},
         };
         use memory::Extensions;
         use winapi::kernel32::*;
-        pub unsafe fn AcquireSRWLockExclusive(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn AcquireSRWLockExclusive(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let SRWLock = <Option<&mut SRWLOCK>>::from_stack(mem, esp + 4u32);
-            winapi::kernel32::AcquireSRWLockExclusive(machine, SRWLock).to_raw()
+            let SRWLock = <Option<&mut SRWLOCK>>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("kernel32/thread") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/thread",
+                    "AcquireSRWLockExclusive",
+                    &[("SRWLock", &SRWLock)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::AcquireSRWLockExclusive(machine, SRWLock);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::AcquireSRWLockExclusive_pos.0,
+                    winapi::kernel32::AcquireSRWLockExclusive_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn AcquireSRWLockShared(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn AcquireSRWLockShared(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let SRWLock = <Option<&mut SRWLOCK>>::from_stack(mem, esp + 4u32);
-            winapi::kernel32::AcquireSRWLockShared(machine, SRWLock).to_raw()
+            let SRWLock = <Option<&mut SRWLOCK>>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("kernel32/thread") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/thread",
+                    "AcquireSRWLockShared",
+                    &[("SRWLock", &SRWLock)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::AcquireSRWLockShared(machine, SRWLock);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::AcquireSRWLockShared_pos.0,
+                    winapi::kernel32::AcquireSRWLockShared_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn AddVectoredExceptionHandler(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn AddVectoredExceptionHandler(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let first = <u32>::from_stack(mem, esp + 4u32);
-            let handler = <u32>::from_stack(mem, esp + 8u32);
-            winapi::kernel32::AddVectoredExceptionHandler(machine, first, handler).to_raw()
+            let first = <u32>::from_stack(mem, stack_args + 0u32);
+            let handler = <u32>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("kernel32/misc") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/misc",
+                    "AddVectoredExceptionHandler",
+                    &[("first", &first), ("handler", &handler)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::AddVectoredExceptionHandler(machine, first, handler);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::AddVectoredExceptionHandler_pos.0,
+                    winapi::kernel32::AddVectoredExceptionHandler_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn CloseHandle(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn CloseHandle(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hObject = <HFILE>::from_stack(mem, esp + 4u32);
-            winapi::kernel32::CloseHandle(machine, hObject).to_raw()
+            let hObject = <HFILE>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("kernel32/misc") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/misc",
+                    "CloseHandle",
+                    &[("hObject", &hObject)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::CloseHandle(machine, hObject);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::CloseHandle_pos.0,
+                    winapi::kernel32::CloseHandle_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn CreateDirectoryA(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn CreateDirectoryA(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let lpPathName = <Option<&str>>::from_stack(mem, esp + 4u32);
-            let lpSecurityAttributes = <u32>::from_stack(mem, esp + 8u32);
-            winapi::kernel32::CreateDirectoryA(machine, lpPathName, lpSecurityAttributes).to_raw()
+            let lpPathName = <Option<&str>>::from_stack(mem, stack_args + 0u32);
+            let lpSecurityAttributes = <u32>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("kernel32/file") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/file",
+                    "CreateDirectoryA",
+                    &[
+                        ("lpPathName", &lpPathName),
+                        ("lpSecurityAttributes", &lpSecurityAttributes),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result =
+                winapi::kernel32::CreateDirectoryA(machine, lpPathName, lpSecurityAttributes);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::CreateDirectoryA_pos.0,
+                    winapi::kernel32::CreateDirectoryA_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn CreateEventA(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn CreateEventA(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let lpEventAttributes = <u32>::from_stack(mem, esp + 4u32);
-            let bManualReset = <bool>::from_stack(mem, esp + 8u32);
-            let bInitialState = <bool>::from_stack(mem, esp + 12u32);
-            let lpName = <Option<&str>>::from_stack(mem, esp + 16u32);
-            winapi::kernel32::CreateEventA(
+            let lpEventAttributes = <u32>::from_stack(mem, stack_args + 0u32);
+            let bManualReset = <bool>::from_stack(mem, stack_args + 4u32);
+            let bInitialState = <bool>::from_stack(mem, stack_args + 8u32);
+            let lpName = <Option<&str>>::from_stack(mem, stack_args + 12u32);
+            let __trace_context = if crate::trace::enabled("kernel32/sync") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/sync",
+                    "CreateEventA",
+                    &[
+                        ("lpEventAttributes", &lpEventAttributes),
+                        ("bManualReset", &bManualReset),
+                        ("bInitialState", &bInitialState),
+                        ("lpName", &lpName),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::CreateEventA(
                 machine,
                 lpEventAttributes,
                 bManualReset,
                 bInitialState,
                 lpName,
-            )
-            .to_raw()
-        }
-        pub unsafe fn CreateFileA(machine: &mut Machine, esp: u32) -> u32 {
-            let mem = machine.mem().detach();
-            let lpFileName = <Option<&str>>::from_stack(mem, esp + 4u32);
-            let dwDesiredAccess = <u32>::from_stack(mem, esp + 8u32);
-            let dwShareMode = <u32>::from_stack(mem, esp + 12u32);
-            let lpSecurityAttributes = <u32>::from_stack(mem, esp + 16u32);
-            let dwCreationDisposition =
-                <Result<CreationDisposition, u32>>::from_stack(mem, esp + 20u32);
-            let dwFlagsAndAttributes = <Result<FileAttribute, u32>>::from_stack(mem, esp + 24u32);
-            let hTemplateFile = <HFILE>::from_stack(mem, esp + 28u32);
-            winapi::kernel32::CreateFileA(
-                machine,
-                lpFileName,
-                dwDesiredAccess,
-                dwShareMode,
-                lpSecurityAttributes,
-                dwCreationDisposition,
-                dwFlagsAndAttributes,
-                hTemplateFile,
-            )
-            .to_raw()
-        }
-        pub unsafe fn CreateFileW(machine: &mut Machine, esp: u32) -> u32 {
-            let mem = machine.mem().detach();
-            let lpFileName = <Option<&Str16>>::from_stack(mem, esp + 4u32);
-            let dwDesiredAccess = <u32>::from_stack(mem, esp + 8u32);
-            let dwShareMode = <u32>::from_stack(mem, esp + 12u32);
-            let lpSecurityAttributes = <u32>::from_stack(mem, esp + 16u32);
-            let dwCreationDisposition =
-                <Result<CreationDisposition, u32>>::from_stack(mem, esp + 20u32);
-            let dwFlagsAndAttributes = <Result<FileAttribute, u32>>::from_stack(mem, esp + 24u32);
-            let hTemplateFile = <HFILE>::from_stack(mem, esp + 28u32);
-            winapi::kernel32::CreateFileW(
-                machine,
-                lpFileName,
-                dwDesiredAccess,
-                dwShareMode,
-                lpSecurityAttributes,
-                dwCreationDisposition,
-                dwFlagsAndAttributes,
-                hTemplateFile,
-            )
-            .to_raw()
-        }
-        pub unsafe fn CreateThread(machine: &mut Machine, esp: u32) -> u32 {
-            let mem = machine.mem().detach();
-            let lpThreadAttributes = <u32>::from_stack(mem, esp + 4u32);
-            let dwStackSize = <u32>::from_stack(mem, esp + 8u32);
-            let lpStartAddress = <u32>::from_stack(mem, esp + 12u32);
-            let lpParameter = <u32>::from_stack(mem, esp + 16u32);
-            let dwCreationFlags = <u32>::from_stack(mem, esp + 20u32);
-            let lpThreadId = <u32>::from_stack(mem, esp + 24u32);
-            #[cfg(feature = "x86-emu")]
-            {
-                let m: *mut Machine = machine;
-                let result = async move {
-                    use memory::Extensions;
-                    let machine = unsafe { &mut *m };
-                    let result = winapi::kernel32::CreateThread(
-                        machine,
-                        lpThreadAttributes,
-                        dwStackSize,
-                        lpStartAddress,
-                        lpParameter,
-                        dwCreationFlags,
-                        lpThreadId,
-                    )
-                    .await;
-                    let cpu = &mut machine.emu.x86.cpu_mut();
-                    cpu.regs.eip = x86::ops::pop(cpu, machine.emu.memory.mem());
-                    *cpu.regs.get32_mut(x86::Register::ESP) += 24u32;
-                    cpu.regs.set32(x86::Register::EAX, result.to_raw());
-                };
-                machine
-                    .emu
-                    .x86
-                    .cpu_mut()
-                    .call_async(machine.emu.memory.mem(), Box::pin(result));
-                0
+            );
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::CreateEventA_pos.0,
+                    winapi::kernel32::CreateEventA_pos.1,
+                    &result,
+                );
             }
-            #[cfg(any(feature = "x86-64", feature = "x86-unicorn"))]
-            {
-                let pin = std::pin::pin!(winapi::kernel32::CreateThread(
+            result.to_raw()
+        }
+        pub unsafe fn CreateFileA(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let lpFileName = <Option<&str>>::from_stack(mem, stack_args + 0u32);
+            let dwDesiredAccess = <u32>::from_stack(mem, stack_args + 4u32);
+            let dwShareMode = <u32>::from_stack(mem, stack_args + 8u32);
+            let lpSecurityAttributes = <u32>::from_stack(mem, stack_args + 12u32);
+            let dwCreationDisposition =
+                <Result<CreationDisposition, u32>>::from_stack(mem, stack_args + 16u32);
+            let dwFlagsAndAttributes =
+                <Result<FileAttribute, u32>>::from_stack(mem, stack_args + 20u32);
+            let hTemplateFile = <HFILE>::from_stack(mem, stack_args + 24u32);
+            let __trace_context = if crate::trace::enabled("kernel32/file") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/file",
+                    "CreateFileA",
+                    &[
+                        ("lpFileName", &lpFileName),
+                        ("dwDesiredAccess", &dwDesiredAccess),
+                        ("dwShareMode", &dwShareMode),
+                        ("lpSecurityAttributes", &lpSecurityAttributes),
+                        ("dwCreationDisposition", &dwCreationDisposition),
+                        ("dwFlagsAndAttributes", &dwFlagsAndAttributes),
+                        ("hTemplateFile", &hTemplateFile),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::CreateFileA(
+                machine,
+                lpFileName,
+                dwDesiredAccess,
+                dwShareMode,
+                lpSecurityAttributes,
+                dwCreationDisposition,
+                dwFlagsAndAttributes,
+                hTemplateFile,
+            );
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::CreateFileA_pos.0,
+                    winapi::kernel32::CreateFileA_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn CreateFileW(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let lpFileName = <Option<&Str16>>::from_stack(mem, stack_args + 0u32);
+            let dwDesiredAccess = <u32>::from_stack(mem, stack_args + 4u32);
+            let dwShareMode = <u32>::from_stack(mem, stack_args + 8u32);
+            let lpSecurityAttributes = <u32>::from_stack(mem, stack_args + 12u32);
+            let dwCreationDisposition =
+                <Result<CreationDisposition, u32>>::from_stack(mem, stack_args + 16u32);
+            let dwFlagsAndAttributes =
+                <Result<FileAttribute, u32>>::from_stack(mem, stack_args + 20u32);
+            let hTemplateFile = <HFILE>::from_stack(mem, stack_args + 24u32);
+            let __trace_context = if crate::trace::enabled("kernel32/file") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/file",
+                    "CreateFileW",
+                    &[
+                        ("lpFileName", &lpFileName),
+                        ("dwDesiredAccess", &dwDesiredAccess),
+                        ("dwShareMode", &dwShareMode),
+                        ("lpSecurityAttributes", &lpSecurityAttributes),
+                        ("dwCreationDisposition", &dwCreationDisposition),
+                        ("dwFlagsAndAttributes", &dwFlagsAndAttributes),
+                        ("hTemplateFile", &hTemplateFile),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::CreateFileW(
+                machine,
+                lpFileName,
+                dwDesiredAccess,
+                dwShareMode,
+                lpSecurityAttributes,
+                dwCreationDisposition,
+                dwFlagsAndAttributes,
+                hTemplateFile,
+            );
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::CreateFileW_pos.0,
+                    winapi::kernel32::CreateFileW_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn CreateThread(
+            machine: &mut Machine,
+            stack_args: u32,
+        ) -> std::pin::Pin<Box<dyn std::future::Future<Output = u32>>> {
+            let mem = machine.mem().detach();
+            let lpThreadAttributes = <u32>::from_stack(mem, stack_args + 0u32);
+            let dwStackSize = <u32>::from_stack(mem, stack_args + 4u32);
+            let lpStartAddress = <u32>::from_stack(mem, stack_args + 8u32);
+            let lpParameter = <u32>::from_stack(mem, stack_args + 12u32);
+            let dwCreationFlags = <u32>::from_stack(mem, stack_args + 16u32);
+            let lpThreadId = <u32>::from_stack(mem, stack_args + 20u32);
+            let __trace_context = if crate::trace::enabled("kernel32/thread") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/thread",
+                    "CreateThread",
+                    &[
+                        ("lpThreadAttributes", &lpThreadAttributes),
+                        ("dwStackSize", &dwStackSize),
+                        ("lpStartAddress", &lpStartAddress),
+                        ("lpParameter", &lpParameter),
+                        ("dwCreationFlags", &dwCreationFlags),
+                        ("lpThreadId", &lpThreadId),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let machine: *mut Machine = machine;
+            Box::pin(async move {
+                let machine = unsafe { &mut *machine };
+                let result = winapi::kernel32::CreateThread(
                     machine,
                     lpThreadAttributes,
                     dwStackSize,
                     lpStartAddress,
                     lpParameter,
                     dwCreationFlags,
-                    lpThreadId
-                ));
-                crate::shims::call_sync(pin).to_raw()
+                    lpThreadId,
+                )
+                .await;
+                if let Some(__trace_context) = __trace_context {
+                    crate::trace::trace_return(
+                        &__trace_context,
+                        winapi::kernel32::CreateThread_pos.0,
+                        winapi::kernel32::CreateThread_pos.1,
+                        &result,
+                    );
+                }
+                result.to_raw()
+            })
+        }
+        pub unsafe fn DebugBreak(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let __trace_context = if crate::trace::enabled("kernel32/misc") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/misc",
+                    "DebugBreak",
+                    &[],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::DebugBreak(machine);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::DebugBreak_pos.0,
+                    winapi::kernel32::DebugBreak_pos.1,
+                    &result,
+                );
             }
+            result.to_raw()
         }
-        pub unsafe fn DeleteCriticalSection(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn DeleteCriticalSection(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let lpCriticalSection = <u32>::from_stack(mem, esp + 4u32);
-            winapi::kernel32::DeleteCriticalSection(machine, lpCriticalSection).to_raw()
+            let lpCriticalSection = <u32>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("kernel32/thread") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/thread",
+                    "DeleteCriticalSection",
+                    &[("lpCriticalSection", &lpCriticalSection)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::DeleteCriticalSection(machine, lpCriticalSection);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::DeleteCriticalSection_pos.0,
+                    winapi::kernel32::DeleteCriticalSection_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn DeleteFileA(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn DeleteFileA(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let lpFileName = <Option<&str>>::from_stack(mem, esp + 4u32);
-            winapi::kernel32::DeleteFileA(machine, lpFileName).to_raw()
+            let lpFileName = <Option<&str>>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("kernel32/file") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/file",
+                    "DeleteFileA",
+                    &[("lpFileName", &lpFileName)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::DeleteFileA(machine, lpFileName);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::DeleteFileA_pos.0,
+                    winapi::kernel32::DeleteFileA_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn DisableThreadLibraryCalls(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn DisableThreadLibraryCalls(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hLibModule = <HMODULE>::from_stack(mem, esp + 4u32);
-            winapi::kernel32::DisableThreadLibraryCalls(machine, hLibModule).to_raw()
+            let hLibModule = <HMODULE>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("kernel32/dll") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/dll",
+                    "DisableThreadLibraryCalls",
+                    &[("hLibModule", &hLibModule)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::DisableThreadLibraryCalls(machine, hLibModule);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::DisableThreadLibraryCalls_pos.0,
+                    winapi::kernel32::DisableThreadLibraryCalls_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn EnterCriticalSection(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn EnterCriticalSection(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let lpCriticalSection = <u32>::from_stack(mem, esp + 4u32);
-            winapi::kernel32::EnterCriticalSection(machine, lpCriticalSection).to_raw()
+            let lpCriticalSection = <u32>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("kernel32/thread") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/thread",
+                    "EnterCriticalSection",
+                    &[("lpCriticalSection", &lpCriticalSection)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::EnterCriticalSection(machine, lpCriticalSection);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::EnterCriticalSection_pos.0,
+                    winapi::kernel32::EnterCriticalSection_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn ExitProcess(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn ExitProcess(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let uExitCode = <u32>::from_stack(mem, esp + 4u32);
-            winapi::kernel32::ExitProcess(machine, uExitCode).to_raw()
+            let uExitCode = <u32>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("kernel32/misc") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/misc",
+                    "ExitProcess",
+                    &[("uExitCode", &uExitCode)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::ExitProcess(machine, uExitCode);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::ExitProcess_pos.0,
+                    winapi::kernel32::ExitProcess_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn FileTimeToSystemTime(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn ExitThread(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let lpFileTime = <Option<&FILETIME>>::from_stack(mem, esp + 4u32);
-            let lpSystemTime = <Option<&mut SYSTEMTIME>>::from_stack(mem, esp + 8u32);
-            winapi::kernel32::FileTimeToSystemTime(machine, lpFileTime, lpSystemTime).to_raw()
+            let dwExitCode = <u32>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("kernel32/thread") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/thread",
+                    "ExitThread",
+                    &[("dwExitCode", &dwExitCode)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::ExitThread(machine, dwExitCode);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::ExitThread_pos.0,
+                    winapi::kernel32::ExitThread_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn FindClose(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn FileTimeToSystemTime(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hFindFile = <HFIND>::from_stack(mem, esp + 4u32);
-            winapi::kernel32::FindClose(machine, hFindFile).to_raw()
+            let lpFileTime = <Option<&FILETIME>>::from_stack(mem, stack_args + 0u32);
+            let lpSystemTime = <Option<&mut SYSTEMTIME>>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("kernel32/time") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/time",
+                    "FileTimeToSystemTime",
+                    &[("lpFileTime", &lpFileTime), ("lpSystemTime", &lpSystemTime)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::FileTimeToSystemTime(machine, lpFileTime, lpSystemTime);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::FileTimeToSystemTime_pos.0,
+                    winapi::kernel32::FileTimeToSystemTime_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn FindFirstFileA(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn FindClose(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let lpFileName = <Option<&str>>::from_stack(mem, esp + 4u32);
-            let lpFindFileData = <Option<&mut WIN32_FIND_DATAA>>::from_stack(mem, esp + 8u32);
-            winapi::kernel32::FindFirstFileA(machine, lpFileName, lpFindFileData).to_raw()
+            let hFindFile = <HFIND>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("kernel32/file") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/file",
+                    "FindClose",
+                    &[("hFindFile", &hFindFile)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::FindClose(machine, hFindFile);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::FindClose_pos.0,
+                    winapi::kernel32::FindClose_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn FindNextFileA(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn FindFirstFileA(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hFindFile = <HFIND>::from_stack(mem, esp + 4u32);
-            let lpFindFileData = <Option<&mut WIN32_FIND_DATAA>>::from_stack(mem, esp + 8u32);
-            winapi::kernel32::FindNextFileA(machine, hFindFile, lpFindFileData).to_raw()
+            let lpFileName = <Option<&str>>::from_stack(mem, stack_args + 0u32);
+            let lpFindFileData =
+                <Option<&mut WIN32_FIND_DATAA>>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("kernel32/file") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/file",
+                    "FindFirstFileA",
+                    &[
+                        ("lpFileName", &lpFileName),
+                        ("lpFindFileData", &lpFindFileData),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::FindFirstFileA(machine, lpFileName, lpFindFileData);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::FindFirstFileA_pos.0,
+                    winapi::kernel32::FindFirstFileA_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn FindResourceA(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn FindNextFileA(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hModule = <HMODULE>::from_stack(mem, esp + 4u32);
-            let lpName = <ResourceKey<&str>>::from_stack(mem, esp + 8u32);
-            let lpType = <ResourceKey<&str>>::from_stack(mem, esp + 12u32);
-            winapi::kernel32::FindResourceA(machine, hModule, lpName, lpType).to_raw()
+            let hFindFile = <HFIND>::from_stack(mem, stack_args + 0u32);
+            let lpFindFileData =
+                <Option<&mut WIN32_FIND_DATAA>>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("kernel32/file") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/file",
+                    "FindNextFileA",
+                    &[
+                        ("hFindFile", &hFindFile),
+                        ("lpFindFileData", &lpFindFileData),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::FindNextFileA(machine, hFindFile, lpFindFileData);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::FindNextFileA_pos.0,
+                    winapi::kernel32::FindNextFileA_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn FindResourceW(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn FindResourceA(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hModule = <HMODULE>::from_stack(mem, esp + 4u32);
-            let lpName = <ResourceKey<&Str16>>::from_stack(mem, esp + 8u32);
-            let lpType = <ResourceKey<&Str16>>::from_stack(mem, esp + 12u32);
-            winapi::kernel32::FindResourceW(machine, hModule, lpName, lpType).to_raw()
+            let hModule = <HMODULE>::from_stack(mem, stack_args + 0u32);
+            let lpName = <ResourceKey<&str>>::from_stack(mem, stack_args + 4u32);
+            let lpType = <ResourceKey<&str>>::from_stack(mem, stack_args + 8u32);
+            let __trace_context = if crate::trace::enabled("kernel32/resource") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/resource",
+                    "FindResourceA",
+                    &[
+                        ("hModule", &hModule),
+                        ("lpName", &lpName),
+                        ("lpType", &lpType),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::FindResourceA(machine, hModule, lpName, lpType);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::FindResourceA_pos.0,
+                    winapi::kernel32::FindResourceA_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn FormatMessageA(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn FindResourceW(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let dwFlags = <u32>::from_stack(mem, esp + 4u32);
-            let lpSource = <u32>::from_stack(mem, esp + 8u32);
-            let dwMessageId = <u32>::from_stack(mem, esp + 12u32);
-            let dwLanguageId = <u32>::from_stack(mem, esp + 16u32);
-            let lpBuffer = <u32>::from_stack(mem, esp + 20u32);
-            let nSize = <u32>::from_stack(mem, esp + 24u32);
-            let args = <u32>::from_stack(mem, esp + 28u32);
-            winapi::kernel32::FormatMessageA(
+            let hModule = <HMODULE>::from_stack(mem, stack_args + 0u32);
+            let lpName = <ResourceKey<&Str16>>::from_stack(mem, stack_args + 4u32);
+            let lpType = <ResourceKey<&Str16>>::from_stack(mem, stack_args + 8u32);
+            let __trace_context = if crate::trace::enabled("kernel32/resource") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/resource",
+                    "FindResourceW",
+                    &[
+                        ("hModule", &hModule),
+                        ("lpName", &lpName),
+                        ("lpType", &lpType),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::FindResourceW(machine, hModule, lpName, lpType);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::FindResourceW_pos.0,
+                    winapi::kernel32::FindResourceW_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn FlushFileBuffers(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let hFile = <HFILE>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("kernel32/file") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/file",
+                    "FlushFileBuffers",
+                    &[("hFile", &hFile)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::FlushFileBuffers(machine, hFile);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::FlushFileBuffers_pos.0,
+                    winapi::kernel32::FlushFileBuffers_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn FormatMessageA(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let dwFlags = <u32>::from_stack(mem, stack_args + 0u32);
+            let lpSource = <u32>::from_stack(mem, stack_args + 4u32);
+            let dwMessageId = <u32>::from_stack(mem, stack_args + 8u32);
+            let dwLanguageId = <u32>::from_stack(mem, stack_args + 12u32);
+            let lpBuffer = <u32>::from_stack(mem, stack_args + 16u32);
+            let nSize = <u32>::from_stack(mem, stack_args + 20u32);
+            let args = <u32>::from_stack(mem, stack_args + 24u32);
+            let __trace_context = if crate::trace::enabled("kernel32/misc") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/misc",
+                    "FormatMessageA",
+                    &[
+                        ("dwFlags", &dwFlags),
+                        ("lpSource", &lpSource),
+                        ("dwMessageId", &dwMessageId),
+                        ("dwLanguageId", &dwLanguageId),
+                        ("lpBuffer", &lpBuffer),
+                        ("nSize", &nSize),
+                        ("args", &args),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::FormatMessageA(
                 machine,
                 dwFlags,
                 lpSource,
@@ -2305,19 +4834,44 @@ pub mod kernel32 {
                 lpBuffer,
                 nSize,
                 args,
-            )
-            .to_raw()
+            );
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::FormatMessageA_pos.0,
+                    winapi::kernel32::FormatMessageA_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn FormatMessageW(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn FormatMessageW(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let dwFlags = <Result<FormatMessageFlags, u32>>::from_stack(mem, esp + 4u32);
-            let lpSource = <u32>::from_stack(mem, esp + 8u32);
-            let dwMessageId = <u32>::from_stack(mem, esp + 12u32);
-            let dwLanguageId = <u32>::from_stack(mem, esp + 16u32);
-            let lpBuffer = <u32>::from_stack(mem, esp + 20u32);
-            let nSize = <u32>::from_stack(mem, esp + 24u32);
-            let args = <u32>::from_stack(mem, esp + 28u32);
-            winapi::kernel32::FormatMessageW(
+            let dwFlags = <Result<FormatMessageFlags, u32>>::from_stack(mem, stack_args + 0u32);
+            let lpSource = <u32>::from_stack(mem, stack_args + 4u32);
+            let dwMessageId = <u32>::from_stack(mem, stack_args + 8u32);
+            let dwLanguageId = <u32>::from_stack(mem, stack_args + 12u32);
+            let lpBuffer = <u32>::from_stack(mem, stack_args + 16u32);
+            let nSize = <u32>::from_stack(mem, stack_args + 20u32);
+            let args = <u32>::from_stack(mem, stack_args + 24u32);
+            let __trace_context = if crate::trace::enabled("kernel32/misc") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/misc",
+                    "FormatMessageW",
+                    &[
+                        ("dwFlags", &dwFlags),
+                        ("lpSource", &lpSource),
+                        ("dwMessageId", &dwMessageId),
+                        ("dwLanguageId", &dwLanguageId),
+                        ("lpBuffer", &lpBuffer),
+                        ("nSize", &nSize),
+                        ("args", &args),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::FormatMessageW(
                 machine,
                 dwFlags,
                 lpSource,
@@ -2326,2018 +4880,4621 @@ pub mod kernel32 {
                 lpBuffer,
                 nSize,
                 args,
-            )
-            .to_raw()
+            );
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::FormatMessageW_pos.0,
+                    winapi::kernel32::FormatMessageW_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn FreeEnvironmentStringsA(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn FreeEnvironmentStringsA(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let _penv = <u32>::from_stack(mem, esp + 4u32);
-            winapi::kernel32::FreeEnvironmentStringsA(machine, _penv).to_raw()
+            let _penv = <u32>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("kernel32/env") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/env",
+                    "FreeEnvironmentStringsA",
+                    &[("penv", &_penv)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::FreeEnvironmentStringsA(machine, _penv);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::FreeEnvironmentStringsA_pos.0,
+                    winapi::kernel32::FreeEnvironmentStringsA_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn FreeLibrary(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn FreeEnvironmentStringsW(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hLibModule = <HMODULE>::from_stack(mem, esp + 4u32);
-            winapi::kernel32::FreeLibrary(machine, hLibModule).to_raw()
+            let __trace_context = if crate::trace::enabled("kernel32/env") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/env",
+                    "FreeEnvironmentStringsW",
+                    &[],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::FreeEnvironmentStringsW(machine);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::FreeEnvironmentStringsW_pos.0,
+                    winapi::kernel32::FreeEnvironmentStringsW_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn GetACP(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn FreeLibrary(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            winapi::kernel32::GetACP(machine).to_raw()
+            let hLibModule = <HMODULE>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("kernel32/dll") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/dll",
+                    "FreeLibrary",
+                    &[("hLibModule", &hLibModule)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::FreeLibrary(machine, hLibModule);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::FreeLibrary_pos.0,
+                    winapi::kernel32::FreeLibrary_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn GetCPInfo(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn GetACP(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let _CodePage = <u32>::from_stack(mem, esp + 4u32);
-            let _lpCPInfo = <u32>::from_stack(mem, esp + 8u32);
-            winapi::kernel32::GetCPInfo(machine, _CodePage, _lpCPInfo).to_raw()
+            let __trace_context = if crate::trace::enabled("kernel32/nls") {
+                Some(crate::trace::trace_begin("kernel32/nls", "GetACP", &[]))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::GetACP(machine);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::GetACP_pos.0,
+                    winapi::kernel32::GetACP_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn GetCommandLineA(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn GetCPInfo(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            winapi::kernel32::GetCommandLineA(machine).to_raw()
+            let _CodePage = <u32>::from_stack(mem, stack_args + 0u32);
+            let _lpCPInfo = <u32>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("kernel32/nls") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/nls",
+                    "GetCPInfo",
+                    &[("CodePage", &_CodePage), ("lpCPInfo", &_lpCPInfo)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::GetCPInfo(machine, _CodePage, _lpCPInfo);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::GetCPInfo_pos.0,
+                    winapi::kernel32::GetCPInfo_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn GetCommandLineW(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn GetCommandLineA(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            winapi::kernel32::GetCommandLineW(machine).to_raw()
+            let __trace_context = if crate::trace::enabled("kernel32/init") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/init",
+                    "GetCommandLineA",
+                    &[],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::GetCommandLineA(machine);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::GetCommandLineA_pos.0,
+                    winapi::kernel32::GetCommandLineA_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn GetConsoleMode(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn GetCommandLineW(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hConsoleHandle = <HFILE>::from_stack(mem, esp + 4u32);
-            let lpMode = <Option<&mut u32>>::from_stack(mem, esp + 8u32);
-            winapi::kernel32::GetConsoleMode(machine, hConsoleHandle, lpMode).to_raw()
+            let __trace_context = if crate::trace::enabled("kernel32/init") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/init",
+                    "GetCommandLineW",
+                    &[],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::GetCommandLineW(machine);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::GetCommandLineW_pos.0,
+                    winapi::kernel32::GetCommandLineW_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn GetConsoleScreenBufferInfo(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn GetConsoleMode(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let _hConsoleOutput = <HANDLE<()>>::from_stack(mem, esp + 4u32);
+            let hConsoleHandle = <HFILE>::from_stack(mem, stack_args + 0u32);
+            let lpMode = <Option<&mut u32>>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("kernel32/file") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/file",
+                    "GetConsoleMode",
+                    &[("hConsoleHandle", &hConsoleHandle), ("lpMode", &lpMode)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::GetConsoleMode(machine, hConsoleHandle, lpMode);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::GetConsoleMode_pos.0,
+                    winapi::kernel32::GetConsoleMode_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn GetConsoleScreenBufferInfo(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let _hConsoleOutput = <HANDLE<()>>::from_stack(mem, stack_args + 0u32);
             let lpConsoleScreenBufferInfo =
-                <Option<&mut CONSOLE_SCREEN_BUFFER_INFO>>::from_stack(mem, esp + 8u32);
-            winapi::kernel32::GetConsoleScreenBufferInfo(
+                <Option<&mut CONSOLE_SCREEN_BUFFER_INFO>>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("kernel32/console") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/console",
+                    "GetConsoleScreenBufferInfo",
+                    &[
+                        ("hConsoleOutput", &_hConsoleOutput),
+                        ("lpConsoleScreenBufferInfo", &lpConsoleScreenBufferInfo),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::GetConsoleScreenBufferInfo(
                 machine,
                 _hConsoleOutput,
                 lpConsoleScreenBufferInfo,
-            )
-            .to_raw()
+            );
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::GetConsoleScreenBufferInfo_pos.0,
+                    winapi::kernel32::GetConsoleScreenBufferInfo_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn GetCurrentDirectoryA(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn GetCurrentDirectoryA(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let nBufferLength = <u32>::from_stack(mem, esp + 4u32);
-            let lpBuffer = <u32>::from_stack(mem, esp + 8u32);
-            winapi::kernel32::GetCurrentDirectoryA(machine, nBufferLength, lpBuffer).to_raw()
+            let nBufferLength = <u32>::from_stack(mem, stack_args + 0u32);
+            let lpBuffer = <u32>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("kernel32/file") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/file",
+                    "GetCurrentDirectoryA",
+                    &[("nBufferLength", &nBufferLength), ("lpBuffer", &lpBuffer)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::GetCurrentDirectoryA(machine, nBufferLength, lpBuffer);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::GetCurrentDirectoryA_pos.0,
+                    winapi::kernel32::GetCurrentDirectoryA_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn GetCurrentProcessId(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn GetCurrentProcess(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            winapi::kernel32::GetCurrentProcessId(machine).to_raw()
+            let __trace_context = if crate::trace::enabled("kernel32/misc") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/misc",
+                    "GetCurrentProcess",
+                    &[],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::GetCurrentProcess(machine);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::GetCurrentProcess_pos.0,
+                    winapi::kernel32::GetCurrentProcess_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn GetCurrentThread(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn GetCurrentProcessId(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            winapi::kernel32::GetCurrentThread(machine).to_raw()
+            let __trace_context = if crate::trace::enabled("kernel32/misc") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/misc",
+                    "GetCurrentProcessId",
+                    &[],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::GetCurrentProcessId(machine);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::GetCurrentProcessId_pos.0,
+                    winapi::kernel32::GetCurrentProcessId_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn GetCurrentThreadId(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn GetCurrentThread(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            winapi::kernel32::GetCurrentThreadId(machine).to_raw()
+            let __trace_context = if crate::trace::enabled("kernel32/thread") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/thread",
+                    "GetCurrentThread",
+                    &[],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::GetCurrentThread(machine);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::GetCurrentThread_pos.0,
+                    winapi::kernel32::GetCurrentThread_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn GetEnvironmentStrings(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn GetCurrentThreadId(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            winapi::kernel32::GetEnvironmentStrings(machine).to_raw()
+            let __trace_context = if crate::trace::enabled("kernel32/thread") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/thread",
+                    "GetCurrentThreadId",
+                    &[],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::GetCurrentThreadId(machine);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::GetCurrentThreadId_pos.0,
+                    winapi::kernel32::GetCurrentThreadId_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn GetEnvironmentStringsW(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn GetEnvironmentStrings(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            winapi::kernel32::GetEnvironmentStringsW(machine).to_raw()
+            let __trace_context = if crate::trace::enabled("kernel32/env") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/env",
+                    "GetEnvironmentStrings",
+                    &[],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::GetEnvironmentStrings(machine);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::GetEnvironmentStrings_pos.0,
+                    winapi::kernel32::GetEnvironmentStrings_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn GetEnvironmentVariableA(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn GetEnvironmentStringsW(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let name = <Option<&str>>::from_stack(mem, esp + 4u32);
-            let buf = <ArrayWithSize<u8>>::from_stack(mem, esp + 8u32);
-            winapi::kernel32::GetEnvironmentVariableA(machine, name, buf).to_raw()
+            let __trace_context = if crate::trace::enabled("kernel32/env") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/env",
+                    "GetEnvironmentStringsW",
+                    &[],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::GetEnvironmentStringsW(machine);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::GetEnvironmentStringsW_pos.0,
+                    winapi::kernel32::GetEnvironmentStringsW_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn GetEnvironmentVariableW(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn GetEnvironmentVariableA(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let name = <Option<&Str16>>::from_stack(mem, esp + 4u32);
-            let buf = <ArrayWithSize<u16>>::from_stack(mem, esp + 8u32);
-            winapi::kernel32::GetEnvironmentVariableW(machine, name, buf).to_raw()
+            let name = <Option<&str>>::from_stack(mem, stack_args + 0u32);
+            let buf = <ArrayWithSize<u8>>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("kernel32/env") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/env",
+                    "GetEnvironmentVariableA",
+                    &[("name", &name), ("buf", &buf)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::GetEnvironmentVariableA(machine, name, buf);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::GetEnvironmentVariableA_pos.0,
+                    winapi::kernel32::GetEnvironmentVariableA_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn GetFileAttributesA(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn GetEnvironmentVariableW(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let lpFileName = <Option<&str>>::from_stack(mem, esp + 4u32);
-            winapi::kernel32::GetFileAttributesA(machine, lpFileName).to_raw()
+            let name = <Option<&Str16>>::from_stack(mem, stack_args + 0u32);
+            let buf = <ArrayWithSize<u16>>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("kernel32/env") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/env",
+                    "GetEnvironmentVariableW",
+                    &[("name", &name), ("buf", &buf)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::GetEnvironmentVariableW(machine, name, buf);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::GetEnvironmentVariableW_pos.0,
+                    winapi::kernel32::GetEnvironmentVariableW_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn GetFileInformationByHandle(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn GetFileAttributesA(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hFile = <HFILE>::from_stack(mem, esp + 4u32);
+            let lpFileName = <Option<&str>>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("kernel32/file") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/file",
+                    "GetFileAttributesA",
+                    &[("lpFileName", &lpFileName)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::GetFileAttributesA(machine, lpFileName);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::GetFileAttributesA_pos.0,
+                    winapi::kernel32::GetFileAttributesA_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn GetFileInformationByHandle(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let hFile = <HFILE>::from_stack(mem, stack_args + 0u32);
             let lpFileInformation =
-                <Option<&mut BY_HANDLE_FILE_INFORMATION>>::from_stack(mem, esp + 8u32);
-            winapi::kernel32::GetFileInformationByHandle(machine, hFile, lpFileInformation).to_raw()
+                <Option<&mut BY_HANDLE_FILE_INFORMATION>>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("kernel32/file") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/file",
+                    "GetFileInformationByHandle",
+                    &[("hFile", &hFile), ("lpFileInformation", &lpFileInformation)],
+                ))
+            } else {
+                None
+            };
+            let result =
+                winapi::kernel32::GetFileInformationByHandle(machine, hFile, lpFileInformation);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::GetFileInformationByHandle_pos.0,
+                    winapi::kernel32::GetFileInformationByHandle_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn GetFileSize(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn GetFileSize(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hFile = <HFILE>::from_stack(mem, esp + 4u32);
-            let lpFileSizeHigh = <Option<&mut u32>>::from_stack(mem, esp + 8u32);
-            winapi::kernel32::GetFileSize(machine, hFile, lpFileSizeHigh).to_raw()
+            let hFile = <HFILE>::from_stack(mem, stack_args + 0u32);
+            let lpFileSizeHigh = <Option<&mut u32>>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("kernel32/file") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/file",
+                    "GetFileSize",
+                    &[("hFile", &hFile), ("lpFileSizeHigh", &lpFileSizeHigh)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::GetFileSize(machine, hFile, lpFileSizeHigh);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::GetFileSize_pos.0,
+                    winapi::kernel32::GetFileSize_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn GetFileTime(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn GetFileTime(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hFile = <HFILE>::from_stack(mem, esp + 4u32);
-            let lpCreationTime = <Option<&mut FILETIME>>::from_stack(mem, esp + 8u32);
-            let lpLastAccessTime = <Option<&mut FILETIME>>::from_stack(mem, esp + 12u32);
-            let lpLastWriteTime = <Option<&mut FILETIME>>::from_stack(mem, esp + 16u32);
-            winapi::kernel32::GetFileTime(
+            let hFile = <HFILE>::from_stack(mem, stack_args + 0u32);
+            let lpCreationTime = <Option<&mut FILETIME>>::from_stack(mem, stack_args + 4u32);
+            let lpLastAccessTime = <Option<&mut FILETIME>>::from_stack(mem, stack_args + 8u32);
+            let lpLastWriteTime = <Option<&mut FILETIME>>::from_stack(mem, stack_args + 12u32);
+            let __trace_context = if crate::trace::enabled("kernel32/file") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/file",
+                    "GetFileTime",
+                    &[
+                        ("hFile", &hFile),
+                        ("lpCreationTime", &lpCreationTime),
+                        ("lpLastAccessTime", &lpLastAccessTime),
+                        ("lpLastWriteTime", &lpLastWriteTime),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::GetFileTime(
                 machine,
                 hFile,
                 lpCreationTime,
                 lpLastAccessTime,
                 lpLastWriteTime,
-            )
-            .to_raw()
+            );
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::GetFileTime_pos.0,
+                    winapi::kernel32::GetFileTime_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn GetFileType(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn GetFileType(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hFile = <HFILE>::from_stack(mem, esp + 4u32);
-            winapi::kernel32::GetFileType(machine, hFile).to_raw()
+            let hFile = <HFILE>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("kernel32/file") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/file",
+                    "GetFileType",
+                    &[("hFile", &hFile)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::GetFileType(machine, hFile);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::GetFileType_pos.0,
+                    winapi::kernel32::GetFileType_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn GetFullPathNameA(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn GetFullPathNameA(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let lpFileName = <Option<&str>>::from_stack(mem, esp + 4u32);
-            let nBufferLength = <u32>::from_stack(mem, esp + 8u32);
-            let lpBuffer = <u32>::from_stack(mem, esp + 12u32);
-            let lpFilePart = <Option<&mut u32>>::from_stack(mem, esp + 16u32);
-            winapi::kernel32::GetFullPathNameA(
+            let lpFileName = <Option<&str>>::from_stack(mem, stack_args + 0u32);
+            let nBufferLength = <u32>::from_stack(mem, stack_args + 4u32);
+            let lpBuffer = <u32>::from_stack(mem, stack_args + 8u32);
+            let lpFilePart = <Option<&mut u32>>::from_stack(mem, stack_args + 12u32);
+            let __trace_context = if crate::trace::enabled("kernel32/file") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/file",
+                    "GetFullPathNameA",
+                    &[
+                        ("lpFileName", &lpFileName),
+                        ("nBufferLength", &nBufferLength),
+                        ("lpBuffer", &lpBuffer),
+                        ("lpFilePart", &lpFilePart),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::GetFullPathNameA(
                 machine,
                 lpFileName,
                 nBufferLength,
                 lpBuffer,
                 lpFilePart,
-            )
-            .to_raw()
+            );
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::GetFullPathNameA_pos.0,
+                    winapi::kernel32::GetFullPathNameA_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn GetFullPathNameW(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn GetFullPathNameW(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let lpFileName = <Option<&Str16>>::from_stack(mem, esp + 4u32);
-            let nBufferLength = <u32>::from_stack(mem, esp + 8u32);
-            let lpBuffer = <u32>::from_stack(mem, esp + 12u32);
-            let lpFilePart = <Option<&mut u32>>::from_stack(mem, esp + 16u32);
-            winapi::kernel32::GetFullPathNameW(
+            let lpFileName = <Option<&Str16>>::from_stack(mem, stack_args + 0u32);
+            let nBufferLength = <u32>::from_stack(mem, stack_args + 4u32);
+            let lpBuffer = <u32>::from_stack(mem, stack_args + 8u32);
+            let lpFilePart = <Option<&mut u32>>::from_stack(mem, stack_args + 12u32);
+            let __trace_context = if crate::trace::enabled("kernel32/file") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/file",
+                    "GetFullPathNameW",
+                    &[
+                        ("lpFileName", &lpFileName),
+                        ("nBufferLength", &nBufferLength),
+                        ("lpBuffer", &lpBuffer),
+                        ("lpFilePart", &lpFilePart),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::GetFullPathNameW(
                 machine,
                 lpFileName,
                 nBufferLength,
                 lpBuffer,
                 lpFilePart,
-            )
-            .to_raw()
+            );
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::GetFullPathNameW_pos.0,
+                    winapi::kernel32::GetFullPathNameW_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn GetLastError(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn GetLastError(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            winapi::kernel32::GetLastError(machine).to_raw()
+            let __trace_context = if crate::trace::enabled("kernel32/misc") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/misc",
+                    "GetLastError",
+                    &[],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::GetLastError(machine);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::GetLastError_pos.0,
+                    winapi::kernel32::GetLastError_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn GetLocalTime(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn GetLocalTime(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let lpSystemTime = <Option<&mut SYSTEMTIME>>::from_stack(mem, esp + 4u32);
-            winapi::kernel32::GetLocalTime(machine, lpSystemTime).to_raw()
+            let lpSystemTime = <Option<&mut SYSTEMTIME>>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("kernel32/time") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/time",
+                    "GetLocalTime",
+                    &[("lpSystemTime", &lpSystemTime)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::GetLocalTime(machine, lpSystemTime);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::GetLocalTime_pos.0,
+                    winapi::kernel32::GetLocalTime_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn GetModuleFileNameA(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn GetModuleFileNameA(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hModule = <HMODULE>::from_stack(mem, esp + 4u32);
-            let filename = <ArrayWithSizeMut<u8>>::from_stack(mem, esp + 8u32);
-            winapi::kernel32::GetModuleFileNameA(machine, hModule, filename).to_raw()
+            let hModule = <HMODULE>::from_stack(mem, stack_args + 0u32);
+            let filename = <ArrayWithSizeMut<u8>>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("kernel32/dll") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/dll",
+                    "GetModuleFileNameA",
+                    &[("hModule", &hModule), ("filename", &filename)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::GetModuleFileNameA(machine, hModule, filename);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::GetModuleFileNameA_pos.0,
+                    winapi::kernel32::GetModuleFileNameA_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn GetModuleFileNameW(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn GetModuleFileNameW(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hModule = <HMODULE>::from_stack(mem, esp + 4u32);
-            let _lpFilename = <u32>::from_stack(mem, esp + 8u32);
-            let _nSize = <u32>::from_stack(mem, esp + 12u32);
-            winapi::kernel32::GetModuleFileNameW(machine, hModule, _lpFilename, _nSize).to_raw()
+            let hModule = <HMODULE>::from_stack(mem, stack_args + 0u32);
+            let _lpFilename = <u32>::from_stack(mem, stack_args + 4u32);
+            let _nSize = <u32>::from_stack(mem, stack_args + 8u32);
+            let __trace_context = if crate::trace::enabled("kernel32/dll") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/dll",
+                    "GetModuleFileNameW",
+                    &[
+                        ("hModule", &hModule),
+                        ("lpFilename", &_lpFilename),
+                        ("nSize", &_nSize),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result =
+                winapi::kernel32::GetModuleFileNameW(machine, hModule, _lpFilename, _nSize);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::GetModuleFileNameW_pos.0,
+                    winapi::kernel32::GetModuleFileNameW_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn GetModuleHandleA(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn GetModuleHandleA(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let lpModuleName = <Option<&str>>::from_stack(mem, esp + 4u32);
-            winapi::kernel32::GetModuleHandleA(machine, lpModuleName).to_raw()
+            let lpModuleName = <Option<&str>>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("kernel32/dll") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/dll",
+                    "GetModuleHandleA",
+                    &[("lpModuleName", &lpModuleName)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::GetModuleHandleA(machine, lpModuleName);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::GetModuleHandleA_pos.0,
+                    winapi::kernel32::GetModuleHandleA_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn GetModuleHandleExW(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn GetModuleHandleExW(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let dwFlags = <u32>::from_stack(mem, esp + 4u32);
-            let lpModuleName = <Option<&Str16>>::from_stack(mem, esp + 8u32);
-            let hModule = <Option<&mut HMODULE>>::from_stack(mem, esp + 12u32);
-            winapi::kernel32::GetModuleHandleExW(machine, dwFlags, lpModuleName, hModule).to_raw()
+            let dwFlags = <u32>::from_stack(mem, stack_args + 0u32);
+            let lpModuleName = <Option<&Str16>>::from_stack(mem, stack_args + 4u32);
+            let hModule = <Option<&mut HMODULE>>::from_stack(mem, stack_args + 8u32);
+            let __trace_context = if crate::trace::enabled("kernel32/dll") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/dll",
+                    "GetModuleHandleExW",
+                    &[
+                        ("dwFlags", &dwFlags),
+                        ("lpModuleName", &lpModuleName),
+                        ("hModule", &hModule),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result =
+                winapi::kernel32::GetModuleHandleExW(machine, dwFlags, lpModuleName, hModule);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::GetModuleHandleExW_pos.0,
+                    winapi::kernel32::GetModuleHandleExW_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn GetModuleHandleW(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn GetModuleHandleW(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let lpModuleName = <Option<&Str16>>::from_stack(mem, esp + 4u32);
-            winapi::kernel32::GetModuleHandleW(machine, lpModuleName).to_raw()
+            let lpModuleName = <Option<&Str16>>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("kernel32/dll") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/dll",
+                    "GetModuleHandleW",
+                    &[("lpModuleName", &lpModuleName)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::GetModuleHandleW(machine, lpModuleName);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::GetModuleHandleW_pos.0,
+                    winapi::kernel32::GetModuleHandleW_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn GetPrivateProfileIntW(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn GetOEMCP(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let lpAppName = <Option<&Str16>>::from_stack(mem, esp + 4u32);
-            let lpKeyName = <Option<&Str16>>::from_stack(mem, esp + 8u32);
-            let nDefault = <u32>::from_stack(mem, esp + 12u32);
-            let lpFileName = <Option<&Str16>>::from_stack(mem, esp + 16u32);
-            winapi::kernel32::GetPrivateProfileIntW(
+            let __trace_context = if crate::trace::enabled("kernel32/nls") {
+                Some(crate::trace::trace_begin("kernel32/nls", "GetOEMCP", &[]))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::GetOEMCP(machine);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::GetOEMCP_pos.0,
+                    winapi::kernel32::GetOEMCP_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn GetPrivateProfileIntW(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let lpAppName = <Option<&Str16>>::from_stack(mem, stack_args + 0u32);
+            let lpKeyName = <Option<&Str16>>::from_stack(mem, stack_args + 4u32);
+            let nDefault = <u32>::from_stack(mem, stack_args + 8u32);
+            let lpFileName = <Option<&Str16>>::from_stack(mem, stack_args + 12u32);
+            let __trace_context = if crate::trace::enabled("kernel32/ini") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/ini",
+                    "GetPrivateProfileIntW",
+                    &[
+                        ("lpAppName", &lpAppName),
+                        ("lpKeyName", &lpKeyName),
+                        ("nDefault", &nDefault),
+                        ("lpFileName", &lpFileName),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::GetPrivateProfileIntW(
                 machine, lpAppName, lpKeyName, nDefault, lpFileName,
-            )
-            .to_raw()
+            );
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::GetPrivateProfileIntW_pos.0,
+                    winapi::kernel32::GetPrivateProfileIntW_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn GetPrivateProfileStringW(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn GetPrivateProfileStringW(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let lpAppName = <Option<&Str16>>::from_stack(mem, esp + 4u32);
-            let lpKeyName = <Option<&Str16>>::from_stack(mem, esp + 8u32);
-            let lpDefault = <Option<&Str16>>::from_stack(mem, esp + 12u32);
-            let lpReturnedString = <ArrayWithSizeMut<u16>>::from_stack(mem, esp + 16u32);
-            let lpFileName = <Option<&Str16>>::from_stack(mem, esp + 24u32);
-            winapi::kernel32::GetPrivateProfileStringW(
+            let lpAppName = <Option<&Str16>>::from_stack(mem, stack_args + 0u32);
+            let lpKeyName = <Option<&Str16>>::from_stack(mem, stack_args + 4u32);
+            let lpDefault = <Option<&Str16>>::from_stack(mem, stack_args + 8u32);
+            let lpReturnedString = <ArrayWithSizeMut<u16>>::from_stack(mem, stack_args + 12u32);
+            let lpFileName = <Option<&Str16>>::from_stack(mem, stack_args + 20u32);
+            let __trace_context = if crate::trace::enabled("kernel32/ini") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/ini",
+                    "GetPrivateProfileStringW",
+                    &[
+                        ("lpAppName", &lpAppName),
+                        ("lpKeyName", &lpKeyName),
+                        ("lpDefault", &lpDefault),
+                        ("lpReturnedString", &lpReturnedString),
+                        ("lpFileName", &lpFileName),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::GetPrivateProfileStringW(
                 machine,
                 lpAppName,
                 lpKeyName,
                 lpDefault,
                 lpReturnedString,
                 lpFileName,
-            )
-            .to_raw()
+            );
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::GetPrivateProfileStringW_pos.0,
+                    winapi::kernel32::GetPrivateProfileStringW_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn GetProcAddress(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn GetProcAddress(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hModule = <HMODULE>::from_stack(mem, esp + 4u32);
-            let lpProcName = <GetProcAddressArg>::from_stack(mem, esp + 8u32);
-            winapi::kernel32::GetProcAddress(machine, hModule, lpProcName).to_raw()
+            let hModule = <HMODULE>::from_stack(mem, stack_args + 0u32);
+            let lpProcName = <GetProcAddressArg>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("kernel32/dll") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/dll",
+                    "GetProcAddress",
+                    &[("hModule", &hModule), ("lpProcName", &lpProcName)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::GetProcAddress(machine, hModule, lpProcName);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::GetProcAddress_pos.0,
+                    winapi::kernel32::GetProcAddress_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn GetProcessHeap(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn GetProcessHeap(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            winapi::kernel32::GetProcessHeap(machine).to_raw()
+            let __trace_context = if crate::trace::enabled("kernel32/memory") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/memory",
+                    "GetProcessHeap",
+                    &[],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::GetProcessHeap(machine);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::GetProcessHeap_pos.0,
+                    winapi::kernel32::GetProcessHeap_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn GetProfileIntW(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn GetProfileIntW(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let lpAppName = <Option<&Str16>>::from_stack(mem, esp + 4u32);
-            let lpKeyName = <Option<&Str16>>::from_stack(mem, esp + 8u32);
-            let nDefault = <i32>::from_stack(mem, esp + 12u32);
-            winapi::kernel32::GetProfileIntW(machine, lpAppName, lpKeyName, nDefault).to_raw()
+            let lpAppName = <Option<&Str16>>::from_stack(mem, stack_args + 0u32);
+            let lpKeyName = <Option<&Str16>>::from_stack(mem, stack_args + 4u32);
+            let nDefault = <i32>::from_stack(mem, stack_args + 8u32);
+            let __trace_context = if crate::trace::enabled("kernel32/ini") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/ini",
+                    "GetProfileIntW",
+                    &[
+                        ("lpAppName", &lpAppName),
+                        ("lpKeyName", &lpKeyName),
+                        ("nDefault", &nDefault),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::GetProfileIntW(machine, lpAppName, lpKeyName, nDefault);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::GetProfileIntW_pos.0,
+                    winapi::kernel32::GetProfileIntW_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn GetProfileStringW(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn GetProfileStringW(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let lpAppName = <Option<&Str16>>::from_stack(mem, esp + 4u32);
-            let lpKeyName = <Option<&Str16>>::from_stack(mem, esp + 8u32);
-            let lpDefault = <Option<&Str16>>::from_stack(mem, esp + 12u32);
-            let lpReturnedString = <ArrayWithSizeMut<u16>>::from_stack(mem, esp + 16u32);
-            winapi::kernel32::GetProfileStringW(
+            let lpAppName = <Option<&Str16>>::from_stack(mem, stack_args + 0u32);
+            let lpKeyName = <Option<&Str16>>::from_stack(mem, stack_args + 4u32);
+            let lpDefault = <Option<&Str16>>::from_stack(mem, stack_args + 8u32);
+            let lpReturnedString = <ArrayWithSizeMut<u16>>::from_stack(mem, stack_args + 12u32);
+            let __trace_context = if crate::trace::enabled("kernel32/ini") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/ini",
+                    "GetProfileStringW",
+                    &[
+                        ("lpAppName", &lpAppName),
+                        ("lpKeyName", &lpKeyName),
+                        ("lpDefault", &lpDefault),
+                        ("lpReturnedString", &lpReturnedString),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::GetProfileStringW(
                 machine,
                 lpAppName,
                 lpKeyName,
                 lpDefault,
                 lpReturnedString,
-            )
-            .to_raw()
+            );
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::GetProfileStringW_pos.0,
+                    winapi::kernel32::GetProfileStringW_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn GetStartupInfoA(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn GetStartupInfoA(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let lpStartupInfo = <Option<&mut STARTUPINFOA>>::from_stack(mem, esp + 4u32);
-            winapi::kernel32::GetStartupInfoA(machine, lpStartupInfo).to_raw()
+            let lpStartupInfo = <Option<&mut STARTUPINFOA>>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("kernel32/dll") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/dll",
+                    "GetStartupInfoA",
+                    &[("lpStartupInfo", &lpStartupInfo)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::GetStartupInfoA(machine, lpStartupInfo);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::GetStartupInfoA_pos.0,
+                    winapi::kernel32::GetStartupInfoA_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn GetStartupInfoW(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn GetStartupInfoW(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let lpStartupInfo = <Option<&mut STARTUPINFOA>>::from_stack(mem, esp + 4u32);
-            winapi::kernel32::GetStartupInfoW(machine, lpStartupInfo).to_raw()
+            let lpStartupInfo = <Option<&mut STARTUPINFOA>>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("kernel32/dll") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/dll",
+                    "GetStartupInfoW",
+                    &[("lpStartupInfo", &lpStartupInfo)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::GetStartupInfoW(machine, lpStartupInfo);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::GetStartupInfoW_pos.0,
+                    winapi::kernel32::GetStartupInfoW_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn GetStdHandle(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn GetStdHandle(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let nStdHandle = <Result<STD, u32>>::from_stack(mem, esp + 4u32);
-            winapi::kernel32::GetStdHandle(machine, nStdHandle).to_raw()
+            let nStdHandle = <Result<STD, u32>>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("kernel32/file") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/file",
+                    "GetStdHandle",
+                    &[("nStdHandle", &nStdHandle)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::GetStdHandle(machine, nStdHandle);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::GetStdHandle_pos.0,
+                    winapi::kernel32::GetStdHandle_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn GetSystemDirectoryA(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn GetStringTypeA(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let lpBuffer = <u32>::from_stack(mem, esp + 4u32);
-            let uSize = <u32>::from_stack(mem, esp + 8u32);
-            winapi::kernel32::GetSystemDirectoryA(machine, lpBuffer, uSize).to_raw()
+            let Locale = <LCID>::from_stack(mem, stack_args + 0u32);
+            let dwInfoType = <u32>::from_stack(mem, stack_args + 4u32);
+            let lpSrcStr = <u32>::from_stack(mem, stack_args + 8u32);
+            let cchSrc = <i32>::from_stack(mem, stack_args + 12u32);
+            let lpCharType = <Option<&mut u32>>::from_stack(mem, stack_args + 16u32);
+            let __trace_context = if crate::trace::enabled("kernel32/nls") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/nls",
+                    "GetStringTypeA",
+                    &[
+                        ("Locale", &Locale),
+                        ("dwInfoType", &dwInfoType),
+                        ("lpSrcStr", &lpSrcStr),
+                        ("cchSrc", &cchSrc),
+                        ("lpCharType", &lpCharType),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::GetStringTypeA(
+                machine, Locale, dwInfoType, lpSrcStr, cchSrc, lpCharType,
+            );
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::GetStringTypeA_pos.0,
+                    winapi::kernel32::GetStringTypeA_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn GetSystemTime(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn GetStringTypeW(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let lpSystemTime = <Option<&mut SYSTEMTIME>>::from_stack(mem, esp + 4u32);
-            winapi::kernel32::GetSystemTime(machine, lpSystemTime).to_raw()
+            let dwInfoType = <u32>::from_stack(mem, stack_args + 0u32);
+            let lpSrcStr = <u32>::from_stack(mem, stack_args + 4u32);
+            let cchSrc = <i32>::from_stack(mem, stack_args + 8u32);
+            let lpCharType = <Option<&mut u32>>::from_stack(mem, stack_args + 12u32);
+            let __trace_context = if crate::trace::enabled("kernel32/nls") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/nls",
+                    "GetStringTypeW",
+                    &[
+                        ("dwInfoType", &dwInfoType),
+                        ("lpSrcStr", &lpSrcStr),
+                        ("cchSrc", &cchSrc),
+                        ("lpCharType", &lpCharType),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result =
+                winapi::kernel32::GetStringTypeW(machine, dwInfoType, lpSrcStr, cchSrc, lpCharType);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::GetStringTypeW_pos.0,
+                    winapi::kernel32::GetStringTypeW_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn GetSystemTimeAsFileTime(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn GetSystemDirectoryA(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let lpSystemTimeAsFileTime = <Option<&mut FILETIME>>::from_stack(mem, esp + 4u32);
-            winapi::kernel32::GetSystemTimeAsFileTime(machine, lpSystemTimeAsFileTime).to_raw()
+            let lpBuffer = <u32>::from_stack(mem, stack_args + 0u32);
+            let uSize = <u32>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("kernel32/misc") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/misc",
+                    "GetSystemDirectoryA",
+                    &[("lpBuffer", &lpBuffer), ("uSize", &uSize)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::GetSystemDirectoryA(machine, lpBuffer, uSize);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::GetSystemDirectoryA_pos.0,
+                    winapi::kernel32::GetSystemDirectoryA_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn GetTickCount(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn GetSystemTime(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            winapi::kernel32::GetTickCount(machine).to_raw()
+            let lpSystemTime = <Option<&mut SYSTEMTIME>>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("kernel32/time") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/time",
+                    "GetSystemTime",
+                    &[("lpSystemTime", &lpSystemTime)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::GetSystemTime(machine, lpSystemTime);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::GetSystemTime_pos.0,
+                    winapi::kernel32::GetSystemTime_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn GetTimeZoneInformation(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn GetSystemTimeAsFileTime(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let lpSystemTimeAsFileTime =
+                <Option<&mut FILETIME>>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("kernel32/time") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/time",
+                    "GetSystemTimeAsFileTime",
+                    &[("lpSystemTimeAsFileTime", &lpSystemTimeAsFileTime)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::GetSystemTimeAsFileTime(machine, lpSystemTimeAsFileTime);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::GetSystemTimeAsFileTime_pos.0,
+                    winapi::kernel32::GetSystemTimeAsFileTime_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn GetTickCount(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let __trace_context = if crate::trace::enabled("kernel32/time") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/time",
+                    "GetTickCount",
+                    &[],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::GetTickCount(machine);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::GetTickCount_pos.0,
+                    winapi::kernel32::GetTickCount_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn GetTimeZoneInformation(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
             let lpTimeZoneInformation =
-                <Option<&mut TIME_ZONE_INFORMATION>>::from_stack(mem, esp + 4u32);
-            winapi::kernel32::GetTimeZoneInformation(machine, lpTimeZoneInformation).to_raw()
+                <Option<&mut TIME_ZONE_INFORMATION>>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("kernel32/time") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/time",
+                    "GetTimeZoneInformation",
+                    &[("lpTimeZoneInformation", &lpTimeZoneInformation)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::GetTimeZoneInformation(machine, lpTimeZoneInformation);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::GetTimeZoneInformation_pos.0,
+                    winapi::kernel32::GetTimeZoneInformation_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn GetVersion(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn GetVersion(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            winapi::kernel32::GetVersion(machine).to_raw()
+            let __trace_context = if crate::trace::enabled("kernel32/misc") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/misc",
+                    "GetVersion",
+                    &[],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::GetVersion(machine);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::GetVersion_pos.0,
+                    winapi::kernel32::GetVersion_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn GetVersionExA(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn GetVersionExA(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let lpVersionInformation = <Option<&mut OSVERSIONINFO>>::from_stack(mem, esp + 4u32);
-            winapi::kernel32::GetVersionExA(machine, lpVersionInformation).to_raw()
+            let lpVersionInformation =
+                <Option<&mut OSVERSIONINFO>>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("kernel32/misc") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/misc",
+                    "GetVersionExA",
+                    &[("lpVersionInformation", &lpVersionInformation)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::GetVersionExA(machine, lpVersionInformation);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::GetVersionExA_pos.0,
+                    winapi::kernel32::GetVersionExA_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn GetWindowsDirectoryA(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn GetWindowsDirectoryA(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let lpBuffer = <u32>::from_stack(mem, esp + 4u32);
-            let uSize = <u32>::from_stack(mem, esp + 8u32);
-            winapi::kernel32::GetWindowsDirectoryA(machine, lpBuffer, uSize).to_raw()
+            let lpBuffer = <u32>::from_stack(mem, stack_args + 0u32);
+            let uSize = <u32>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("kernel32/misc") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/misc",
+                    "GetWindowsDirectoryA",
+                    &[("lpBuffer", &lpBuffer), ("uSize", &uSize)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::GetWindowsDirectoryA(machine, lpBuffer, uSize);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::GetWindowsDirectoryA_pos.0,
+                    winapi::kernel32::GetWindowsDirectoryA_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn GlobalAlloc(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn GlobalAlloc(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let uFlags = <GMEM>::from_stack(mem, esp + 4u32);
-            let dwBytes = <u32>::from_stack(mem, esp + 8u32);
-            winapi::kernel32::GlobalAlloc(machine, uFlags, dwBytes).to_raw()
+            let uFlags = <GMEM>::from_stack(mem, stack_args + 0u32);
+            let dwBytes = <u32>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("kernel32/memory") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/memory",
+                    "GlobalAlloc",
+                    &[("uFlags", &uFlags), ("dwBytes", &dwBytes)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::GlobalAlloc(machine, uFlags, dwBytes);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::GlobalAlloc_pos.0,
+                    winapi::kernel32::GlobalAlloc_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn GlobalFlags(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn GlobalFlags(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hMem = <u32>::from_stack(mem, esp + 4u32);
-            winapi::kernel32::GlobalFlags(machine, hMem).to_raw()
+            let hMem = <u32>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("kernel32/memory") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/memory",
+                    "GlobalFlags",
+                    &[("hMem", &hMem)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::GlobalFlags(machine, hMem);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::GlobalFlags_pos.0,
+                    winapi::kernel32::GlobalFlags_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn GlobalFree(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn GlobalFree(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hMem = <u32>::from_stack(mem, esp + 4u32);
-            winapi::kernel32::GlobalFree(machine, hMem).to_raw()
+            let hMem = <u32>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("kernel32/memory") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/memory",
+                    "GlobalFree",
+                    &[("hMem", &hMem)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::GlobalFree(machine, hMem);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::GlobalFree_pos.0,
+                    winapi::kernel32::GlobalFree_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn GlobalReAlloc(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn GlobalReAlloc(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hMem = <u32>::from_stack(mem, esp + 4u32);
-            let dwBytes = <u32>::from_stack(mem, esp + 8u32);
-            let uFlags = <GMEM>::from_stack(mem, esp + 12u32);
-            winapi::kernel32::GlobalReAlloc(machine, hMem, dwBytes, uFlags).to_raw()
+            let hMem = <u32>::from_stack(mem, stack_args + 0u32);
+            let dwBytes = <u32>::from_stack(mem, stack_args + 4u32);
+            let uFlags = <GMEM>::from_stack(mem, stack_args + 8u32);
+            let __trace_context = if crate::trace::enabled("kernel32/memory") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/memory",
+                    "GlobalReAlloc",
+                    &[("hMem", &hMem), ("dwBytes", &dwBytes), ("uFlags", &uFlags)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::GlobalReAlloc(machine, hMem, dwBytes, uFlags);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::GlobalReAlloc_pos.0,
+                    winapi::kernel32::GlobalReAlloc_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn HeapAlloc(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn HeapAlloc(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hHeap = <u32>::from_stack(mem, esp + 4u32);
-            let dwFlags = <Result<HeapAllocFlags, u32>>::from_stack(mem, esp + 8u32);
-            let dwBytes = <u32>::from_stack(mem, esp + 12u32);
-            winapi::kernel32::HeapAlloc(machine, hHeap, dwFlags, dwBytes).to_raw()
+            let hHeap = <u32>::from_stack(mem, stack_args + 0u32);
+            let dwFlags = <Result<HeapAllocFlags, u32>>::from_stack(mem, stack_args + 4u32);
+            let dwBytes = <u32>::from_stack(mem, stack_args + 8u32);
+            let __trace_context = if crate::trace::enabled("kernel32/memory") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/memory",
+                    "HeapAlloc",
+                    &[
+                        ("hHeap", &hHeap),
+                        ("dwFlags", &dwFlags),
+                        ("dwBytes", &dwBytes),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::HeapAlloc(machine, hHeap, dwFlags, dwBytes);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::HeapAlloc_pos.0,
+                    winapi::kernel32::HeapAlloc_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn HeapCreate(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn HeapCreate(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let flOptions = <Result<HeapCreateFlags, u32>>::from_stack(mem, esp + 4u32);
-            let dwInitialSize = <u32>::from_stack(mem, esp + 8u32);
-            let dwMaximumSize = <u32>::from_stack(mem, esp + 12u32);
-            winapi::kernel32::HeapCreate(machine, flOptions, dwInitialSize, dwMaximumSize).to_raw()
+            let flOptions = <Result<HeapCreateFlags, u32>>::from_stack(mem, stack_args + 0u32);
+            let dwInitialSize = <u32>::from_stack(mem, stack_args + 4u32);
+            let dwMaximumSize = <u32>::from_stack(mem, stack_args + 8u32);
+            let __trace_context = if crate::trace::enabled("kernel32/memory") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/memory",
+                    "HeapCreate",
+                    &[
+                        ("flOptions", &flOptions),
+                        ("dwInitialSize", &dwInitialSize),
+                        ("dwMaximumSize", &dwMaximumSize),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result =
+                winapi::kernel32::HeapCreate(machine, flOptions, dwInitialSize, dwMaximumSize);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::HeapCreate_pos.0,
+                    winapi::kernel32::HeapCreate_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn HeapDestroy(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn HeapDestroy(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hHeap = <u32>::from_stack(mem, esp + 4u32);
-            winapi::kernel32::HeapDestroy(machine, hHeap).to_raw()
+            let hHeap = <u32>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("kernel32/memory") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/memory",
+                    "HeapDestroy",
+                    &[("hHeap", &hHeap)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::HeapDestroy(machine, hHeap);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::HeapDestroy_pos.0,
+                    winapi::kernel32::HeapDestroy_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn HeapFree(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn HeapFree(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hHeap = <u32>::from_stack(mem, esp + 4u32);
-            let dwFlags = <u32>::from_stack(mem, esp + 8u32);
-            let lpMem = <u32>::from_stack(mem, esp + 12u32);
-            winapi::kernel32::HeapFree(machine, hHeap, dwFlags, lpMem).to_raw()
+            let hHeap = <u32>::from_stack(mem, stack_args + 0u32);
+            let dwFlags = <u32>::from_stack(mem, stack_args + 4u32);
+            let lpMem = <u32>::from_stack(mem, stack_args + 8u32);
+            let __trace_context = if crate::trace::enabled("kernel32/memory") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/memory",
+                    "HeapFree",
+                    &[("hHeap", &hHeap), ("dwFlags", &dwFlags), ("lpMem", &lpMem)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::HeapFree(machine, hHeap, dwFlags, lpMem);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::HeapFree_pos.0,
+                    winapi::kernel32::HeapFree_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn HeapReAlloc(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn HeapReAlloc(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hHeap = <u32>::from_stack(mem, esp + 4u32);
-            let dwFlags = <u32>::from_stack(mem, esp + 8u32);
-            let lpMem = <u32>::from_stack(mem, esp + 12u32);
-            let dwBytes = <u32>::from_stack(mem, esp + 16u32);
-            winapi::kernel32::HeapReAlloc(machine, hHeap, dwFlags, lpMem, dwBytes).to_raw()
+            let hHeap = <u32>::from_stack(mem, stack_args + 0u32);
+            let dwFlags = <u32>::from_stack(mem, stack_args + 4u32);
+            let lpMem = <u32>::from_stack(mem, stack_args + 8u32);
+            let dwBytes = <u32>::from_stack(mem, stack_args + 12u32);
+            let __trace_context = if crate::trace::enabled("kernel32/memory") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/memory",
+                    "HeapReAlloc",
+                    &[
+                        ("hHeap", &hHeap),
+                        ("dwFlags", &dwFlags),
+                        ("lpMem", &lpMem),
+                        ("dwBytes", &dwBytes),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::HeapReAlloc(machine, hHeap, dwFlags, lpMem, dwBytes);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::HeapReAlloc_pos.0,
+                    winapi::kernel32::HeapReAlloc_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn HeapSetInformation(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn HeapSetInformation(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let HeapHandle = <u32>::from_stack(mem, esp + 4u32);
-            let HeapInformationClass = <u32>::from_stack(mem, esp + 8u32);
-            let HeapInformation = <u32>::from_stack(mem, esp + 12u32);
-            let HeapInformationLength = <u32>::from_stack(mem, esp + 16u32);
-            winapi::kernel32::HeapSetInformation(
+            let HeapHandle = <u32>::from_stack(mem, stack_args + 0u32);
+            let HeapInformationClass = <u32>::from_stack(mem, stack_args + 4u32);
+            let HeapInformation = <u32>::from_stack(mem, stack_args + 8u32);
+            let HeapInformationLength = <u32>::from_stack(mem, stack_args + 12u32);
+            let __trace_context = if crate::trace::enabled("kernel32/memory") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/memory",
+                    "HeapSetInformation",
+                    &[
+                        ("HeapHandle", &HeapHandle),
+                        ("HeapInformationClass", &HeapInformationClass),
+                        ("HeapInformation", &HeapInformation),
+                        ("HeapInformationLength", &HeapInformationLength),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::HeapSetInformation(
                 machine,
                 HeapHandle,
                 HeapInformationClass,
                 HeapInformation,
                 HeapInformationLength,
-            )
-            .to_raw()
+            );
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::HeapSetInformation_pos.0,
+                    winapi::kernel32::HeapSetInformation_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn HeapSize(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn HeapSize(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hHeap = <u32>::from_stack(mem, esp + 4u32);
-            let dwFlags = <u32>::from_stack(mem, esp + 8u32);
-            let lpMem = <u32>::from_stack(mem, esp + 12u32);
-            winapi::kernel32::HeapSize(machine, hHeap, dwFlags, lpMem).to_raw()
+            let hHeap = <u32>::from_stack(mem, stack_args + 0u32);
+            let dwFlags = <u32>::from_stack(mem, stack_args + 4u32);
+            let lpMem = <u32>::from_stack(mem, stack_args + 8u32);
+            let __trace_context = if crate::trace::enabled("kernel32/memory") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/memory",
+                    "HeapSize",
+                    &[("hHeap", &hHeap), ("dwFlags", &dwFlags), ("lpMem", &lpMem)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::HeapSize(machine, hHeap, dwFlags, lpMem);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::HeapSize_pos.0,
+                    winapi::kernel32::HeapSize_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn InitOnceBeginInitialize(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn HeapValidate(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let lpInitOnce = <Option<&mut INIT_ONCE>>::from_stack(mem, esp + 4u32);
-            let dwFlags = <u32>::from_stack(mem, esp + 8u32);
-            let fPending = <Option<&mut u32>>::from_stack(mem, esp + 12u32);
-            let lpContext = <u32>::from_stack(mem, esp + 16u32);
-            winapi::kernel32::InitOnceBeginInitialize(
+            let hHeap = <u32>::from_stack(mem, stack_args + 0u32);
+            let dwFlags = <u32>::from_stack(mem, stack_args + 4u32);
+            let lpMem = <u32>::from_stack(mem, stack_args + 8u32);
+            let __trace_context = if crate::trace::enabled("kernel32/memory") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/memory",
+                    "HeapValidate",
+                    &[("hHeap", &hHeap), ("dwFlags", &dwFlags), ("lpMem", &lpMem)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::HeapValidate(machine, hHeap, dwFlags, lpMem);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::HeapValidate_pos.0,
+                    winapi::kernel32::HeapValidate_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn InitOnceBeginInitialize(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let lpInitOnce = <Option<&mut INIT_ONCE>>::from_stack(mem, stack_args + 0u32);
+            let dwFlags = <u32>::from_stack(mem, stack_args + 4u32);
+            let fPending = <Option<&mut u32>>::from_stack(mem, stack_args + 8u32);
+            let lpContext = <u32>::from_stack(mem, stack_args + 12u32);
+            let __trace_context = if crate::trace::enabled("kernel32/thread") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/thread",
+                    "InitOnceBeginInitialize",
+                    &[
+                        ("lpInitOnce", &lpInitOnce),
+                        ("dwFlags", &dwFlags),
+                        ("fPending", &fPending),
+                        ("lpContext", &lpContext),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::InitOnceBeginInitialize(
                 machine, lpInitOnce, dwFlags, fPending, lpContext,
-            )
-            .to_raw()
+            );
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::InitOnceBeginInitialize_pos.0,
+                    winapi::kernel32::InitOnceBeginInitialize_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn InitOnceComplete(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn InitOnceComplete(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let lpInitOnce = <Option<&mut INIT_ONCE>>::from_stack(mem, esp + 4u32);
-            let dwFlags = <u32>::from_stack(mem, esp + 8u32);
-            let lpContext = <u32>::from_stack(mem, esp + 12u32);
-            winapi::kernel32::InitOnceComplete(machine, lpInitOnce, dwFlags, lpContext).to_raw()
+            let lpInitOnce = <Option<&mut INIT_ONCE>>::from_stack(mem, stack_args + 0u32);
+            let dwFlags = <u32>::from_stack(mem, stack_args + 4u32);
+            let lpContext = <u32>::from_stack(mem, stack_args + 8u32);
+            let __trace_context = if crate::trace::enabled("kernel32/thread") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/thread",
+                    "InitOnceComplete",
+                    &[
+                        ("lpInitOnce", &lpInitOnce),
+                        ("dwFlags", &dwFlags),
+                        ("lpContext", &lpContext),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result =
+                winapi::kernel32::InitOnceComplete(machine, lpInitOnce, dwFlags, lpContext);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::InitOnceComplete_pos.0,
+                    winapi::kernel32::InitOnceComplete_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn InitializeCriticalSection(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn InitializeCriticalSection(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let lpCriticalSection = <u32>::from_stack(mem, esp + 4u32);
-            winapi::kernel32::InitializeCriticalSection(machine, lpCriticalSection).to_raw()
+            let lpCriticalSection = <u32>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("kernel32/thread") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/thread",
+                    "InitializeCriticalSection",
+                    &[("lpCriticalSection", &lpCriticalSection)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::InitializeCriticalSection(machine, lpCriticalSection);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::InitializeCriticalSection_pos.0,
+                    winapi::kernel32::InitializeCriticalSection_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
         pub unsafe fn InitializeCriticalSectionAndSpinCount(
             machine: &mut Machine,
-            esp: u32,
+            stack_args: u32,
         ) -> u32 {
             let mem = machine.mem().detach();
-            let lpCriticalSection = <u32>::from_stack(mem, esp + 4u32);
-            let dwSpinCount = <u32>::from_stack(mem, esp + 8u32);
-            winapi::kernel32::InitializeCriticalSectionAndSpinCount(
+            let lpCriticalSection = <u32>::from_stack(mem, stack_args + 0u32);
+            let dwSpinCount = <u32>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("kernel32/thread") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/thread",
+                    "InitializeCriticalSectionAndSpinCount",
+                    &[
+                        ("lpCriticalSection", &lpCriticalSection),
+                        ("dwSpinCount", &dwSpinCount),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::InitializeCriticalSectionAndSpinCount(
                 machine,
                 lpCriticalSection,
                 dwSpinCount,
-            )
-            .to_raw()
+            );
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::InitializeCriticalSectionAndSpinCount_pos.0,
+                    winapi::kernel32::InitializeCriticalSectionAndSpinCount_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn InitializeCriticalSectionEx(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn InitializeCriticalSectionEx(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let lpCriticalSection = <u32>::from_stack(mem, esp + 4u32);
-            let dwSpinCount = <u32>::from_stack(mem, esp + 8u32);
-            let flags = <u32>::from_stack(mem, esp + 12u32);
-            winapi::kernel32::InitializeCriticalSectionEx(
+            let lpCriticalSection = <u32>::from_stack(mem, stack_args + 0u32);
+            let dwSpinCount = <u32>::from_stack(mem, stack_args + 4u32);
+            let flags = <u32>::from_stack(mem, stack_args + 8u32);
+            let __trace_context = if crate::trace::enabled("kernel32/thread") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/thread",
+                    "InitializeCriticalSectionEx",
+                    &[
+                        ("lpCriticalSection", &lpCriticalSection),
+                        ("dwSpinCount", &dwSpinCount),
+                        ("flags", &flags),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::InitializeCriticalSectionEx(
                 machine,
                 lpCriticalSection,
                 dwSpinCount,
                 flags,
-            )
-            .to_raw()
+            );
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::InitializeCriticalSectionEx_pos.0,
+                    winapi::kernel32::InitializeCriticalSectionEx_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn InitializeSListHead(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn InitializeSListHead(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let ListHead = <Option<&mut SLIST_HEADER>>::from_stack(mem, esp + 4u32);
-            winapi::kernel32::InitializeSListHead(machine, ListHead).to_raw()
+            let ListHead = <Option<&mut SLIST_HEADER>>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("kernel32/misc") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/misc",
+                    "InitializeSListHead",
+                    &[("ListHead", &ListHead)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::InitializeSListHead(machine, ListHead);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::InitializeSListHead_pos.0,
+                    winapi::kernel32::InitializeSListHead_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn InterlockedIncrement(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn InterlockedDecrement(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let addend = <Option<&mut u32>>::from_stack(mem, esp + 4u32);
-            winapi::kernel32::InterlockedIncrement(machine, addend).to_raw()
+            let addend = <Option<&mut u32>>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("kernel32/thread") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/thread",
+                    "InterlockedDecrement",
+                    &[("addend", &addend)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::InterlockedDecrement(machine, addend);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::InterlockedDecrement_pos.0,
+                    winapi::kernel32::InterlockedDecrement_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn IsBadReadPtr(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn InterlockedIncrement(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let lp = <u32>::from_stack(mem, esp + 4u32);
-            let ucb = <u32>::from_stack(mem, esp + 8u32);
-            winapi::kernel32::IsBadReadPtr(machine, lp, ucb).to_raw()
+            let addend = <Option<&mut u32>>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("kernel32/thread") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/thread",
+                    "InterlockedIncrement",
+                    &[("addend", &addend)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::InterlockedIncrement(machine, addend);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::InterlockedIncrement_pos.0,
+                    winapi::kernel32::InterlockedIncrement_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn IsBadWritePtr(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn IsBadCodePtr(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let lp = <u32>::from_stack(mem, esp + 4u32);
-            let ucb = <u32>::from_stack(mem, esp + 8u32);
-            winapi::kernel32::IsBadWritePtr(machine, lp, ucb).to_raw()
+            let lpfn = <u32>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("kernel32/memory") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/memory",
+                    "IsBadCodePtr",
+                    &[("lpfn", &lpfn)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::IsBadCodePtr(machine, lpfn);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::IsBadCodePtr_pos.0,
+                    winapi::kernel32::IsBadCodePtr_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn IsDBCSLeadByte(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn IsBadReadPtr(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let _TestChar = <u8>::from_stack(mem, esp + 4u32);
-            winapi::kernel32::IsDBCSLeadByte(machine, _TestChar).to_raw()
+            let lp = <u32>::from_stack(mem, stack_args + 0u32);
+            let ucb = <u32>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("kernel32/memory") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/memory",
+                    "IsBadReadPtr",
+                    &[("lp", &lp), ("ucb", &ucb)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::IsBadReadPtr(machine, lp, ucb);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::IsBadReadPtr_pos.0,
+                    winapi::kernel32::IsBadReadPtr_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn IsDBCSLeadByteEx(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn IsBadWritePtr(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let _TestChar = <u8>::from_stack(mem, esp + 4u32);
-            let _CodePage = <u32>::from_stack(mem, esp + 8u32);
-            winapi::kernel32::IsDBCSLeadByteEx(machine, _TestChar, _CodePage).to_raw()
+            let lp = <u32>::from_stack(mem, stack_args + 0u32);
+            let ucb = <u32>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("kernel32/memory") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/memory",
+                    "IsBadWritePtr",
+                    &[("lp", &lp), ("ucb", &ucb)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::IsBadWritePtr(machine, lp, ucb);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::IsBadWritePtr_pos.0,
+                    winapi::kernel32::IsBadWritePtr_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn IsDebuggerPresent(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn IsDBCSLeadByte(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            winapi::kernel32::IsDebuggerPresent(machine).to_raw()
+            let _TestChar = <u8>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("kernel32/nls") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/nls",
+                    "IsDBCSLeadByte",
+                    &[("TestChar", &_TestChar)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::IsDBCSLeadByte(machine, _TestChar);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::IsDBCSLeadByte_pos.0,
+                    winapi::kernel32::IsDBCSLeadByte_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn IsProcessorFeaturePresent(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn IsDBCSLeadByteEx(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let feature = <Result<ProcessorFeature, u32>>::from_stack(mem, esp + 4u32);
-            winapi::kernel32::IsProcessorFeaturePresent(machine, feature).to_raw()
+            let _TestChar = <u8>::from_stack(mem, stack_args + 0u32);
+            let _CodePage = <u32>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("kernel32/nls") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/nls",
+                    "IsDBCSLeadByteEx",
+                    &[("TestChar", &_TestChar), ("CodePage", &_CodePage)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::IsDBCSLeadByteEx(machine, _TestChar, _CodePage);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::IsDBCSLeadByteEx_pos.0,
+                    winapi::kernel32::IsDBCSLeadByteEx_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn IsValidCodePage(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn IsDebuggerPresent(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let CodePage = <u32>::from_stack(mem, esp + 4u32);
-            winapi::kernel32::IsValidCodePage(machine, CodePage).to_raw()
+            let __trace_context = if crate::trace::enabled("kernel32/misc") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/misc",
+                    "IsDebuggerPresent",
+                    &[],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::IsDebuggerPresent(machine);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::IsDebuggerPresent_pos.0,
+                    winapi::kernel32::IsDebuggerPresent_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn LeaveCriticalSection(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn IsProcessorFeaturePresent(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let lpCriticalSection = <u32>::from_stack(mem, esp + 4u32);
-            winapi::kernel32::LeaveCriticalSection(machine, lpCriticalSection).to_raw()
+            let feature = <Result<ProcessorFeature, u32>>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("kernel32/misc") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/misc",
+                    "IsProcessorFeaturePresent",
+                    &[("feature", &feature)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::IsProcessorFeaturePresent(machine, feature);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::IsProcessorFeaturePresent_pos.0,
+                    winapi::kernel32::IsProcessorFeaturePresent_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn LoadLibraryA(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn IsValidCodePage(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let filename = <Option<&str>>::from_stack(mem, esp + 4u32);
-            winapi::kernel32::LoadLibraryA(machine, filename).to_raw()
+            let CodePage = <u32>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("kernel32/nls") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/nls",
+                    "IsValidCodePage",
+                    &[("CodePage", &CodePage)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::IsValidCodePage(machine, CodePage);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::IsValidCodePage_pos.0,
+                    winapi::kernel32::IsValidCodePage_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn LoadLibraryExW(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn LCMapStringA(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let lpLibFileName = <Option<&Str16>>::from_stack(mem, esp + 4u32);
-            let hFile = <HFILE>::from_stack(mem, esp + 8u32);
-            let dwFlags = <u32>::from_stack(mem, esp + 12u32);
-            winapi::kernel32::LoadLibraryExW(machine, lpLibFileName, hFile, dwFlags).to_raw()
+            let locale = <LCID>::from_stack(mem, stack_args + 0u32);
+            let dwMapFlags = <u32>::from_stack(mem, stack_args + 4u32);
+            let lpSrcStr = <u32>::from_stack(mem, stack_args + 8u32);
+            let cchSrc = <i32>::from_stack(mem, stack_args + 12u32);
+            let lpDestStr = <ArrayWithSizeMut<u8>>::from_stack(mem, stack_args + 16u32);
+            let __trace_context = if crate::trace::enabled("kernel32/nls") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/nls",
+                    "LCMapStringA",
+                    &[
+                        ("locale", &locale),
+                        ("dwMapFlags", &dwMapFlags),
+                        ("lpSrcStr", &lpSrcStr),
+                        ("cchSrc", &cchSrc),
+                        ("lpDestStr", &lpDestStr),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::LCMapStringA(
+                machine, locale, dwMapFlags, lpSrcStr, cchSrc, lpDestStr,
+            );
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::LCMapStringA_pos.0,
+                    winapi::kernel32::LCMapStringA_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn LoadResource(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn LCMapStringW(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hModule = <HMODULE>::from_stack(mem, esp + 4u32);
-            let hResInfo = <HRSRC>::from_stack(mem, esp + 8u32);
-            winapi::kernel32::LoadResource(machine, hModule, hResInfo).to_raw()
+            let locale = <LCID>::from_stack(mem, stack_args + 0u32);
+            let dwMapFlags = <u32>::from_stack(mem, stack_args + 4u32);
+            let lpSrcStr = <u32>::from_stack(mem, stack_args + 8u32);
+            let cchSrc = <i32>::from_stack(mem, stack_args + 12u32);
+            let lpDestStr = <ArrayWithSizeMut<u16>>::from_stack(mem, stack_args + 16u32);
+            let __trace_context = if crate::trace::enabled("kernel32/nls") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/nls",
+                    "LCMapStringW",
+                    &[
+                        ("locale", &locale),
+                        ("dwMapFlags", &dwMapFlags),
+                        ("lpSrcStr", &lpSrcStr),
+                        ("cchSrc", &cchSrc),
+                        ("lpDestStr", &lpDestStr),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::LCMapStringW(
+                machine, locale, dwMapFlags, lpSrcStr, cchSrc, lpDestStr,
+            );
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::LCMapStringW_pos.0,
+                    winapi::kernel32::LCMapStringW_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn LocalAlloc(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn LeaveCriticalSection(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let uFlags = <GMEM>::from_stack(mem, esp + 4u32);
-            let dwBytes = <u32>::from_stack(mem, esp + 8u32);
-            winapi::kernel32::LocalAlloc(machine, uFlags, dwBytes).to_raw()
+            let lpCriticalSection = <u32>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("kernel32/thread") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/thread",
+                    "LeaveCriticalSection",
+                    &[("lpCriticalSection", &lpCriticalSection)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::LeaveCriticalSection(machine, lpCriticalSection);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::LeaveCriticalSection_pos.0,
+                    winapi::kernel32::LeaveCriticalSection_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn LocalFree(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn LoadLibraryA(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hMem = <u32>::from_stack(mem, esp + 4u32);
-            winapi::kernel32::LocalFree(machine, hMem).to_raw()
+            let filename = <Option<&str>>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("kernel32/dll") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/dll",
+                    "LoadLibraryA",
+                    &[("filename", &filename)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::LoadLibraryA(machine, filename);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::LoadLibraryA_pos.0,
+                    winapi::kernel32::LoadLibraryA_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn LockResource(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn LoadLibraryExW(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hResData = <HRSRC>::from_stack(mem, esp + 4u32);
-            winapi::kernel32::LockResource(machine, hResData).to_raw()
+            let lpLibFileName = <Option<&Str16>>::from_stack(mem, stack_args + 0u32);
+            let hFile = <HFILE>::from_stack(mem, stack_args + 4u32);
+            let dwFlags = <u32>::from_stack(mem, stack_args + 8u32);
+            let __trace_context = if crate::trace::enabled("kernel32/dll") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/dll",
+                    "LoadLibraryExW",
+                    &[
+                        ("lpLibFileName", &lpLibFileName),
+                        ("hFile", &hFile),
+                        ("dwFlags", &dwFlags),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::LoadLibraryExW(machine, lpLibFileName, hFile, dwFlags);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::LoadLibraryExW_pos.0,
+                    winapi::kernel32::LoadLibraryExW_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn MulDiv(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn LoadResource(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let nNumber = <i32>::from_stack(mem, esp + 4u32);
-            let nNumerator = <i32>::from_stack(mem, esp + 8u32);
-            let nDenominator = <i32>::from_stack(mem, esp + 12u32);
-            winapi::kernel32::MulDiv(machine, nNumber, nNumerator, nDenominator).to_raw()
+            let hModule = <HMODULE>::from_stack(mem, stack_args + 0u32);
+            let hResInfo = <HRSRC>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("kernel32/resource") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/resource",
+                    "LoadResource",
+                    &[("hModule", &hModule), ("hResInfo", &hResInfo)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::LoadResource(machine, hModule, hResInfo);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::LoadResource_pos.0,
+                    winapi::kernel32::LoadResource_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn MultiByteToWideChar(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn LocalAlloc(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let CodePage = <Result<CP, u32>>::from_stack(mem, esp + 4u32);
-            let dwFlags = <u32>::from_stack(mem, esp + 8u32);
-            let lpMultiByteStr = <u32>::from_stack(mem, esp + 12u32);
-            let cbMultiByte = <i32>::from_stack(mem, esp + 16u32);
-            let lpWideCharStr = <ArrayWithSizeMut<u16>>::from_stack(mem, esp + 20u32);
-            winapi::kernel32::MultiByteToWideChar(
+            let uFlags = <GMEM>::from_stack(mem, stack_args + 0u32);
+            let dwBytes = <u32>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("kernel32/memory") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/memory",
+                    "LocalAlloc",
+                    &[("uFlags", &uFlags), ("dwBytes", &dwBytes)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::LocalAlloc(machine, uFlags, dwBytes);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::LocalAlloc_pos.0,
+                    winapi::kernel32::LocalAlloc_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn LocalFree(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let hMem = <u32>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("kernel32/memory") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/memory",
+                    "LocalFree",
+                    &[("hMem", &hMem)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::LocalFree(machine, hMem);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::LocalFree_pos.0,
+                    winapi::kernel32::LocalFree_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn LockResource(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let hResData = <HRSRC>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("kernel32/resource") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/resource",
+                    "LockResource",
+                    &[("hResData", &hResData)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::LockResource(machine, hResData);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::LockResource_pos.0,
+                    winapi::kernel32::LockResource_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn MulDiv(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let nNumber = <i32>::from_stack(mem, stack_args + 0u32);
+            let nNumerator = <i32>::from_stack(mem, stack_args + 4u32);
+            let nDenominator = <i32>::from_stack(mem, stack_args + 8u32);
+            let __trace_context = if crate::trace::enabled("kernel32/misc") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/misc",
+                    "MulDiv",
+                    &[
+                        ("nNumber", &nNumber),
+                        ("nNumerator", &nNumerator),
+                        ("nDenominator", &nDenominator),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::MulDiv(machine, nNumber, nNumerator, nDenominator);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::MulDiv_pos.0,
+                    winapi::kernel32::MulDiv_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn MultiByteToWideChar(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let CodePage = <Result<CP, u32>>::from_stack(mem, stack_args + 0u32);
+            let dwFlags = <Result<MB, u32>>::from_stack(mem, stack_args + 4u32);
+            let lpMultiByteStr = <u32>::from_stack(mem, stack_args + 8u32);
+            let cbMultiByte = <i32>::from_stack(mem, stack_args + 12u32);
+            let lpWideCharStr = <ArrayWithSizeMut<u16>>::from_stack(mem, stack_args + 16u32);
+            let __trace_context = if crate::trace::enabled("kernel32/nls") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/nls",
+                    "MultiByteToWideChar",
+                    &[
+                        ("CodePage", &CodePage),
+                        ("dwFlags", &dwFlags),
+                        ("lpMultiByteStr", &lpMultiByteStr),
+                        ("cbMultiByte", &cbMultiByte),
+                        ("lpWideCharStr", &lpWideCharStr),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::MultiByteToWideChar(
                 machine,
                 CodePage,
                 dwFlags,
                 lpMultiByteStr,
                 cbMultiByte,
                 lpWideCharStr,
-            )
-            .to_raw()
+            );
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::MultiByteToWideChar_pos.0,
+                    winapi::kernel32::MultiByteToWideChar_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn NtCurrentTeb(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn NtCurrentTeb(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            winapi::kernel32::NtCurrentTeb(machine).to_raw()
+            let __trace_context = if crate::trace::enabled("kernel32/misc") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/misc",
+                    "NtCurrentTeb",
+                    &[],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::NtCurrentTeb(machine);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::NtCurrentTeb_pos.0,
+                    winapi::kernel32::NtCurrentTeb_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn OutputDebugStringA(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn OutputDebugStringA(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let msg = <Option<&str>>::from_stack(mem, esp + 4u32);
-            winapi::kernel32::OutputDebugStringA(machine, msg).to_raw()
+            let msg = <Option<&str>>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("kernel32/misc") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/misc",
+                    "OutputDebugStringA",
+                    &[("msg", &msg)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::OutputDebugStringA(machine, msg);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::OutputDebugStringA_pos.0,
+                    winapi::kernel32::OutputDebugStringA_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn QueryPerformanceCounter(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn QueryPerformanceCounter(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let lpPerformanceCount = <Option<&mut LARGE_INTEGER>>::from_stack(mem, esp + 4u32);
-            winapi::kernel32::QueryPerformanceCounter(machine, lpPerformanceCount).to_raw()
+            let lpPerformanceCount =
+                <Option<&mut LARGE_INTEGER>>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("kernel32/time") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/time",
+                    "QueryPerformanceCounter",
+                    &[("lpPerformanceCount", &lpPerformanceCount)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::QueryPerformanceCounter(machine, lpPerformanceCount);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::QueryPerformanceCounter_pos.0,
+                    winapi::kernel32::QueryPerformanceCounter_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn QueryPerformanceFrequency(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn QueryPerformanceFrequency(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let lpFrequency = <u32>::from_stack(mem, esp + 4u32);
-            winapi::kernel32::QueryPerformanceFrequency(machine, lpFrequency).to_raw()
+            let lpFrequency = <u32>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("kernel32/time") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/time",
+                    "QueryPerformanceFrequency",
+                    &[("lpFrequency", &lpFrequency)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::QueryPerformanceFrequency(machine, lpFrequency);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::QueryPerformanceFrequency_pos.0,
+                    winapi::kernel32::QueryPerformanceFrequency_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn ReadFile(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn RaiseException(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hFile = <HFILE>::from_stack(mem, esp + 4u32);
-            let lpBuffer = <ArrayWithSizeMut<u8>>::from_stack(mem, esp + 8u32);
-            let lpNumberOfBytesRead = <Option<&mut u32>>::from_stack(mem, esp + 16u32);
-            let lpOverlapped = <u32>::from_stack(mem, esp + 20u32);
-            winapi::kernel32::ReadFile(machine, hFile, lpBuffer, lpNumberOfBytesRead, lpOverlapped)
-                .to_raw()
+            let dwExceptionCode = <u32>::from_stack(mem, stack_args + 0u32);
+            let dwExceptionFlags = <u32>::from_stack(mem, stack_args + 4u32);
+            let nNumberOfArguments = <u32>::from_stack(mem, stack_args + 8u32);
+            let lpArguments = <u32>::from_stack(mem, stack_args + 12u32);
+            let __trace_context = if crate::trace::enabled("kernel32/misc") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/misc",
+                    "RaiseException",
+                    &[
+                        ("dwExceptionCode", &dwExceptionCode),
+                        ("dwExceptionFlags", &dwExceptionFlags),
+                        ("nNumberOfArguments", &nNumberOfArguments),
+                        ("lpArguments", &lpArguments),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::RaiseException(
+                machine,
+                dwExceptionCode,
+                dwExceptionFlags,
+                nNumberOfArguments,
+                lpArguments,
+            );
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::RaiseException_pos.0,
+                    winapi::kernel32::RaiseException_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn ReleaseSRWLockExclusive(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn ReadFile(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let SRWLock = <Option<&mut SRWLOCK>>::from_stack(mem, esp + 4u32);
-            winapi::kernel32::ReleaseSRWLockExclusive(machine, SRWLock).to_raw()
+            let hFile = <HFILE>::from_stack(mem, stack_args + 0u32);
+            let lpBuffer = <ArrayWithSizeMut<u8>>::from_stack(mem, stack_args + 4u32);
+            let lpNumberOfBytesRead = <Option<&mut u32>>::from_stack(mem, stack_args + 12u32);
+            let lpOverlapped = <u32>::from_stack(mem, stack_args + 16u32);
+            let __trace_context = if crate::trace::enabled("kernel32/file") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/file",
+                    "ReadFile",
+                    &[
+                        ("hFile", &hFile),
+                        ("lpBuffer", &lpBuffer),
+                        ("lpNumberOfBytesRead", &lpNumberOfBytesRead),
+                        ("lpOverlapped", &lpOverlapped),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::ReadFile(
+                machine,
+                hFile,
+                lpBuffer,
+                lpNumberOfBytesRead,
+                lpOverlapped,
+            );
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::ReadFile_pos.0,
+                    winapi::kernel32::ReadFile_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn ReleaseSRWLockShared(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn ReleaseSRWLockExclusive(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let SRWLock = <Option<&mut SRWLOCK>>::from_stack(mem, esp + 4u32);
-            winapi::kernel32::ReleaseSRWLockShared(machine, SRWLock).to_raw()
+            let SRWLock = <Option<&mut SRWLOCK>>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("kernel32/thread") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/thread",
+                    "ReleaseSRWLockExclusive",
+                    &[("SRWLock", &SRWLock)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::ReleaseSRWLockExclusive(machine, SRWLock);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::ReleaseSRWLockExclusive_pos.0,
+                    winapi::kernel32::ReleaseSRWLockExclusive_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn RemoveDirectoryA(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn ReleaseSRWLockShared(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let lpPathName = <Option<&str>>::from_stack(mem, esp + 4u32);
-            winapi::kernel32::RemoveDirectoryA(machine, lpPathName).to_raw()
+            let SRWLock = <Option<&mut SRWLOCK>>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("kernel32/thread") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/thread",
+                    "ReleaseSRWLockShared",
+                    &[("SRWLock", &SRWLock)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::ReleaseSRWLockShared(machine, SRWLock);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::ReleaseSRWLockShared_pos.0,
+                    winapi::kernel32::ReleaseSRWLockShared_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn ResumeThread(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn RemoveDirectoryA(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hThread = <HTHREAD>::from_stack(mem, esp + 4u32);
-            winapi::kernel32::ResumeThread(machine, hThread).to_raw()
+            let lpPathName = <Option<&str>>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("kernel32/file") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/file",
+                    "RemoveDirectoryA",
+                    &[("lpPathName", &lpPathName)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::RemoveDirectoryA(machine, lpPathName);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::RemoveDirectoryA_pos.0,
+                    winapi::kernel32::RemoveDirectoryA_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn SetConsoleCtrlHandler(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn ResumeThread(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let _handlerRoutine = <DWORD>::from_stack(mem, esp + 4u32);
-            let _add = <u32>::from_stack(mem, esp + 8u32);
-            winapi::kernel32::SetConsoleCtrlHandler(machine, _handlerRoutine, _add).to_raw()
+            let hThread = <HTHREAD>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("kernel32/thread") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/thread",
+                    "ResumeThread",
+                    &[("hThread", &hThread)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::ResumeThread(machine, hThread);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::ResumeThread_pos.0,
+                    winapi::kernel32::ResumeThread_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn SetEndOfFile(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn RtlUnwind(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hFile = <HFILE>::from_stack(mem, esp + 4u32);
-            winapi::kernel32::SetEndOfFile(machine, hFile).to_raw()
+            let TargetFrame = <u32>::from_stack(mem, stack_args + 0u32);
+            let TargetIp = <u32>::from_stack(mem, stack_args + 4u32);
+            let ExceptionRecord = <u32>::from_stack(mem, stack_args + 8u32);
+            let ReturnValue = <u32>::from_stack(mem, stack_args + 12u32);
+            let __trace_context = if crate::trace::enabled("kernel32/misc") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/misc",
+                    "RtlUnwind",
+                    &[
+                        ("TargetFrame", &TargetFrame),
+                        ("TargetIp", &TargetIp),
+                        ("ExceptionRecord", &ExceptionRecord),
+                        ("ReturnValue", &ReturnValue),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::RtlUnwind(
+                machine,
+                TargetFrame,
+                TargetIp,
+                ExceptionRecord,
+                ReturnValue,
+            );
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::RtlUnwind_pos.0,
+                    winapi::kernel32::RtlUnwind_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn SetEnvironmentVariableA(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn SetConsoleCtrlHandler(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let name = <Option<&str>>::from_stack(mem, esp + 4u32);
-            let value = <Option<&str>>::from_stack(mem, esp + 8u32);
-            winapi::kernel32::SetEnvironmentVariableA(machine, name, value).to_raw()
+            let _handlerRoutine = <DWORD>::from_stack(mem, stack_args + 0u32);
+            let _add = <u32>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("kernel32/console") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/console",
+                    "SetConsoleCtrlHandler",
+                    &[("handlerRoutine", &_handlerRoutine), ("add", &_add)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::SetConsoleCtrlHandler(machine, _handlerRoutine, _add);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::SetConsoleCtrlHandler_pos.0,
+                    winapi::kernel32::SetConsoleCtrlHandler_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn SetEvent(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn SetEndOfFile(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hEvent = <HEVENT>::from_stack(mem, esp + 4u32);
-            winapi::kernel32::SetEvent(machine, hEvent).to_raw()
+            let hFile = <HFILE>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("kernel32/file") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/file",
+                    "SetEndOfFile",
+                    &[("hFile", &hFile)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::SetEndOfFile(machine, hFile);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::SetEndOfFile_pos.0,
+                    winapi::kernel32::SetEndOfFile_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn SetFileAttributesA(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn SetEnvironmentVariableA(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let lpFileName = <Option<&str>>::from_stack(mem, esp + 4u32);
-            let dwFileAttributes = <Result<FileAttribute, u32>>::from_stack(mem, esp + 8u32);
-            winapi::kernel32::SetFileAttributesA(machine, lpFileName, dwFileAttributes).to_raw()
+            let name = <Option<&str>>::from_stack(mem, stack_args + 0u32);
+            let value = <Option<&str>>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("kernel32/env") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/env",
+                    "SetEnvironmentVariableA",
+                    &[("name", &name), ("value", &value)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::SetEnvironmentVariableA(machine, name, value);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::SetEnvironmentVariableA_pos.0,
+                    winapi::kernel32::SetEnvironmentVariableA_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn SetFilePointer(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn SetEvent(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hFile = <HFILE>::from_stack(mem, esp + 4u32);
-            let lDistanceToMove = <i32>::from_stack(mem, esp + 8u32);
-            let lpDistanceToMoveHigh = <Option<&mut i32>>::from_stack(mem, esp + 12u32);
-            let dwMoveMethod = <Result<FILE, u32>>::from_stack(mem, esp + 16u32);
-            winapi::kernel32::SetFilePointer(
+            let hEvent = <HEVENT>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("kernel32/sync") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/sync",
+                    "SetEvent",
+                    &[("hEvent", &hEvent)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::SetEvent(machine, hEvent);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::SetEvent_pos.0,
+                    winapi::kernel32::SetEvent_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn SetFileAttributesA(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let lpFileName = <Option<&str>>::from_stack(mem, stack_args + 0u32);
+            let dwFileAttributes = <Result<FileAttribute, u32>>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("kernel32/file") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/file",
+                    "SetFileAttributesA",
+                    &[
+                        ("lpFileName", &lpFileName),
+                        ("dwFileAttributes", &dwFileAttributes),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result =
+                winapi::kernel32::SetFileAttributesA(machine, lpFileName, dwFileAttributes);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::SetFileAttributesA_pos.0,
+                    winapi::kernel32::SetFileAttributesA_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn SetFilePointer(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let hFile = <HFILE>::from_stack(mem, stack_args + 0u32);
+            let lDistanceToMove = <i32>::from_stack(mem, stack_args + 4u32);
+            let lpDistanceToMoveHigh = <Option<&mut i32>>::from_stack(mem, stack_args + 8u32);
+            let dwMoveMethod = <Result<FILE, u32>>::from_stack(mem, stack_args + 12u32);
+            let __trace_context = if crate::trace::enabled("kernel32/file") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/file",
+                    "SetFilePointer",
+                    &[
+                        ("hFile", &hFile),
+                        ("lDistanceToMove", &lDistanceToMove),
+                        ("lpDistanceToMoveHigh", &lpDistanceToMoveHigh),
+                        ("dwMoveMethod", &dwMoveMethod),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::SetFilePointer(
                 machine,
                 hFile,
                 lDistanceToMove,
                 lpDistanceToMoveHigh,
                 dwMoveMethod,
-            )
-            .to_raw()
+            );
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::SetFilePointer_pos.0,
+                    winapi::kernel32::SetFilePointer_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn SetFileTime(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn SetFileTime(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hFile = <HFILE>::from_stack(mem, esp + 4u32);
-            let lpCreationTime = <Option<&FILETIME>>::from_stack(mem, esp + 8u32);
-            let lpLastAccessTime = <Option<&FILETIME>>::from_stack(mem, esp + 12u32);
-            let lpLastWriteTime = <Option<&FILETIME>>::from_stack(mem, esp + 16u32);
-            winapi::kernel32::SetFileTime(
+            let hFile = <HFILE>::from_stack(mem, stack_args + 0u32);
+            let lpCreationTime = <Option<&FILETIME>>::from_stack(mem, stack_args + 4u32);
+            let lpLastAccessTime = <Option<&FILETIME>>::from_stack(mem, stack_args + 8u32);
+            let lpLastWriteTime = <Option<&FILETIME>>::from_stack(mem, stack_args + 12u32);
+            let __trace_context = if crate::trace::enabled("kernel32/file") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/file",
+                    "SetFileTime",
+                    &[
+                        ("hFile", &hFile),
+                        ("lpCreationTime", &lpCreationTime),
+                        ("lpLastAccessTime", &lpLastAccessTime),
+                        ("lpLastWriteTime", &lpLastWriteTime),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::SetFileTime(
                 machine,
                 hFile,
                 lpCreationTime,
                 lpLastAccessTime,
                 lpLastWriteTime,
-            )
-            .to_raw()
-        }
-        pub unsafe fn SetHandleCount(machine: &mut Machine, esp: u32) -> u32 {
-            let mem = machine.mem().detach();
-            let uNumber = <u32>::from_stack(mem, esp + 4u32);
-            winapi::kernel32::SetHandleCount(machine, uNumber).to_raw()
-        }
-        pub unsafe fn SetLastError(machine: &mut Machine, esp: u32) -> u32 {
-            let mem = machine.mem().detach();
-            let dwErrCode = <u32>::from_stack(mem, esp + 4u32);
-            winapi::kernel32::SetLastError(machine, dwErrCode).to_raw()
-        }
-        pub unsafe fn SetPriorityClass(machine: &mut Machine, esp: u32) -> u32 {
-            let mem = machine.mem().detach();
-            let hProcess = <HANDLE<()>>::from_stack(mem, esp + 4u32);
-            let dwPriorityClass = <u32>::from_stack(mem, esp + 8u32);
-            winapi::kernel32::SetPriorityClass(machine, hProcess, dwPriorityClass).to_raw()
-        }
-        pub unsafe fn SetStdHandle(machine: &mut Machine, esp: u32) -> u32 {
-            let mem = machine.mem().detach();
-            let nStdHandle = <Result<STD, u32>>::from_stack(mem, esp + 4u32);
-            let hHandle = <u32>::from_stack(mem, esp + 8u32);
-            winapi::kernel32::SetStdHandle(machine, nStdHandle, hHandle).to_raw()
-        }
-        pub unsafe fn SetThreadDescription(machine: &mut Machine, esp: u32) -> u32 {
-            let mem = machine.mem().detach();
-            let hThread = <HTHREAD>::from_stack(mem, esp + 4u32);
-            let lpThreadDescription = <Option<&Str16>>::from_stack(mem, esp + 8u32);
-            winapi::kernel32::SetThreadDescription(machine, hThread, lpThreadDescription).to_raw()
-        }
-        pub unsafe fn SetThreadPriority(machine: &mut Machine, esp: u32) -> u32 {
-            let mem = machine.mem().detach();
-            let hThread = <HTHREAD>::from_stack(mem, esp + 4u32);
-            let nPriority = <u32>::from_stack(mem, esp + 8u32);
-            winapi::kernel32::SetThreadPriority(machine, hThread, nPriority).to_raw()
-        }
-        pub unsafe fn SetThreadStackGuarantee(machine: &mut Machine, esp: u32) -> u32 {
-            let mem = machine.mem().detach();
-            let StackSizeInBytes = <Option<&mut u32>>::from_stack(mem, esp + 4u32);
-            winapi::kernel32::SetThreadStackGuarantee(machine, StackSizeInBytes).to_raw()
-        }
-        pub unsafe fn SetUnhandledExceptionFilter(machine: &mut Machine, esp: u32) -> u32 {
-            let mem = machine.mem().detach();
-            let _lpTopLevelExceptionFilter = <u32>::from_stack(mem, esp + 4u32);
-            winapi::kernel32::SetUnhandledExceptionFilter(machine, _lpTopLevelExceptionFilter)
-                .to_raw()
-        }
-        pub unsafe fn SizeofResource(machine: &mut Machine, esp: u32) -> u32 {
-            let mem = machine.mem().detach();
-            let hModule = <HMODULE>::from_stack(mem, esp + 4u32);
-            let hResInfo = <HRSRC>::from_stack(mem, esp + 8u32);
-            winapi::kernel32::SizeofResource(machine, hModule, hResInfo).to_raw()
-        }
-        pub unsafe fn Sleep(machine: &mut Machine, esp: u32) -> u32 {
-            let mem = machine.mem().detach();
-            let dwMilliseconds = <u32>::from_stack(mem, esp + 4u32);
-            #[cfg(feature = "x86-emu")]
-            {
-                let m: *mut Machine = machine;
-                let result = async move {
-                    use memory::Extensions;
-                    let machine = unsafe { &mut *m };
-                    let result = winapi::kernel32::Sleep(machine, dwMilliseconds).await;
-                    let cpu = &mut machine.emu.x86.cpu_mut();
-                    cpu.regs.eip = x86::ops::pop(cpu, machine.emu.memory.mem());
-                    *cpu.regs.get32_mut(x86::Register::ESP) += 4u32;
-                    cpu.regs.set32(x86::Register::EAX, result.to_raw());
-                };
-                machine
-                    .emu
-                    .x86
-                    .cpu_mut()
-                    .call_async(machine.emu.memory.mem(), Box::pin(result));
-                0
+            );
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::SetFileTime_pos.0,
+                    winapi::kernel32::SetFileTime_pos.1,
+                    &result,
+                );
             }
-            #[cfg(any(feature = "x86-64", feature = "x86-unicorn"))]
-            {
-                let pin = std::pin::pin!(winapi::kernel32::Sleep(machine, dwMilliseconds));
-                crate::shims::call_sync(pin).to_raw()
+            result.to_raw()
+        }
+        pub unsafe fn SetHandleCount(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let uNumber = <u32>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("kernel32/misc") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/misc",
+                    "SetHandleCount",
+                    &[("uNumber", &uNumber)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::SetHandleCount(machine, uNumber);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::SetHandleCount_pos.0,
+                    winapi::kernel32::SetHandleCount_pos.1,
+                    &result,
+                );
             }
+            result.to_raw()
         }
-        pub unsafe fn SystemTimeToFileTime(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn SetLastError(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let lpSystemTime = <Option<&SYSTEMTIME>>::from_stack(mem, esp + 4u32);
-            let lpFileTime = <Option<&mut FILETIME>>::from_stack(mem, esp + 8u32);
-            winapi::kernel32::SystemTimeToFileTime(machine, lpSystemTime, lpFileTime).to_raw()
+            let dwErrCode = <u32>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("kernel32/misc") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/misc",
+                    "SetLastError",
+                    &[("dwErrCode", &dwErrCode)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::SetLastError(machine, dwErrCode);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::SetLastError_pos.0,
+                    winapi::kernel32::SetLastError_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn TlsAlloc(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn SetPriorityClass(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            winapi::kernel32::TlsAlloc(machine).to_raw()
+            let hProcess = <HANDLE<()>>::from_stack(mem, stack_args + 0u32);
+            let dwPriorityClass = <u32>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("kernel32/misc") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/misc",
+                    "SetPriorityClass",
+                    &[
+                        ("hProcess", &hProcess),
+                        ("dwPriorityClass", &dwPriorityClass),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::SetPriorityClass(machine, hProcess, dwPriorityClass);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::SetPriorityClass_pos.0,
+                    winapi::kernel32::SetPriorityClass_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn TlsFree(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn SetStdHandle(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let dwTlsIndex = <u32>::from_stack(mem, esp + 4u32);
-            winapi::kernel32::TlsFree(machine, dwTlsIndex).to_raw()
+            let nStdHandle = <Result<STD, u32>>::from_stack(mem, stack_args + 0u32);
+            let hHandle = <u32>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("kernel32/file") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/file",
+                    "SetStdHandle",
+                    &[("nStdHandle", &nStdHandle), ("hHandle", &hHandle)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::SetStdHandle(machine, nStdHandle, hHandle);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::SetStdHandle_pos.0,
+                    winapi::kernel32::SetStdHandle_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn TlsGetValue(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn SetThreadDescription(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let dwTlsIndex = <u32>::from_stack(mem, esp + 4u32);
-            winapi::kernel32::TlsGetValue(machine, dwTlsIndex).to_raw()
+            let hThread = <HTHREAD>::from_stack(mem, stack_args + 0u32);
+            let lpThreadDescription = <Option<&Str16>>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("kernel32/thread") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/thread",
+                    "SetThreadDescription",
+                    &[
+                        ("hThread", &hThread),
+                        ("lpThreadDescription", &lpThreadDescription),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result =
+                winapi::kernel32::SetThreadDescription(machine, hThread, lpThreadDescription);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::SetThreadDescription_pos.0,
+                    winapi::kernel32::SetThreadDescription_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn TlsSetValue(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn SetThreadPriority(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let dwTlsIndex = <u32>::from_stack(mem, esp + 4u32);
-            let lpTlsValue = <u32>::from_stack(mem, esp + 8u32);
-            winapi::kernel32::TlsSetValue(machine, dwTlsIndex, lpTlsValue).to_raw()
+            let hThread = <HTHREAD>::from_stack(mem, stack_args + 0u32);
+            let nPriority = <u32>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("kernel32/thread") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/thread",
+                    "SetThreadPriority",
+                    &[("hThread", &hThread), ("nPriority", &nPriority)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::SetThreadPriority(machine, hThread, nPriority);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::SetThreadPriority_pos.0,
+                    winapi::kernel32::SetThreadPriority_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn TryAcquireSRWLockExclusive(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn SetThreadStackGuarantee(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let SRWLock = <Option<&mut SRWLOCK>>::from_stack(mem, esp + 4u32);
-            winapi::kernel32::TryAcquireSRWLockExclusive(machine, SRWLock).to_raw()
+            let StackSizeInBytes = <Option<&mut u32>>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("kernel32/thread") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/thread",
+                    "SetThreadStackGuarantee",
+                    &[("StackSizeInBytes", &StackSizeInBytes)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::SetThreadStackGuarantee(machine, StackSizeInBytes);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::SetThreadStackGuarantee_pos.0,
+                    winapi::kernel32::SetThreadStackGuarantee_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn UnhandledExceptionFilter(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn SetUnhandledExceptionFilter(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let _exceptionInfo = <u32>::from_stack(mem, esp + 4u32);
-            winapi::kernel32::UnhandledExceptionFilter(machine, _exceptionInfo).to_raw()
+            let _lpTopLevelExceptionFilter = <u32>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("kernel32/misc") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/misc",
+                    "SetUnhandledExceptionFilter",
+                    &[("lpTopLevelExceptionFilter", &_lpTopLevelExceptionFilter)],
+                ))
+            } else {
+                None
+            };
+            let result =
+                winapi::kernel32::SetUnhandledExceptionFilter(machine, _lpTopLevelExceptionFilter);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::SetUnhandledExceptionFilter_pos.0,
+                    winapi::kernel32::SetUnhandledExceptionFilter_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn VirtualAlloc(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn SizeofResource(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let lpAddress = <u32>::from_stack(mem, esp + 4u32);
-            let dwSize = <u32>::from_stack(mem, esp + 8u32);
-            let flAllocationType = <Result<MEM, u32>>::from_stack(mem, esp + 12u32);
-            let flProtec = <Result<PAGE, u32>>::from_stack(mem, esp + 16u32);
-            winapi::kernel32::VirtualAlloc(machine, lpAddress, dwSize, flAllocationType, flProtec)
-                .to_raw()
+            let hModule = <HMODULE>::from_stack(mem, stack_args + 0u32);
+            let hResInfo = <HRSRC>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("kernel32/resource") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/resource",
+                    "SizeofResource",
+                    &[("hModule", &hModule), ("hResInfo", &hResInfo)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::SizeofResource(machine, hModule, hResInfo);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::SizeofResource_pos.0,
+                    winapi::kernel32::SizeofResource_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn VirtualFree(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn Sleep(
+            machine: &mut Machine,
+            stack_args: u32,
+        ) -> std::pin::Pin<Box<dyn std::future::Future<Output = u32>>> {
             let mem = machine.mem().detach();
-            let lpAddress = <u32>::from_stack(mem, esp + 4u32);
-            let dwSize = <u32>::from_stack(mem, esp + 8u32);
-            let dwFreeType = <u32>::from_stack(mem, esp + 12u32);
-            winapi::kernel32::VirtualFree(machine, lpAddress, dwSize, dwFreeType).to_raw()
+            let dwMilliseconds = <u32>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("kernel32/time") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/time",
+                    "Sleep",
+                    &[("dwMilliseconds", &dwMilliseconds)],
+                ))
+            } else {
+                None
+            };
+            let machine: *mut Machine = machine;
+            Box::pin(async move {
+                let machine = unsafe { &mut *machine };
+                let result = winapi::kernel32::Sleep(machine, dwMilliseconds).await;
+                if let Some(__trace_context) = __trace_context {
+                    crate::trace::trace_return(
+                        &__trace_context,
+                        winapi::kernel32::Sleep_pos.0,
+                        winapi::kernel32::Sleep_pos.1,
+                        &result,
+                    );
+                }
+                result.to_raw()
+            })
         }
-        pub unsafe fn VirtualProtect(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn SystemTimeToFileTime(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let lpAddress = <u32>::from_stack(mem, esp + 4u32);
-            let dwSize = <u32>::from_stack(mem, esp + 8u32);
-            let flNewProtect = <u32>::from_stack(mem, esp + 12u32);
-            let lpflOldProtect = <Option<&mut u32>>::from_stack(mem, esp + 16u32);
-            winapi::kernel32::VirtualProtect(
+            let lpSystemTime = <Option<&SYSTEMTIME>>::from_stack(mem, stack_args + 0u32);
+            let lpFileTime = <Option<&mut FILETIME>>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("kernel32/time") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/time",
+                    "SystemTimeToFileTime",
+                    &[("lpSystemTime", &lpSystemTime), ("lpFileTime", &lpFileTime)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::SystemTimeToFileTime(machine, lpSystemTime, lpFileTime);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::SystemTimeToFileTime_pos.0,
+                    winapi::kernel32::SystemTimeToFileTime_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn TerminateProcess(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let hProcess = <u32>::from_stack(mem, stack_args + 0u32);
+            let uExitCode = <u32>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("kernel32/misc") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/misc",
+                    "TerminateProcess",
+                    &[("hProcess", &hProcess), ("uExitCode", &uExitCode)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::TerminateProcess(machine, hProcess, uExitCode);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::TerminateProcess_pos.0,
+                    winapi::kernel32::TerminateProcess_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn TlsAlloc(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let __trace_context = if crate::trace::enabled("kernel32/thread") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/thread",
+                    "TlsAlloc",
+                    &[],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::TlsAlloc(machine);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::TlsAlloc_pos.0,
+                    winapi::kernel32::TlsAlloc_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn TlsFree(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let dwTlsIndex = <u32>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("kernel32/thread") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/thread",
+                    "TlsFree",
+                    &[("dwTlsIndex", &dwTlsIndex)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::TlsFree(machine, dwTlsIndex);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::TlsFree_pos.0,
+                    winapi::kernel32::TlsFree_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn TlsGetValue(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let dwTlsIndex = <u32>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("kernel32/thread") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/thread",
+                    "TlsGetValue",
+                    &[("dwTlsIndex", &dwTlsIndex)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::TlsGetValue(machine, dwTlsIndex);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::TlsGetValue_pos.0,
+                    winapi::kernel32::TlsGetValue_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn TlsSetValue(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let dwTlsIndex = <u32>::from_stack(mem, stack_args + 0u32);
+            let lpTlsValue = <u32>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("kernel32/thread") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/thread",
+                    "TlsSetValue",
+                    &[("dwTlsIndex", &dwTlsIndex), ("lpTlsValue", &lpTlsValue)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::TlsSetValue(machine, dwTlsIndex, lpTlsValue);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::TlsSetValue_pos.0,
+                    winapi::kernel32::TlsSetValue_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn TryAcquireSRWLockExclusive(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let SRWLock = <Option<&mut SRWLOCK>>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("kernel32/thread") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/thread",
+                    "TryAcquireSRWLockExclusive",
+                    &[("SRWLock", &SRWLock)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::TryAcquireSRWLockExclusive(machine, SRWLock);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::TryAcquireSRWLockExclusive_pos.0,
+                    winapi::kernel32::TryAcquireSRWLockExclusive_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn UnhandledExceptionFilter(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let _exceptionInfo = <u32>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("kernel32/misc") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/misc",
+                    "UnhandledExceptionFilter",
+                    &[("exceptionInfo", &_exceptionInfo)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::UnhandledExceptionFilter(machine, _exceptionInfo);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::UnhandledExceptionFilter_pos.0,
+                    winapi::kernel32::UnhandledExceptionFilter_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn VirtualAlloc(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let lpAddress = <u32>::from_stack(mem, stack_args + 0u32);
+            let dwSize = <u32>::from_stack(mem, stack_args + 4u32);
+            let flAllocationType = <Result<MEM, u32>>::from_stack(mem, stack_args + 8u32);
+            let flProtec = <Result<PAGE, u32>>::from_stack(mem, stack_args + 12u32);
+            let __trace_context = if crate::trace::enabled("kernel32/memory") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/memory",
+                    "VirtualAlloc",
+                    &[
+                        ("lpAddress", &lpAddress),
+                        ("dwSize", &dwSize),
+                        ("flAllocationType", &flAllocationType),
+                        ("flProtec", &flProtec),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::VirtualAlloc(
+                machine,
+                lpAddress,
+                dwSize,
+                flAllocationType,
+                flProtec,
+            );
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::VirtualAlloc_pos.0,
+                    winapi::kernel32::VirtualAlloc_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn VirtualFree(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let lpAddress = <u32>::from_stack(mem, stack_args + 0u32);
+            let dwSize = <u32>::from_stack(mem, stack_args + 4u32);
+            let dwFreeType = <u32>::from_stack(mem, stack_args + 8u32);
+            let __trace_context = if crate::trace::enabled("kernel32/memory") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/memory",
+                    "VirtualFree",
+                    &[
+                        ("lpAddress", &lpAddress),
+                        ("dwSize", &dwSize),
+                        ("dwFreeType", &dwFreeType),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::VirtualFree(machine, lpAddress, dwSize, dwFreeType);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::VirtualFree_pos.0,
+                    winapi::kernel32::VirtualFree_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn VirtualProtect(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let lpAddress = <u32>::from_stack(mem, stack_args + 0u32);
+            let dwSize = <u32>::from_stack(mem, stack_args + 4u32);
+            let flNewProtect = <u32>::from_stack(mem, stack_args + 8u32);
+            let lpflOldProtect = <Option<&mut u32>>::from_stack(mem, stack_args + 12u32);
+            let __trace_context = if crate::trace::enabled("kernel32/memory") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/memory",
+                    "VirtualProtect",
+                    &[
+                        ("lpAddress", &lpAddress),
+                        ("dwSize", &dwSize),
+                        ("flNewProtect", &flNewProtect),
+                        ("lpflOldProtect", &lpflOldProtect),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::VirtualProtect(
                 machine,
                 lpAddress,
                 dwSize,
                 flNewProtect,
                 lpflOldProtect,
-            )
-            .to_raw()
+            );
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::VirtualProtect_pos.0,
+                    winapi::kernel32::VirtualProtect_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn VirtualQuery(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn VirtualQuery(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let lpAddress = <u32>::from_stack(mem, esp + 4u32);
-            let lpBuffer = <Option<&mut MEMORY_BASIC_INFORMATION>>::from_stack(mem, esp + 8u32);
-            let dwLength = <u32>::from_stack(mem, esp + 12u32);
-            winapi::kernel32::VirtualQuery(machine, lpAddress, lpBuffer, dwLength).to_raw()
+            let lpAddress = <u32>::from_stack(mem, stack_args + 0u32);
+            let lpBuffer =
+                <Option<&mut MEMORY_BASIC_INFORMATION>>::from_stack(mem, stack_args + 4u32);
+            let dwLength = <u32>::from_stack(mem, stack_args + 8u32);
+            let __trace_context = if crate::trace::enabled("kernel32/memory") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/memory",
+                    "VirtualQuery",
+                    &[
+                        ("lpAddress", &lpAddress),
+                        ("lpBuffer", &lpBuffer),
+                        ("dwLength", &dwLength),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::VirtualQuery(machine, lpAddress, lpBuffer, dwLength);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::VirtualQuery_pos.0,
+                    winapi::kernel32::VirtualQuery_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn WaitForSingleObject(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn WaitForSingleObject(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hHandle = <HEVENT>::from_stack(mem, esp + 4u32);
-            let dwMilliseconds = <u32>::from_stack(mem, esp + 8u32);
-            winapi::kernel32::WaitForSingleObject(machine, hHandle, dwMilliseconds).to_raw()
+            let hHandle = <HEVENT>::from_stack(mem, stack_args + 0u32);
+            let dwMilliseconds = <u32>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("kernel32/sync") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/sync",
+                    "WaitForSingleObject",
+                    &[("hHandle", &hHandle), ("dwMilliseconds", &dwMilliseconds)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::WaitForSingleObject(machine, hHandle, dwMilliseconds);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::WaitForSingleObject_pos.0,
+                    winapi::kernel32::WaitForSingleObject_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn WriteConsoleA(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn WideCharToMultiByte(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hConsoleOutput = <HANDLE<()>>::from_stack(mem, esp + 4u32);
-            let lpBuffer = <ArrayWithSize<u8>>::from_stack(mem, esp + 8u32);
-            let lpNumberOfCharsWritten = <Option<&mut u32>>::from_stack(mem, esp + 16u32);
-            let lpReserved = <u32>::from_stack(mem, esp + 20u32);
-            winapi::kernel32::WriteConsoleA(
+            let CodePage = <Result<CP, u32>>::from_stack(mem, stack_args + 0u32);
+            let dwFlags = <Result<WC, u32>>::from_stack(mem, stack_args + 4u32);
+            let lpWideCharStr = <u32>::from_stack(mem, stack_args + 8u32);
+            let cchWideChar = <i32>::from_stack(mem, stack_args + 12u32);
+            let lpMultiByteStr = <u32>::from_stack(mem, stack_args + 16u32);
+            let cbMultiByte = <i32>::from_stack(mem, stack_args + 20u32);
+            let lpUsedDefaultChar = <Option<&mut u32>>::from_stack(mem, stack_args + 24u32);
+            let __trace_context = if crate::trace::enabled("kernel32/nls") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/nls",
+                    "WideCharToMultiByte",
+                    &[
+                        ("CodePage", &CodePage),
+                        ("dwFlags", &dwFlags),
+                        ("lpWideCharStr", &lpWideCharStr),
+                        ("cchWideChar", &cchWideChar),
+                        ("lpMultiByteStr", &lpMultiByteStr),
+                        ("cbMultiByte", &cbMultiByte),
+                        ("lpUsedDefaultChar", &lpUsedDefaultChar),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::WideCharToMultiByte(
+                machine,
+                CodePage,
+                dwFlags,
+                lpWideCharStr,
+                cchWideChar,
+                lpMultiByteStr,
+                cbMultiByte,
+                lpUsedDefaultChar,
+            );
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::WideCharToMultiByte_pos.0,
+                    winapi::kernel32::WideCharToMultiByte_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn WriteConsoleA(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let hConsoleOutput = <HANDLE<()>>::from_stack(mem, stack_args + 0u32);
+            let lpBuffer = <ArrayWithSize<u8>>::from_stack(mem, stack_args + 4u32);
+            let lpNumberOfCharsWritten = <Option<&mut u32>>::from_stack(mem, stack_args + 12u32);
+            let lpReserved = <u32>::from_stack(mem, stack_args + 16u32);
+            let __trace_context = if crate::trace::enabled("kernel32/console") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/console",
+                    "WriteConsoleA",
+                    &[
+                        ("hConsoleOutput", &hConsoleOutput),
+                        ("lpBuffer", &lpBuffer),
+                        ("lpNumberOfCharsWritten", &lpNumberOfCharsWritten),
+                        ("lpReserved", &lpReserved),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::WriteConsoleA(
                 machine,
                 hConsoleOutput,
                 lpBuffer,
                 lpNumberOfCharsWritten,
                 lpReserved,
-            )
-            .to_raw()
+            );
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::WriteConsoleA_pos.0,
+                    winapi::kernel32::WriteConsoleA_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn WriteConsoleW(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn WriteConsoleW(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hConsoleOutput = <HFILE>::from_stack(mem, esp + 4u32);
-            let lpBuffer = <ArrayWithSize<u16>>::from_stack(mem, esp + 8u32);
-            let lpNumberOfCharsWritten = <Option<&mut u32>>::from_stack(mem, esp + 16u32);
-            let _lpReserved = <u32>::from_stack(mem, esp + 20u32);
-            winapi::kernel32::WriteConsoleW(
+            let hConsoleOutput = <HFILE>::from_stack(mem, stack_args + 0u32);
+            let lpBuffer = <ArrayWithSize<u16>>::from_stack(mem, stack_args + 4u32);
+            let lpNumberOfCharsWritten = <Option<&mut u32>>::from_stack(mem, stack_args + 12u32);
+            let _lpReserved = <u32>::from_stack(mem, stack_args + 16u32);
+            let __trace_context = if crate::trace::enabled("kernel32/console") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/console",
+                    "WriteConsoleW",
+                    &[
+                        ("hConsoleOutput", &hConsoleOutput),
+                        ("lpBuffer", &lpBuffer),
+                        ("lpNumberOfCharsWritten", &lpNumberOfCharsWritten),
+                        ("lpReserved", &_lpReserved),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::WriteConsoleW(
                 machine,
                 hConsoleOutput,
                 lpBuffer,
                 lpNumberOfCharsWritten,
                 _lpReserved,
-            )
-            .to_raw()
+            );
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::WriteConsoleW_pos.0,
+                    winapi::kernel32::WriteConsoleW_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn WriteFile(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn WriteFile(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hFile = <HFILE>::from_stack(mem, esp + 4u32);
-            let lpBuffer = <ArrayWithSize<u8>>::from_stack(mem, esp + 8u32);
-            let lpNumberOfBytesWritten = <Option<&mut u32>>::from_stack(mem, esp + 16u32);
-            let lpOverlapped = <u32>::from_stack(mem, esp + 20u32);
-            winapi::kernel32::WriteFile(
+            let hFile = <HFILE>::from_stack(mem, stack_args + 0u32);
+            let lpBuffer = <ArrayWithSize<u8>>::from_stack(mem, stack_args + 4u32);
+            let lpNumberOfBytesWritten = <Option<&mut u32>>::from_stack(mem, stack_args + 12u32);
+            let lpOverlapped = <u32>::from_stack(mem, stack_args + 16u32);
+            let __trace_context = if crate::trace::enabled("kernel32/file") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/file",
+                    "WriteFile",
+                    &[
+                        ("hFile", &hFile),
+                        ("lpBuffer", &lpBuffer),
+                        ("lpNumberOfBytesWritten", &lpNumberOfBytesWritten),
+                        ("lpOverlapped", &lpOverlapped),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::WriteFile(
                 machine,
                 hFile,
                 lpBuffer,
                 lpNumberOfBytesWritten,
                 lpOverlapped,
-            )
-            .to_raw()
-        }
-        pub unsafe fn lstrcmpiA(machine: &mut Machine, esp: u32) -> u32 {
-            let mem = machine.mem().detach();
-            let lpString1 = <Option<&str>>::from_stack(mem, esp + 4u32);
-            let lpString2 = <Option<&str>>::from_stack(mem, esp + 8u32);
-            winapi::kernel32::lstrcmpiA(machine, lpString1, lpString2).to_raw()
-        }
-        pub unsafe fn lstrcpyA(machine: &mut Machine, esp: u32) -> u32 {
-            let mem = machine.mem().detach();
-            let lpString1 = <u32>::from_stack(mem, esp + 4u32);
-            let lpString2 = <Option<&str>>::from_stack(mem, esp + 8u32);
-            winapi::kernel32::lstrcpyA(machine, lpString1, lpString2).to_raw()
-        }
-        pub unsafe fn lstrcpyW(machine: &mut Machine, esp: u32) -> u32 {
-            let mem = machine.mem().detach();
-            let lpString1 = <u32>::from_stack(mem, esp + 4u32);
-            let lpString2 = <Option<&Str16>>::from_stack(mem, esp + 8u32);
-            winapi::kernel32::lstrcpyW(machine, lpString1, lpString2).to_raw()
-        }
-        pub unsafe fn lstrlenA(machine: &mut Machine, esp: u32) -> u32 {
-            let mem = machine.mem().detach();
-            let lpString = <Option<&str>>::from_stack(mem, esp + 4u32);
-            winapi::kernel32::lstrlenA(machine, lpString).to_raw()
-        }
-        pub unsafe fn lstrlenW(machine: &mut Machine, esp: u32) -> u32 {
-            let mem = machine.mem().detach();
-            let lpString = <Option<&Str16>>::from_stack(mem, esp + 4u32);
-            winapi::kernel32::lstrlenW(machine, lpString).to_raw()
-        }
-        pub unsafe fn retrowin32_main(machine: &mut Machine, esp: u32) -> u32 {
-            let mem = machine.mem().detach();
-            let entry_point = <u32>::from_stack(mem, esp + 4u32);
-            #[cfg(feature = "x86-emu")]
-            {
-                let m: *mut Machine = machine;
-                let result = async move {
-                    use memory::Extensions;
-                    let machine = unsafe { &mut *m };
-                    let result = winapi::kernel32::retrowin32_main(machine, entry_point).await;
-                    let cpu = &mut machine.emu.x86.cpu_mut();
-                    cpu.regs.eip = x86::ops::pop(cpu, machine.emu.memory.mem());
-                    *cpu.regs.get32_mut(x86::Register::ESP) += 4u32;
-                    cpu.regs.set32(x86::Register::EAX, result.to_raw());
-                };
-                machine
-                    .emu
-                    .x86
-                    .cpu_mut()
-                    .call_async(machine.emu.memory.mem(), Box::pin(result));
-                0
+            );
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::WriteFile_pos.0,
+                    winapi::kernel32::WriteFile_pos.1,
+                    &result,
+                );
             }
-            #[cfg(any(feature = "x86-64", feature = "x86-unicorn"))]
-            {
-                let pin = std::pin::pin!(winapi::kernel32::retrowin32_main(machine, entry_point));
-                crate::shims::call_sync(pin).to_raw()
-            }
+            result.to_raw()
         }
-        pub unsafe fn retrowin32_thread_main(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn WriteProfileStringW(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let entry_point = <u32>::from_stack(mem, esp + 4u32);
-            let param = <u32>::from_stack(mem, esp + 8u32);
-            #[cfg(feature = "x86-emu")]
-            {
-                let m: *mut Machine = machine;
-                let result = async move {
-                    use memory::Extensions;
-                    let machine = unsafe { &mut *m };
-                    let result =
-                        winapi::kernel32::retrowin32_thread_main(machine, entry_point, param).await;
-                    let cpu = &mut machine.emu.x86.cpu_mut();
-                    cpu.regs.eip = x86::ops::pop(cpu, machine.emu.memory.mem());
-                    *cpu.regs.get32_mut(x86::Register::ESP) += 8u32;
-                    cpu.regs.set32(x86::Register::EAX, result.to_raw());
-                };
-                machine
-                    .emu
-                    .x86
-                    .cpu_mut()
-                    .call_async(machine.emu.memory.mem(), Box::pin(result));
-                0
+            let lpAppName = <Option<&Str16>>::from_stack(mem, stack_args + 0u32);
+            let lpKeyName = <Option<&Str16>>::from_stack(mem, stack_args + 4u32);
+            let lpString = <Option<&Str16>>::from_stack(mem, stack_args + 8u32);
+            let __trace_context = if crate::trace::enabled("kernel32/ini") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/ini",
+                    "WriteProfileStringW",
+                    &[
+                        ("lpAppName", &lpAppName),
+                        ("lpKeyName", &lpKeyName),
+                        ("lpString", &lpString),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result =
+                winapi::kernel32::WriteProfileStringW(machine, lpAppName, lpKeyName, lpString);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::WriteProfileStringW_pos.0,
+                    winapi::kernel32::WriteProfileStringW_pos.1,
+                    &result,
+                );
             }
-            #[cfg(any(feature = "x86-64", feature = "x86-unicorn"))]
-            {
-                let pin = std::pin::pin!(winapi::kernel32::retrowin32_thread_main(
-                    machine,
-                    entry_point,
-                    param
-                ));
-                crate::shims::call_sync(pin).to_raw()
+            result.to_raw()
+        }
+        pub unsafe fn _lclose(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let hFile = <HFILE>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("kernel32/file16") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/file16",
+                    "_lclose",
+                    &[("hFile", &hFile)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::_lclose(machine, hFile);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::_lclose_pos.0,
+                    winapi::kernel32::_lclose_pos.1,
+                    &result,
+                );
             }
+            result.to_raw()
+        }
+        pub unsafe fn _llseek(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let hFile = <HFILE>::from_stack(mem, stack_args + 0u32);
+            let lOffset = <i32>::from_stack(mem, stack_args + 4u32);
+            let iOrigin = <i32>::from_stack(mem, stack_args + 8u32);
+            let __trace_context = if crate::trace::enabled("kernel32/file16") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/file16",
+                    "_llseek",
+                    &[
+                        ("hFile", &hFile),
+                        ("lOffset", &lOffset),
+                        ("iOrigin", &iOrigin),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::_llseek(machine, hFile, lOffset, iOrigin);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::_llseek_pos.0,
+                    winapi::kernel32::_llseek_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn _lopen(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let lpPathName = <Option<&str>>::from_stack(mem, stack_args + 0u32);
+            let iReadWrite = <i32>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("kernel32/file16") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/file16",
+                    "_lopen",
+                    &[("lpPathName", &lpPathName), ("iReadWrite", &iReadWrite)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::_lopen(machine, lpPathName, iReadWrite);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::_lopen_pos.0,
+                    winapi::kernel32::_lopen_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn _lread(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let hFile = <HFILE>::from_stack(mem, stack_args + 0u32);
+            let lpBuffer = <ArrayWithSize<u8>>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("kernel32/file16") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/file16",
+                    "_lread",
+                    &[("hFile", &hFile), ("lpBuffer", &lpBuffer)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::_lread(machine, hFile, lpBuffer);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::_lread_pos.0,
+                    winapi::kernel32::_lread_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn lstrcmpiA(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let lpString1 = <Option<&str>>::from_stack(mem, stack_args + 0u32);
+            let lpString2 = <Option<&str>>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("kernel32/libc") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/libc",
+                    "lstrcmpiA",
+                    &[("lpString1", &lpString1), ("lpString2", &lpString2)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::lstrcmpiA(machine, lpString1, lpString2);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::lstrcmpiA_pos.0,
+                    winapi::kernel32::lstrcmpiA_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn lstrcpyA(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let lpString1 = <u32>::from_stack(mem, stack_args + 0u32);
+            let lpString2 = <Option<&str>>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("kernel32/libc") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/libc",
+                    "lstrcpyA",
+                    &[("lpString1", &lpString1), ("lpString2", &lpString2)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::lstrcpyA(machine, lpString1, lpString2);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::lstrcpyA_pos.0,
+                    winapi::kernel32::lstrcpyA_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn lstrcpyW(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let lpString1 = <u32>::from_stack(mem, stack_args + 0u32);
+            let lpString2 = <Option<&Str16>>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("kernel32/libc") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/libc",
+                    "lstrcpyW",
+                    &[("lpString1", &lpString1), ("lpString2", &lpString2)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::lstrcpyW(machine, lpString1, lpString2);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::lstrcpyW_pos.0,
+                    winapi::kernel32::lstrcpyW_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn lstrlenA(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let lpString = <Option<&str>>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("kernel32/libc") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/libc",
+                    "lstrlenA",
+                    &[("lpString", &lpString)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::lstrlenA(machine, lpString);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::lstrlenA_pos.0,
+                    winapi::kernel32::lstrlenA_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn lstrlenW(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let lpString = <Option<&Str16>>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("kernel32/libc") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/libc",
+                    "lstrlenW",
+                    &[("lpString", &lpString)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::kernel32::lstrlenW(machine, lpString);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::kernel32::lstrlenW_pos.0,
+                    winapi::kernel32::lstrlenW_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn retrowin32_main(
+            machine: &mut Machine,
+            stack_args: u32,
+        ) -> std::pin::Pin<Box<dyn std::future::Future<Output = u32>>> {
+            let mem = machine.mem().detach();
+            let entry_point = <u32>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("kernel32/init") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/init",
+                    "retrowin32_main",
+                    &[("entry_point", &entry_point)],
+                ))
+            } else {
+                None
+            };
+            let machine: *mut Machine = machine;
+            Box::pin(async move {
+                let machine = unsafe { &mut *machine };
+                let result = winapi::kernel32::retrowin32_main(machine, entry_point).await;
+                if let Some(__trace_context) = __trace_context {
+                    crate::trace::trace_return(
+                        &__trace_context,
+                        winapi::kernel32::retrowin32_main_pos.0,
+                        winapi::kernel32::retrowin32_main_pos.1,
+                        &result,
+                    );
+                }
+                result.to_raw()
+            })
+        }
+        pub unsafe fn retrowin32_thread_main(
+            machine: &mut Machine,
+            stack_args: u32,
+        ) -> std::pin::Pin<Box<dyn std::future::Future<Output = u32>>> {
+            let mem = machine.mem().detach();
+            let entry_point = <u32>::from_stack(mem, stack_args + 0u32);
+            let param = <u32>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("kernel32/init") {
+                Some(crate::trace::trace_begin(
+                    "kernel32/init",
+                    "retrowin32_thread_main",
+                    &[("entry_point", &entry_point), ("param", &param)],
+                ))
+            } else {
+                None
+            };
+            let machine: *mut Machine = machine;
+            Box::pin(async move {
+                let machine = unsafe { &mut *machine };
+                let result =
+                    winapi::kernel32::retrowin32_thread_main(machine, entry_point, param).await;
+                if let Some(__trace_context) = __trace_context {
+                    crate::trace::trace_return(
+                        &__trace_context,
+                        winapi::kernel32::retrowin32_thread_main_pos.0,
+                        winapi::kernel32::retrowin32_thread_main_pos.1,
+                        &result,
+                    );
+                }
+                result.to_raw()
+            })
         }
     }
-    mod shims {
-        use super::impls;
-        use super::Shim;
-        pub const AcquireSRWLockExclusive: Shim = Shim {
+    const SHIMS: [Shim; 173usize] = [
+        Shim {
             name: "AcquireSRWLockExclusive",
-            func: impls::AcquireSRWLockExclusive,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const AcquireSRWLockShared: Shim = Shim {
+            func: Handler::Sync(wrappers::AcquireSRWLockExclusive),
+        },
+        Shim {
             name: "AcquireSRWLockShared",
-            func: impls::AcquireSRWLockShared,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const AddVectoredExceptionHandler: Shim = Shim {
+            func: Handler::Sync(wrappers::AcquireSRWLockShared),
+        },
+        Shim {
             name: "AddVectoredExceptionHandler",
-            func: impls::AddVectoredExceptionHandler,
-            stack_consumed: 8u32,
-            is_async: false,
-        };
-        pub const CloseHandle: Shim = Shim {
+            func: Handler::Sync(wrappers::AddVectoredExceptionHandler),
+        },
+        Shim {
             name: "CloseHandle",
-            func: impls::CloseHandle,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const CreateDirectoryA: Shim = Shim {
+            func: Handler::Sync(wrappers::CloseHandle),
+        },
+        Shim {
             name: "CreateDirectoryA",
-            func: impls::CreateDirectoryA,
-            stack_consumed: 8u32,
-            is_async: false,
-        };
-        pub const CreateEventA: Shim = Shim {
+            func: Handler::Sync(wrappers::CreateDirectoryA),
+        },
+        Shim {
             name: "CreateEventA",
-            func: impls::CreateEventA,
-            stack_consumed: 16u32,
-            is_async: false,
-        };
-        pub const CreateFileA: Shim = Shim {
+            func: Handler::Sync(wrappers::CreateEventA),
+        },
+        Shim {
             name: "CreateFileA",
-            func: impls::CreateFileA,
-            stack_consumed: 28u32,
-            is_async: false,
-        };
-        pub const CreateFileW: Shim = Shim {
+            func: Handler::Sync(wrappers::CreateFileA),
+        },
+        Shim {
             name: "CreateFileW",
-            func: impls::CreateFileW,
-            stack_consumed: 28u32,
-            is_async: false,
-        };
-        pub const CreateThread: Shim = Shim {
+            func: Handler::Sync(wrappers::CreateFileW),
+        },
+        Shim {
             name: "CreateThread",
-            func: impls::CreateThread,
-            stack_consumed: 24u32,
-            is_async: true,
-        };
-        pub const DeleteCriticalSection: Shim = Shim {
+            func: Handler::Async(wrappers::CreateThread),
+        },
+        Shim {
+            name: "DebugBreak",
+            func: Handler::Sync(wrappers::DebugBreak),
+        },
+        Shim {
             name: "DeleteCriticalSection",
-            func: impls::DeleteCriticalSection,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const DeleteFileA: Shim = Shim {
+            func: Handler::Sync(wrappers::DeleteCriticalSection),
+        },
+        Shim {
             name: "DeleteFileA",
-            func: impls::DeleteFileA,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const DisableThreadLibraryCalls: Shim = Shim {
+            func: Handler::Sync(wrappers::DeleteFileA),
+        },
+        Shim {
             name: "DisableThreadLibraryCalls",
-            func: impls::DisableThreadLibraryCalls,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const EnterCriticalSection: Shim = Shim {
+            func: Handler::Sync(wrappers::DisableThreadLibraryCalls),
+        },
+        Shim {
             name: "EnterCriticalSection",
-            func: impls::EnterCriticalSection,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const ExitProcess: Shim = Shim {
+            func: Handler::Sync(wrappers::EnterCriticalSection),
+        },
+        Shim {
             name: "ExitProcess",
-            func: impls::ExitProcess,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const FileTimeToSystemTime: Shim = Shim {
+            func: Handler::Sync(wrappers::ExitProcess),
+        },
+        Shim {
+            name: "ExitThread",
+            func: Handler::Sync(wrappers::ExitThread),
+        },
+        Shim {
             name: "FileTimeToSystemTime",
-            func: impls::FileTimeToSystemTime,
-            stack_consumed: 8u32,
-            is_async: false,
-        };
-        pub const FindClose: Shim = Shim {
+            func: Handler::Sync(wrappers::FileTimeToSystemTime),
+        },
+        Shim {
             name: "FindClose",
-            func: impls::FindClose,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const FindFirstFileA: Shim = Shim {
+            func: Handler::Sync(wrappers::FindClose),
+        },
+        Shim {
             name: "FindFirstFileA",
-            func: impls::FindFirstFileA,
-            stack_consumed: 8u32,
-            is_async: false,
-        };
-        pub const FindNextFileA: Shim = Shim {
+            func: Handler::Sync(wrappers::FindFirstFileA),
+        },
+        Shim {
             name: "FindNextFileA",
-            func: impls::FindNextFileA,
-            stack_consumed: 8u32,
-            is_async: false,
-        };
-        pub const FindResourceA: Shim = Shim {
+            func: Handler::Sync(wrappers::FindNextFileA),
+        },
+        Shim {
             name: "FindResourceA",
-            func: impls::FindResourceA,
-            stack_consumed: 12u32,
-            is_async: false,
-        };
-        pub const FindResourceW: Shim = Shim {
+            func: Handler::Sync(wrappers::FindResourceA),
+        },
+        Shim {
             name: "FindResourceW",
-            func: impls::FindResourceW,
-            stack_consumed: 12u32,
-            is_async: false,
-        };
-        pub const FormatMessageA: Shim = Shim {
+            func: Handler::Sync(wrappers::FindResourceW),
+        },
+        Shim {
+            name: "FlushFileBuffers",
+            func: Handler::Sync(wrappers::FlushFileBuffers),
+        },
+        Shim {
             name: "FormatMessageA",
-            func: impls::FormatMessageA,
-            stack_consumed: 28u32,
-            is_async: false,
-        };
-        pub const FormatMessageW: Shim = Shim {
+            func: Handler::Sync(wrappers::FormatMessageA),
+        },
+        Shim {
             name: "FormatMessageW",
-            func: impls::FormatMessageW,
-            stack_consumed: 28u32,
-            is_async: false,
-        };
-        pub const FreeEnvironmentStringsA: Shim = Shim {
+            func: Handler::Sync(wrappers::FormatMessageW),
+        },
+        Shim {
             name: "FreeEnvironmentStringsA",
-            func: impls::FreeEnvironmentStringsA,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const FreeLibrary: Shim = Shim {
+            func: Handler::Sync(wrappers::FreeEnvironmentStringsA),
+        },
+        Shim {
+            name: "FreeEnvironmentStringsW",
+            func: Handler::Sync(wrappers::FreeEnvironmentStringsW),
+        },
+        Shim {
             name: "FreeLibrary",
-            func: impls::FreeLibrary,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const GetACP: Shim = Shim {
+            func: Handler::Sync(wrappers::FreeLibrary),
+        },
+        Shim {
             name: "GetACP",
-            func: impls::GetACP,
-            stack_consumed: 0u32,
-            is_async: false,
-        };
-        pub const GetCPInfo: Shim = Shim {
+            func: Handler::Sync(wrappers::GetACP),
+        },
+        Shim {
             name: "GetCPInfo",
-            func: impls::GetCPInfo,
-            stack_consumed: 8u32,
-            is_async: false,
-        };
-        pub const GetCommandLineA: Shim = Shim {
+            func: Handler::Sync(wrappers::GetCPInfo),
+        },
+        Shim {
             name: "GetCommandLineA",
-            func: impls::GetCommandLineA,
-            stack_consumed: 0u32,
-            is_async: false,
-        };
-        pub const GetCommandLineW: Shim = Shim {
+            func: Handler::Sync(wrappers::GetCommandLineA),
+        },
+        Shim {
             name: "GetCommandLineW",
-            func: impls::GetCommandLineW,
-            stack_consumed: 0u32,
-            is_async: false,
-        };
-        pub const GetConsoleMode: Shim = Shim {
+            func: Handler::Sync(wrappers::GetCommandLineW),
+        },
+        Shim {
             name: "GetConsoleMode",
-            func: impls::GetConsoleMode,
-            stack_consumed: 8u32,
-            is_async: false,
-        };
-        pub const GetConsoleScreenBufferInfo: Shim = Shim {
+            func: Handler::Sync(wrappers::GetConsoleMode),
+        },
+        Shim {
             name: "GetConsoleScreenBufferInfo",
-            func: impls::GetConsoleScreenBufferInfo,
-            stack_consumed: 8u32,
-            is_async: false,
-        };
-        pub const GetCurrentDirectoryA: Shim = Shim {
+            func: Handler::Sync(wrappers::GetConsoleScreenBufferInfo),
+        },
+        Shim {
             name: "GetCurrentDirectoryA",
-            func: impls::GetCurrentDirectoryA,
-            stack_consumed: 8u32,
-            is_async: false,
-        };
-        pub const GetCurrentProcessId: Shim = Shim {
+            func: Handler::Sync(wrappers::GetCurrentDirectoryA),
+        },
+        Shim {
+            name: "GetCurrentProcess",
+            func: Handler::Sync(wrappers::GetCurrentProcess),
+        },
+        Shim {
             name: "GetCurrentProcessId",
-            func: impls::GetCurrentProcessId,
-            stack_consumed: 0u32,
-            is_async: false,
-        };
-        pub const GetCurrentThread: Shim = Shim {
+            func: Handler::Sync(wrappers::GetCurrentProcessId),
+        },
+        Shim {
             name: "GetCurrentThread",
-            func: impls::GetCurrentThread,
-            stack_consumed: 0u32,
-            is_async: false,
-        };
-        pub const GetCurrentThreadId: Shim = Shim {
+            func: Handler::Sync(wrappers::GetCurrentThread),
+        },
+        Shim {
             name: "GetCurrentThreadId",
-            func: impls::GetCurrentThreadId,
-            stack_consumed: 0u32,
-            is_async: false,
-        };
-        pub const GetEnvironmentStrings: Shim = Shim {
+            func: Handler::Sync(wrappers::GetCurrentThreadId),
+        },
+        Shim {
             name: "GetEnvironmentStrings",
-            func: impls::GetEnvironmentStrings,
-            stack_consumed: 0u32,
-            is_async: false,
-        };
-        pub const GetEnvironmentStringsW: Shim = Shim {
+            func: Handler::Sync(wrappers::GetEnvironmentStrings),
+        },
+        Shim {
             name: "GetEnvironmentStringsW",
-            func: impls::GetEnvironmentStringsW,
-            stack_consumed: 0u32,
-            is_async: false,
-        };
-        pub const GetEnvironmentVariableA: Shim = Shim {
+            func: Handler::Sync(wrappers::GetEnvironmentStringsW),
+        },
+        Shim {
             name: "GetEnvironmentVariableA",
-            func: impls::GetEnvironmentVariableA,
-            stack_consumed: 12u32,
-            is_async: false,
-        };
-        pub const GetEnvironmentVariableW: Shim = Shim {
+            func: Handler::Sync(wrappers::GetEnvironmentVariableA),
+        },
+        Shim {
             name: "GetEnvironmentVariableW",
-            func: impls::GetEnvironmentVariableW,
-            stack_consumed: 12u32,
-            is_async: false,
-        };
-        pub const GetFileAttributesA: Shim = Shim {
+            func: Handler::Sync(wrappers::GetEnvironmentVariableW),
+        },
+        Shim {
             name: "GetFileAttributesA",
-            func: impls::GetFileAttributesA,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const GetFileInformationByHandle: Shim = Shim {
+            func: Handler::Sync(wrappers::GetFileAttributesA),
+        },
+        Shim {
             name: "GetFileInformationByHandle",
-            func: impls::GetFileInformationByHandle,
-            stack_consumed: 8u32,
-            is_async: false,
-        };
-        pub const GetFileSize: Shim = Shim {
+            func: Handler::Sync(wrappers::GetFileInformationByHandle),
+        },
+        Shim {
             name: "GetFileSize",
-            func: impls::GetFileSize,
-            stack_consumed: 8u32,
-            is_async: false,
-        };
-        pub const GetFileTime: Shim = Shim {
+            func: Handler::Sync(wrappers::GetFileSize),
+        },
+        Shim {
             name: "GetFileTime",
-            func: impls::GetFileTime,
-            stack_consumed: 16u32,
-            is_async: false,
-        };
-        pub const GetFileType: Shim = Shim {
+            func: Handler::Sync(wrappers::GetFileTime),
+        },
+        Shim {
             name: "GetFileType",
-            func: impls::GetFileType,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const GetFullPathNameA: Shim = Shim {
+            func: Handler::Sync(wrappers::GetFileType),
+        },
+        Shim {
             name: "GetFullPathNameA",
-            func: impls::GetFullPathNameA,
-            stack_consumed: 16u32,
-            is_async: false,
-        };
-        pub const GetFullPathNameW: Shim = Shim {
+            func: Handler::Sync(wrappers::GetFullPathNameA),
+        },
+        Shim {
             name: "GetFullPathNameW",
-            func: impls::GetFullPathNameW,
-            stack_consumed: 16u32,
-            is_async: false,
-        };
-        pub const GetLastError: Shim = Shim {
+            func: Handler::Sync(wrappers::GetFullPathNameW),
+        },
+        Shim {
             name: "GetLastError",
-            func: impls::GetLastError,
-            stack_consumed: 0u32,
-            is_async: false,
-        };
-        pub const GetLocalTime: Shim = Shim {
+            func: Handler::Sync(wrappers::GetLastError),
+        },
+        Shim {
             name: "GetLocalTime",
-            func: impls::GetLocalTime,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const GetModuleFileNameA: Shim = Shim {
+            func: Handler::Sync(wrappers::GetLocalTime),
+        },
+        Shim {
             name: "GetModuleFileNameA",
-            func: impls::GetModuleFileNameA,
-            stack_consumed: 12u32,
-            is_async: false,
-        };
-        pub const GetModuleFileNameW: Shim = Shim {
+            func: Handler::Sync(wrappers::GetModuleFileNameA),
+        },
+        Shim {
             name: "GetModuleFileNameW",
-            func: impls::GetModuleFileNameW,
-            stack_consumed: 12u32,
-            is_async: false,
-        };
-        pub const GetModuleHandleA: Shim = Shim {
+            func: Handler::Sync(wrappers::GetModuleFileNameW),
+        },
+        Shim {
             name: "GetModuleHandleA",
-            func: impls::GetModuleHandleA,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const GetModuleHandleExW: Shim = Shim {
+            func: Handler::Sync(wrappers::GetModuleHandleA),
+        },
+        Shim {
             name: "GetModuleHandleExW",
-            func: impls::GetModuleHandleExW,
-            stack_consumed: 12u32,
-            is_async: false,
-        };
-        pub const GetModuleHandleW: Shim = Shim {
+            func: Handler::Sync(wrappers::GetModuleHandleExW),
+        },
+        Shim {
             name: "GetModuleHandleW",
-            func: impls::GetModuleHandleW,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const GetPrivateProfileIntW: Shim = Shim {
+            func: Handler::Sync(wrappers::GetModuleHandleW),
+        },
+        Shim {
+            name: "GetOEMCP",
+            func: Handler::Sync(wrappers::GetOEMCP),
+        },
+        Shim {
             name: "GetPrivateProfileIntW",
-            func: impls::GetPrivateProfileIntW,
-            stack_consumed: 16u32,
-            is_async: false,
-        };
-        pub const GetPrivateProfileStringW: Shim = Shim {
+            func: Handler::Sync(wrappers::GetPrivateProfileIntW),
+        },
+        Shim {
             name: "GetPrivateProfileStringW",
-            func: impls::GetPrivateProfileStringW,
-            stack_consumed: 24u32,
-            is_async: false,
-        };
-        pub const GetProcAddress: Shim = Shim {
+            func: Handler::Sync(wrappers::GetPrivateProfileStringW),
+        },
+        Shim {
             name: "GetProcAddress",
-            func: impls::GetProcAddress,
-            stack_consumed: 8u32,
-            is_async: false,
-        };
-        pub const GetProcessHeap: Shim = Shim {
+            func: Handler::Sync(wrappers::GetProcAddress),
+        },
+        Shim {
             name: "GetProcessHeap",
-            func: impls::GetProcessHeap,
-            stack_consumed: 0u32,
-            is_async: false,
-        };
-        pub const GetProfileIntW: Shim = Shim {
+            func: Handler::Sync(wrappers::GetProcessHeap),
+        },
+        Shim {
             name: "GetProfileIntW",
-            func: impls::GetProfileIntW,
-            stack_consumed: 12u32,
-            is_async: false,
-        };
-        pub const GetProfileStringW: Shim = Shim {
+            func: Handler::Sync(wrappers::GetProfileIntW),
+        },
+        Shim {
             name: "GetProfileStringW",
-            func: impls::GetProfileStringW,
-            stack_consumed: 20u32,
-            is_async: false,
-        };
-        pub const GetStartupInfoA: Shim = Shim {
+            func: Handler::Sync(wrappers::GetProfileStringW),
+        },
+        Shim {
             name: "GetStartupInfoA",
-            func: impls::GetStartupInfoA,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const GetStartupInfoW: Shim = Shim {
+            func: Handler::Sync(wrappers::GetStartupInfoA),
+        },
+        Shim {
             name: "GetStartupInfoW",
-            func: impls::GetStartupInfoW,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const GetStdHandle: Shim = Shim {
+            func: Handler::Sync(wrappers::GetStartupInfoW),
+        },
+        Shim {
             name: "GetStdHandle",
-            func: impls::GetStdHandle,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const GetSystemDirectoryA: Shim = Shim {
+            func: Handler::Sync(wrappers::GetStdHandle),
+        },
+        Shim {
+            name: "GetStringTypeA",
+            func: Handler::Sync(wrappers::GetStringTypeA),
+        },
+        Shim {
+            name: "GetStringTypeW",
+            func: Handler::Sync(wrappers::GetStringTypeW),
+        },
+        Shim {
             name: "GetSystemDirectoryA",
-            func: impls::GetSystemDirectoryA,
-            stack_consumed: 8u32,
-            is_async: false,
-        };
-        pub const GetSystemTime: Shim = Shim {
+            func: Handler::Sync(wrappers::GetSystemDirectoryA),
+        },
+        Shim {
             name: "GetSystemTime",
-            func: impls::GetSystemTime,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const GetSystemTimeAsFileTime: Shim = Shim {
+            func: Handler::Sync(wrappers::GetSystemTime),
+        },
+        Shim {
             name: "GetSystemTimeAsFileTime",
-            func: impls::GetSystemTimeAsFileTime,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const GetTickCount: Shim = Shim {
+            func: Handler::Sync(wrappers::GetSystemTimeAsFileTime),
+        },
+        Shim {
             name: "GetTickCount",
-            func: impls::GetTickCount,
-            stack_consumed: 0u32,
-            is_async: false,
-        };
-        pub const GetTimeZoneInformation: Shim = Shim {
+            func: Handler::Sync(wrappers::GetTickCount),
+        },
+        Shim {
             name: "GetTimeZoneInformation",
-            func: impls::GetTimeZoneInformation,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const GetVersion: Shim = Shim {
+            func: Handler::Sync(wrappers::GetTimeZoneInformation),
+        },
+        Shim {
             name: "GetVersion",
-            func: impls::GetVersion,
-            stack_consumed: 0u32,
-            is_async: false,
-        };
-        pub const GetVersionExA: Shim = Shim {
+            func: Handler::Sync(wrappers::GetVersion),
+        },
+        Shim {
             name: "GetVersionExA",
-            func: impls::GetVersionExA,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const GetWindowsDirectoryA: Shim = Shim {
+            func: Handler::Sync(wrappers::GetVersionExA),
+        },
+        Shim {
             name: "GetWindowsDirectoryA",
-            func: impls::GetWindowsDirectoryA,
-            stack_consumed: 8u32,
-            is_async: false,
-        };
-        pub const GlobalAlloc: Shim = Shim {
+            func: Handler::Sync(wrappers::GetWindowsDirectoryA),
+        },
+        Shim {
             name: "GlobalAlloc",
-            func: impls::GlobalAlloc,
-            stack_consumed: 8u32,
-            is_async: false,
-        };
-        pub const GlobalFlags: Shim = Shim {
+            func: Handler::Sync(wrappers::GlobalAlloc),
+        },
+        Shim {
             name: "GlobalFlags",
-            func: impls::GlobalFlags,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const GlobalFree: Shim = Shim {
+            func: Handler::Sync(wrappers::GlobalFlags),
+        },
+        Shim {
             name: "GlobalFree",
-            func: impls::GlobalFree,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const GlobalReAlloc: Shim = Shim {
+            func: Handler::Sync(wrappers::GlobalFree),
+        },
+        Shim {
             name: "GlobalReAlloc",
-            func: impls::GlobalReAlloc,
-            stack_consumed: 12u32,
-            is_async: false,
-        };
-        pub const HeapAlloc: Shim = Shim {
+            func: Handler::Sync(wrappers::GlobalReAlloc),
+        },
+        Shim {
             name: "HeapAlloc",
-            func: impls::HeapAlloc,
-            stack_consumed: 12u32,
-            is_async: false,
-        };
-        pub const HeapCreate: Shim = Shim {
+            func: Handler::Sync(wrappers::HeapAlloc),
+        },
+        Shim {
             name: "HeapCreate",
-            func: impls::HeapCreate,
-            stack_consumed: 12u32,
-            is_async: false,
-        };
-        pub const HeapDestroy: Shim = Shim {
+            func: Handler::Sync(wrappers::HeapCreate),
+        },
+        Shim {
             name: "HeapDestroy",
-            func: impls::HeapDestroy,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const HeapFree: Shim = Shim {
+            func: Handler::Sync(wrappers::HeapDestroy),
+        },
+        Shim {
             name: "HeapFree",
-            func: impls::HeapFree,
-            stack_consumed: 12u32,
-            is_async: false,
-        };
-        pub const HeapReAlloc: Shim = Shim {
+            func: Handler::Sync(wrappers::HeapFree),
+        },
+        Shim {
             name: "HeapReAlloc",
-            func: impls::HeapReAlloc,
-            stack_consumed: 16u32,
-            is_async: false,
-        };
-        pub const HeapSetInformation: Shim = Shim {
+            func: Handler::Sync(wrappers::HeapReAlloc),
+        },
+        Shim {
             name: "HeapSetInformation",
-            func: impls::HeapSetInformation,
-            stack_consumed: 16u32,
-            is_async: false,
-        };
-        pub const HeapSize: Shim = Shim {
+            func: Handler::Sync(wrappers::HeapSetInformation),
+        },
+        Shim {
             name: "HeapSize",
-            func: impls::HeapSize,
-            stack_consumed: 12u32,
-            is_async: false,
-        };
-        pub const InitOnceBeginInitialize: Shim = Shim {
+            func: Handler::Sync(wrappers::HeapSize),
+        },
+        Shim {
+            name: "HeapValidate",
+            func: Handler::Sync(wrappers::HeapValidate),
+        },
+        Shim {
             name: "InitOnceBeginInitialize",
-            func: impls::InitOnceBeginInitialize,
-            stack_consumed: 16u32,
-            is_async: false,
-        };
-        pub const InitOnceComplete: Shim = Shim {
+            func: Handler::Sync(wrappers::InitOnceBeginInitialize),
+        },
+        Shim {
             name: "InitOnceComplete",
-            func: impls::InitOnceComplete,
-            stack_consumed: 12u32,
-            is_async: false,
-        };
-        pub const InitializeCriticalSection: Shim = Shim {
+            func: Handler::Sync(wrappers::InitOnceComplete),
+        },
+        Shim {
             name: "InitializeCriticalSection",
-            func: impls::InitializeCriticalSection,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const InitializeCriticalSectionAndSpinCount: Shim = Shim {
+            func: Handler::Sync(wrappers::InitializeCriticalSection),
+        },
+        Shim {
             name: "InitializeCriticalSectionAndSpinCount",
-            func: impls::InitializeCriticalSectionAndSpinCount,
-            stack_consumed: 8u32,
-            is_async: false,
-        };
-        pub const InitializeCriticalSectionEx: Shim = Shim {
+            func: Handler::Sync(wrappers::InitializeCriticalSectionAndSpinCount),
+        },
+        Shim {
             name: "InitializeCriticalSectionEx",
-            func: impls::InitializeCriticalSectionEx,
-            stack_consumed: 12u32,
-            is_async: false,
-        };
-        pub const InitializeSListHead: Shim = Shim {
+            func: Handler::Sync(wrappers::InitializeCriticalSectionEx),
+        },
+        Shim {
             name: "InitializeSListHead",
-            func: impls::InitializeSListHead,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const InterlockedIncrement: Shim = Shim {
+            func: Handler::Sync(wrappers::InitializeSListHead),
+        },
+        Shim {
+            name: "InterlockedDecrement",
+            func: Handler::Sync(wrappers::InterlockedDecrement),
+        },
+        Shim {
             name: "InterlockedIncrement",
-            func: impls::InterlockedIncrement,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const IsBadReadPtr: Shim = Shim {
+            func: Handler::Sync(wrappers::InterlockedIncrement),
+        },
+        Shim {
+            name: "IsBadCodePtr",
+            func: Handler::Sync(wrappers::IsBadCodePtr),
+        },
+        Shim {
             name: "IsBadReadPtr",
-            func: impls::IsBadReadPtr,
-            stack_consumed: 8u32,
-            is_async: false,
-        };
-        pub const IsBadWritePtr: Shim = Shim {
+            func: Handler::Sync(wrappers::IsBadReadPtr),
+        },
+        Shim {
             name: "IsBadWritePtr",
-            func: impls::IsBadWritePtr,
-            stack_consumed: 8u32,
-            is_async: false,
-        };
-        pub const IsDBCSLeadByte: Shim = Shim {
+            func: Handler::Sync(wrappers::IsBadWritePtr),
+        },
+        Shim {
             name: "IsDBCSLeadByte",
-            func: impls::IsDBCSLeadByte,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const IsDBCSLeadByteEx: Shim = Shim {
+            func: Handler::Sync(wrappers::IsDBCSLeadByte),
+        },
+        Shim {
             name: "IsDBCSLeadByteEx",
-            func: impls::IsDBCSLeadByteEx,
-            stack_consumed: 8u32,
-            is_async: false,
-        };
-        pub const IsDebuggerPresent: Shim = Shim {
+            func: Handler::Sync(wrappers::IsDBCSLeadByteEx),
+        },
+        Shim {
             name: "IsDebuggerPresent",
-            func: impls::IsDebuggerPresent,
-            stack_consumed: 0u32,
-            is_async: false,
-        };
-        pub const IsProcessorFeaturePresent: Shim = Shim {
+            func: Handler::Sync(wrappers::IsDebuggerPresent),
+        },
+        Shim {
             name: "IsProcessorFeaturePresent",
-            func: impls::IsProcessorFeaturePresent,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const IsValidCodePage: Shim = Shim {
+            func: Handler::Sync(wrappers::IsProcessorFeaturePresent),
+        },
+        Shim {
             name: "IsValidCodePage",
-            func: impls::IsValidCodePage,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const LeaveCriticalSection: Shim = Shim {
+            func: Handler::Sync(wrappers::IsValidCodePage),
+        },
+        Shim {
+            name: "LCMapStringA",
+            func: Handler::Sync(wrappers::LCMapStringA),
+        },
+        Shim {
+            name: "LCMapStringW",
+            func: Handler::Sync(wrappers::LCMapStringW),
+        },
+        Shim {
             name: "LeaveCriticalSection",
-            func: impls::LeaveCriticalSection,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const LoadLibraryA: Shim = Shim {
+            func: Handler::Sync(wrappers::LeaveCriticalSection),
+        },
+        Shim {
             name: "LoadLibraryA",
-            func: impls::LoadLibraryA,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const LoadLibraryExW: Shim = Shim {
+            func: Handler::Sync(wrappers::LoadLibraryA),
+        },
+        Shim {
             name: "LoadLibraryExW",
-            func: impls::LoadLibraryExW,
-            stack_consumed: 12u32,
-            is_async: false,
-        };
-        pub const LoadResource: Shim = Shim {
+            func: Handler::Sync(wrappers::LoadLibraryExW),
+        },
+        Shim {
             name: "LoadResource",
-            func: impls::LoadResource,
-            stack_consumed: 8u32,
-            is_async: false,
-        };
-        pub const LocalAlloc: Shim = Shim {
+            func: Handler::Sync(wrappers::LoadResource),
+        },
+        Shim {
             name: "LocalAlloc",
-            func: impls::LocalAlloc,
-            stack_consumed: 8u32,
-            is_async: false,
-        };
-        pub const LocalFree: Shim = Shim {
+            func: Handler::Sync(wrappers::LocalAlloc),
+        },
+        Shim {
             name: "LocalFree",
-            func: impls::LocalFree,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const LockResource: Shim = Shim {
+            func: Handler::Sync(wrappers::LocalFree),
+        },
+        Shim {
             name: "LockResource",
-            func: impls::LockResource,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const MulDiv: Shim = Shim {
+            func: Handler::Sync(wrappers::LockResource),
+        },
+        Shim {
             name: "MulDiv",
-            func: impls::MulDiv,
-            stack_consumed: 12u32,
-            is_async: false,
-        };
-        pub const MultiByteToWideChar: Shim = Shim {
+            func: Handler::Sync(wrappers::MulDiv),
+        },
+        Shim {
             name: "MultiByteToWideChar",
-            func: impls::MultiByteToWideChar,
-            stack_consumed: 24u32,
-            is_async: false,
-        };
-        pub const NtCurrentTeb: Shim = Shim {
+            func: Handler::Sync(wrappers::MultiByteToWideChar),
+        },
+        Shim {
             name: "NtCurrentTeb",
-            func: impls::NtCurrentTeb,
-            stack_consumed: 0u32,
-            is_async: false,
-        };
-        pub const OutputDebugStringA: Shim = Shim {
+            func: Handler::Sync(wrappers::NtCurrentTeb),
+        },
+        Shim {
             name: "OutputDebugStringA",
-            func: impls::OutputDebugStringA,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const QueryPerformanceCounter: Shim = Shim {
+            func: Handler::Sync(wrappers::OutputDebugStringA),
+        },
+        Shim {
             name: "QueryPerformanceCounter",
-            func: impls::QueryPerformanceCounter,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const QueryPerformanceFrequency: Shim = Shim {
+            func: Handler::Sync(wrappers::QueryPerformanceCounter),
+        },
+        Shim {
             name: "QueryPerformanceFrequency",
-            func: impls::QueryPerformanceFrequency,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const ReadFile: Shim = Shim {
+            func: Handler::Sync(wrappers::QueryPerformanceFrequency),
+        },
+        Shim {
+            name: "RaiseException",
+            func: Handler::Sync(wrappers::RaiseException),
+        },
+        Shim {
             name: "ReadFile",
-            func: impls::ReadFile,
-            stack_consumed: 20u32,
-            is_async: false,
-        };
-        pub const ReleaseSRWLockExclusive: Shim = Shim {
+            func: Handler::Sync(wrappers::ReadFile),
+        },
+        Shim {
             name: "ReleaseSRWLockExclusive",
-            func: impls::ReleaseSRWLockExclusive,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const ReleaseSRWLockShared: Shim = Shim {
+            func: Handler::Sync(wrappers::ReleaseSRWLockExclusive),
+        },
+        Shim {
             name: "ReleaseSRWLockShared",
-            func: impls::ReleaseSRWLockShared,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const RemoveDirectoryA: Shim = Shim {
+            func: Handler::Sync(wrappers::ReleaseSRWLockShared),
+        },
+        Shim {
             name: "RemoveDirectoryA",
-            func: impls::RemoveDirectoryA,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const ResumeThread: Shim = Shim {
+            func: Handler::Sync(wrappers::RemoveDirectoryA),
+        },
+        Shim {
             name: "ResumeThread",
-            func: impls::ResumeThread,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const SetConsoleCtrlHandler: Shim = Shim {
+            func: Handler::Sync(wrappers::ResumeThread),
+        },
+        Shim {
+            name: "RtlUnwind",
+            func: Handler::Sync(wrappers::RtlUnwind),
+        },
+        Shim {
             name: "SetConsoleCtrlHandler",
-            func: impls::SetConsoleCtrlHandler,
-            stack_consumed: 8u32,
-            is_async: false,
-        };
-        pub const SetEndOfFile: Shim = Shim {
+            func: Handler::Sync(wrappers::SetConsoleCtrlHandler),
+        },
+        Shim {
             name: "SetEndOfFile",
-            func: impls::SetEndOfFile,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const SetEnvironmentVariableA: Shim = Shim {
+            func: Handler::Sync(wrappers::SetEndOfFile),
+        },
+        Shim {
             name: "SetEnvironmentVariableA",
-            func: impls::SetEnvironmentVariableA,
-            stack_consumed: 8u32,
-            is_async: false,
-        };
-        pub const SetEvent: Shim = Shim {
+            func: Handler::Sync(wrappers::SetEnvironmentVariableA),
+        },
+        Shim {
             name: "SetEvent",
-            func: impls::SetEvent,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const SetFileAttributesA: Shim = Shim {
+            func: Handler::Sync(wrappers::SetEvent),
+        },
+        Shim {
             name: "SetFileAttributesA",
-            func: impls::SetFileAttributesA,
-            stack_consumed: 8u32,
-            is_async: false,
-        };
-        pub const SetFilePointer: Shim = Shim {
+            func: Handler::Sync(wrappers::SetFileAttributesA),
+        },
+        Shim {
             name: "SetFilePointer",
-            func: impls::SetFilePointer,
-            stack_consumed: 16u32,
-            is_async: false,
-        };
-        pub const SetFileTime: Shim = Shim {
+            func: Handler::Sync(wrappers::SetFilePointer),
+        },
+        Shim {
             name: "SetFileTime",
-            func: impls::SetFileTime,
-            stack_consumed: 16u32,
-            is_async: false,
-        };
-        pub const SetHandleCount: Shim = Shim {
+            func: Handler::Sync(wrappers::SetFileTime),
+        },
+        Shim {
             name: "SetHandleCount",
-            func: impls::SetHandleCount,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const SetLastError: Shim = Shim {
+            func: Handler::Sync(wrappers::SetHandleCount),
+        },
+        Shim {
             name: "SetLastError",
-            func: impls::SetLastError,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const SetPriorityClass: Shim = Shim {
+            func: Handler::Sync(wrappers::SetLastError),
+        },
+        Shim {
             name: "SetPriorityClass",
-            func: impls::SetPriorityClass,
-            stack_consumed: 8u32,
-            is_async: false,
-        };
-        pub const SetStdHandle: Shim = Shim {
+            func: Handler::Sync(wrappers::SetPriorityClass),
+        },
+        Shim {
             name: "SetStdHandle",
-            func: impls::SetStdHandle,
-            stack_consumed: 8u32,
-            is_async: false,
-        };
-        pub const SetThreadDescription: Shim = Shim {
+            func: Handler::Sync(wrappers::SetStdHandle),
+        },
+        Shim {
             name: "SetThreadDescription",
-            func: impls::SetThreadDescription,
-            stack_consumed: 8u32,
-            is_async: false,
-        };
-        pub const SetThreadPriority: Shim = Shim {
+            func: Handler::Sync(wrappers::SetThreadDescription),
+        },
+        Shim {
             name: "SetThreadPriority",
-            func: impls::SetThreadPriority,
-            stack_consumed: 8u32,
-            is_async: false,
-        };
-        pub const SetThreadStackGuarantee: Shim = Shim {
+            func: Handler::Sync(wrappers::SetThreadPriority),
+        },
+        Shim {
             name: "SetThreadStackGuarantee",
-            func: impls::SetThreadStackGuarantee,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const SetUnhandledExceptionFilter: Shim = Shim {
+            func: Handler::Sync(wrappers::SetThreadStackGuarantee),
+        },
+        Shim {
             name: "SetUnhandledExceptionFilter",
-            func: impls::SetUnhandledExceptionFilter,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const SizeofResource: Shim = Shim {
+            func: Handler::Sync(wrappers::SetUnhandledExceptionFilter),
+        },
+        Shim {
             name: "SizeofResource",
-            func: impls::SizeofResource,
-            stack_consumed: 8u32,
-            is_async: false,
-        };
-        pub const Sleep: Shim = Shim {
+            func: Handler::Sync(wrappers::SizeofResource),
+        },
+        Shim {
             name: "Sleep",
-            func: impls::Sleep,
-            stack_consumed: 4u32,
-            is_async: true,
-        };
-        pub const SystemTimeToFileTime: Shim = Shim {
+            func: Handler::Async(wrappers::Sleep),
+        },
+        Shim {
             name: "SystemTimeToFileTime",
-            func: impls::SystemTimeToFileTime,
-            stack_consumed: 8u32,
-            is_async: false,
-        };
-        pub const TlsAlloc: Shim = Shim {
+            func: Handler::Sync(wrappers::SystemTimeToFileTime),
+        },
+        Shim {
+            name: "TerminateProcess",
+            func: Handler::Sync(wrappers::TerminateProcess),
+        },
+        Shim {
             name: "TlsAlloc",
-            func: impls::TlsAlloc,
-            stack_consumed: 0u32,
-            is_async: false,
-        };
-        pub const TlsFree: Shim = Shim {
+            func: Handler::Sync(wrappers::TlsAlloc),
+        },
+        Shim {
             name: "TlsFree",
-            func: impls::TlsFree,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const TlsGetValue: Shim = Shim {
+            func: Handler::Sync(wrappers::TlsFree),
+        },
+        Shim {
             name: "TlsGetValue",
-            func: impls::TlsGetValue,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const TlsSetValue: Shim = Shim {
+            func: Handler::Sync(wrappers::TlsGetValue),
+        },
+        Shim {
             name: "TlsSetValue",
-            func: impls::TlsSetValue,
-            stack_consumed: 8u32,
-            is_async: false,
-        };
-        pub const TryAcquireSRWLockExclusive: Shim = Shim {
+            func: Handler::Sync(wrappers::TlsSetValue),
+        },
+        Shim {
             name: "TryAcquireSRWLockExclusive",
-            func: impls::TryAcquireSRWLockExclusive,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const UnhandledExceptionFilter: Shim = Shim {
+            func: Handler::Sync(wrappers::TryAcquireSRWLockExclusive),
+        },
+        Shim {
             name: "UnhandledExceptionFilter",
-            func: impls::UnhandledExceptionFilter,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const VirtualAlloc: Shim = Shim {
+            func: Handler::Sync(wrappers::UnhandledExceptionFilter),
+        },
+        Shim {
             name: "VirtualAlloc",
-            func: impls::VirtualAlloc,
-            stack_consumed: 16u32,
-            is_async: false,
-        };
-        pub const VirtualFree: Shim = Shim {
+            func: Handler::Sync(wrappers::VirtualAlloc),
+        },
+        Shim {
             name: "VirtualFree",
-            func: impls::VirtualFree,
-            stack_consumed: 12u32,
-            is_async: false,
-        };
-        pub const VirtualProtect: Shim = Shim {
+            func: Handler::Sync(wrappers::VirtualFree),
+        },
+        Shim {
             name: "VirtualProtect",
-            func: impls::VirtualProtect,
-            stack_consumed: 16u32,
-            is_async: false,
-        };
-        pub const VirtualQuery: Shim = Shim {
+            func: Handler::Sync(wrappers::VirtualProtect),
+        },
+        Shim {
             name: "VirtualQuery",
-            func: impls::VirtualQuery,
-            stack_consumed: 12u32,
-            is_async: false,
-        };
-        pub const WaitForSingleObject: Shim = Shim {
+            func: Handler::Sync(wrappers::VirtualQuery),
+        },
+        Shim {
             name: "WaitForSingleObject",
-            func: impls::WaitForSingleObject,
-            stack_consumed: 8u32,
-            is_async: false,
-        };
-        pub const WriteConsoleA: Shim = Shim {
+            func: Handler::Sync(wrappers::WaitForSingleObject),
+        },
+        Shim {
+            name: "WideCharToMultiByte",
+            func: Handler::Sync(wrappers::WideCharToMultiByte),
+        },
+        Shim {
             name: "WriteConsoleA",
-            func: impls::WriteConsoleA,
-            stack_consumed: 20u32,
-            is_async: false,
-        };
-        pub const WriteConsoleW: Shim = Shim {
+            func: Handler::Sync(wrappers::WriteConsoleA),
+        },
+        Shim {
             name: "WriteConsoleW",
-            func: impls::WriteConsoleW,
-            stack_consumed: 20u32,
-            is_async: false,
-        };
-        pub const WriteFile: Shim = Shim {
+            func: Handler::Sync(wrappers::WriteConsoleW),
+        },
+        Shim {
             name: "WriteFile",
-            func: impls::WriteFile,
-            stack_consumed: 20u32,
-            is_async: false,
-        };
-        pub const lstrcmpiA: Shim = Shim {
+            func: Handler::Sync(wrappers::WriteFile),
+        },
+        Shim {
+            name: "WriteProfileStringW",
+            func: Handler::Sync(wrappers::WriteProfileStringW),
+        },
+        Shim {
+            name: "_lclose",
+            func: Handler::Sync(wrappers::_lclose),
+        },
+        Shim {
+            name: "_llseek",
+            func: Handler::Sync(wrappers::_llseek),
+        },
+        Shim {
+            name: "_lopen",
+            func: Handler::Sync(wrappers::_lopen),
+        },
+        Shim {
+            name: "_lread",
+            func: Handler::Sync(wrappers::_lread),
+        },
+        Shim {
             name: "lstrcmpiA",
-            func: impls::lstrcmpiA,
-            stack_consumed: 8u32,
-            is_async: false,
-        };
-        pub const lstrcpyA: Shim = Shim {
+            func: Handler::Sync(wrappers::lstrcmpiA),
+        },
+        Shim {
             name: "lstrcpyA",
-            func: impls::lstrcpyA,
-            stack_consumed: 8u32,
-            is_async: false,
-        };
-        pub const lstrcpyW: Shim = Shim {
+            func: Handler::Sync(wrappers::lstrcpyA),
+        },
+        Shim {
             name: "lstrcpyW",
-            func: impls::lstrcpyW,
-            stack_consumed: 8u32,
-            is_async: false,
-        };
-        pub const lstrlenA: Shim = Shim {
+            func: Handler::Sync(wrappers::lstrcpyW),
+        },
+        Shim {
             name: "lstrlenA",
-            func: impls::lstrlenA,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const lstrlenW: Shim = Shim {
+            func: Handler::Sync(wrappers::lstrlenA),
+        },
+        Shim {
             name: "lstrlenW",
-            func: impls::lstrlenW,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const retrowin32_main: Shim = Shim {
+            func: Handler::Sync(wrappers::lstrlenW),
+        },
+        Shim {
             name: "retrowin32_main",
-            func: impls::retrowin32_main,
-            stack_consumed: 4u32,
-            is_async: true,
-        };
-        pub const retrowin32_thread_main: Shim = Shim {
+            func: Handler::Async(wrappers::retrowin32_main),
+        },
+        Shim {
             name: "retrowin32_thread_main",
-            func: impls::retrowin32_thread_main,
-            stack_consumed: 8u32,
-            is_async: true,
-        };
-    }
-    const SHIMS: [Shim; 151usize] = [
-        shims::AcquireSRWLockExclusive,
-        shims::AcquireSRWLockShared,
-        shims::AddVectoredExceptionHandler,
-        shims::CloseHandle,
-        shims::CreateDirectoryA,
-        shims::CreateEventA,
-        shims::CreateFileA,
-        shims::CreateFileW,
-        shims::CreateThread,
-        shims::DeleteCriticalSection,
-        shims::DeleteFileA,
-        shims::DisableThreadLibraryCalls,
-        shims::EnterCriticalSection,
-        shims::ExitProcess,
-        shims::FileTimeToSystemTime,
-        shims::FindClose,
-        shims::FindFirstFileA,
-        shims::FindNextFileA,
-        shims::FindResourceA,
-        shims::FindResourceW,
-        shims::FormatMessageA,
-        shims::FormatMessageW,
-        shims::FreeEnvironmentStringsA,
-        shims::FreeLibrary,
-        shims::GetACP,
-        shims::GetCPInfo,
-        shims::GetCommandLineA,
-        shims::GetCommandLineW,
-        shims::GetConsoleMode,
-        shims::GetConsoleScreenBufferInfo,
-        shims::GetCurrentDirectoryA,
-        shims::GetCurrentProcessId,
-        shims::GetCurrentThread,
-        shims::GetCurrentThreadId,
-        shims::GetEnvironmentStrings,
-        shims::GetEnvironmentStringsW,
-        shims::GetEnvironmentVariableA,
-        shims::GetEnvironmentVariableW,
-        shims::GetFileAttributesA,
-        shims::GetFileInformationByHandle,
-        shims::GetFileSize,
-        shims::GetFileTime,
-        shims::GetFileType,
-        shims::GetFullPathNameA,
-        shims::GetFullPathNameW,
-        shims::GetLastError,
-        shims::GetLocalTime,
-        shims::GetModuleFileNameA,
-        shims::GetModuleFileNameW,
-        shims::GetModuleHandleA,
-        shims::GetModuleHandleExW,
-        shims::GetModuleHandleW,
-        shims::GetPrivateProfileIntW,
-        shims::GetPrivateProfileStringW,
-        shims::GetProcAddress,
-        shims::GetProcessHeap,
-        shims::GetProfileIntW,
-        shims::GetProfileStringW,
-        shims::GetStartupInfoA,
-        shims::GetStartupInfoW,
-        shims::GetStdHandle,
-        shims::GetSystemDirectoryA,
-        shims::GetSystemTime,
-        shims::GetSystemTimeAsFileTime,
-        shims::GetTickCount,
-        shims::GetTimeZoneInformation,
-        shims::GetVersion,
-        shims::GetVersionExA,
-        shims::GetWindowsDirectoryA,
-        shims::GlobalAlloc,
-        shims::GlobalFlags,
-        shims::GlobalFree,
-        shims::GlobalReAlloc,
-        shims::HeapAlloc,
-        shims::HeapCreate,
-        shims::HeapDestroy,
-        shims::HeapFree,
-        shims::HeapReAlloc,
-        shims::HeapSetInformation,
-        shims::HeapSize,
-        shims::InitOnceBeginInitialize,
-        shims::InitOnceComplete,
-        shims::InitializeCriticalSection,
-        shims::InitializeCriticalSectionAndSpinCount,
-        shims::InitializeCriticalSectionEx,
-        shims::InitializeSListHead,
-        shims::InterlockedIncrement,
-        shims::IsBadReadPtr,
-        shims::IsBadWritePtr,
-        shims::IsDBCSLeadByte,
-        shims::IsDBCSLeadByteEx,
-        shims::IsDebuggerPresent,
-        shims::IsProcessorFeaturePresent,
-        shims::IsValidCodePage,
-        shims::LeaveCriticalSection,
-        shims::LoadLibraryA,
-        shims::LoadLibraryExW,
-        shims::LoadResource,
-        shims::LocalAlloc,
-        shims::LocalFree,
-        shims::LockResource,
-        shims::MulDiv,
-        shims::MultiByteToWideChar,
-        shims::NtCurrentTeb,
-        shims::OutputDebugStringA,
-        shims::QueryPerformanceCounter,
-        shims::QueryPerformanceFrequency,
-        shims::ReadFile,
-        shims::ReleaseSRWLockExclusive,
-        shims::ReleaseSRWLockShared,
-        shims::RemoveDirectoryA,
-        shims::ResumeThread,
-        shims::SetConsoleCtrlHandler,
-        shims::SetEndOfFile,
-        shims::SetEnvironmentVariableA,
-        shims::SetEvent,
-        shims::SetFileAttributesA,
-        shims::SetFilePointer,
-        shims::SetFileTime,
-        shims::SetHandleCount,
-        shims::SetLastError,
-        shims::SetPriorityClass,
-        shims::SetStdHandle,
-        shims::SetThreadDescription,
-        shims::SetThreadPriority,
-        shims::SetThreadStackGuarantee,
-        shims::SetUnhandledExceptionFilter,
-        shims::SizeofResource,
-        shims::Sleep,
-        shims::SystemTimeToFileTime,
-        shims::TlsAlloc,
-        shims::TlsFree,
-        shims::TlsGetValue,
-        shims::TlsSetValue,
-        shims::TryAcquireSRWLockExclusive,
-        shims::UnhandledExceptionFilter,
-        shims::VirtualAlloc,
-        shims::VirtualFree,
-        shims::VirtualProtect,
-        shims::VirtualQuery,
-        shims::WaitForSingleObject,
-        shims::WriteConsoleA,
-        shims::WriteConsoleW,
-        shims::WriteFile,
-        shims::lstrcmpiA,
-        shims::lstrcpyA,
-        shims::lstrcpyW,
-        shims::lstrlenA,
-        shims::lstrlenW,
-        shims::retrowin32_main,
-        shims::retrowin32_thread_main,
+            func: Handler::Async(wrappers::retrowin32_thread_main),
+        },
     ];
     pub const DLL: BuiltinDLL = BuiltinDLL {
         file_name: "kernel32.dll",
@@ -4347,24 +9504,42 @@ pub mod kernel32 {
 }
 pub mod ntdll {
     use super::*;
-    mod impls {
+    mod wrappers {
         use crate::{
             machine::Machine,
             winapi::{self, stack_args::*, types::*},
         };
         use memory::Extensions;
         use winapi::ntdll::*;
-        pub unsafe fn NtReadFile(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn NtReadFile(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let FileHandle = <HFILE>::from_stack(mem, esp + 4u32);
-            let Event = <u32>::from_stack(mem, esp + 8u32);
-            let ApcRoutine = <u32>::from_stack(mem, esp + 12u32);
-            let ApcContext = <u32>::from_stack(mem, esp + 16u32);
-            let IoStatusBlock = <Option<&mut IO_STATUS_BLOCK>>::from_stack(mem, esp + 20u32);
-            let Buffer = <ArrayWithSizeMut<u8>>::from_stack(mem, esp + 24u32);
-            let ByteOffset = <Option<&mut u64>>::from_stack(mem, esp + 32u32);
-            let Key = <u32>::from_stack(mem, esp + 36u32);
-            winapi::ntdll::NtReadFile(
+            let FileHandle = <HFILE>::from_stack(mem, stack_args + 0u32);
+            let Event = <u32>::from_stack(mem, stack_args + 4u32);
+            let ApcRoutine = <u32>::from_stack(mem, stack_args + 8u32);
+            let ApcContext = <u32>::from_stack(mem, stack_args + 12u32);
+            let IoStatusBlock = <Option<&mut IO_STATUS_BLOCK>>::from_stack(mem, stack_args + 16u32);
+            let Buffer = <ArrayWithSizeMut<u8>>::from_stack(mem, stack_args + 20u32);
+            let ByteOffset = <Option<&mut u64>>::from_stack(mem, stack_args + 28u32);
+            let Key = <u32>::from_stack(mem, stack_args + 32u32);
+            let __trace_context = if crate::trace::enabled("ntdll") {
+                Some(crate::trace::trace_begin(
+                    "ntdll",
+                    "NtReadFile",
+                    &[
+                        ("FileHandle", &FileHandle),
+                        ("Event", &Event),
+                        ("ApcRoutine", &ApcRoutine),
+                        ("ApcContext", &ApcContext),
+                        ("IoStatusBlock", &IoStatusBlock),
+                        ("Buffer", &Buffer),
+                        ("ByteOffset", &ByteOffset),
+                        ("Key", &Key),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::ntdll::NtReadFile(
                 machine,
                 FileHandle,
                 Event,
@@ -4374,32 +9549,51 @@ pub mod ntdll {
                 Buffer,
                 ByteOffset,
                 Key,
-            )
-            .to_raw()
+            );
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::ntdll::NtReadFile_pos.0,
+                    winapi::ntdll::NtReadFile_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn RtlExitUserProcess(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn RtlExitUserProcess(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let exit_code = <u32>::from_stack(mem, esp + 4u32);
-            winapi::ntdll::RtlExitUserProcess(machine, exit_code).to_raw()
+            let exit_code = <u32>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("ntdll") {
+                Some(crate::trace::trace_begin(
+                    "ntdll",
+                    "RtlExitUserProcess",
+                    &[("exit_code", &exit_code)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::ntdll::RtlExitUserProcess(machine, exit_code);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::ntdll::RtlExitUserProcess_pos.0,
+                    winapi::ntdll::RtlExitUserProcess_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
     }
-    mod shims {
-        use super::impls;
-        use super::Shim;
-        pub const NtReadFile: Shim = Shim {
+    const SHIMS: [Shim; 2usize] = [
+        Shim {
             name: "NtReadFile",
-            func: impls::NtReadFile,
-            stack_consumed: 36u32,
-            is_async: false,
-        };
-        pub const RtlExitUserProcess: Shim = Shim {
+            func: Handler::Sync(wrappers::NtReadFile),
+        },
+        Shim {
             name: "RtlExitUserProcess",
-            func: impls::RtlExitUserProcess,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-    }
-    const SHIMS: [Shim; 2usize] = [shims::NtReadFile, shims::RtlExitUserProcess];
+            func: Handler::Sync(wrappers::RtlExitUserProcess),
+        },
+    ];
     pub const DLL: BuiltinDLL = BuiltinDLL {
         file_name: "ntdll.dll",
         shims: &SHIMS,
@@ -4408,30 +9602,136 @@ pub mod ntdll {
 }
 pub mod ole32 {
     use super::*;
-    mod impls {
+    mod wrappers {
         use crate::{
             machine::Machine,
             winapi::{self, stack_args::*, types::*},
         };
         use memory::Extensions;
         use winapi::ole32::*;
-        pub unsafe fn OleInitialize(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn CoCreateInstance(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let _pvReserved = <u32>::from_stack(mem, esp + 4u32);
-            winapi::ole32::OleInitialize(machine, _pvReserved).to_raw()
+            let rclsid = <u32>::from_stack(mem, stack_args + 0u32);
+            let pUnkOuter = <u32>::from_stack(mem, stack_args + 4u32);
+            let dwClsContext = <u32>::from_stack(mem, stack_args + 8u32);
+            let riid = <u32>::from_stack(mem, stack_args + 12u32);
+            let ppv = <u32>::from_stack(mem, stack_args + 16u32);
+            let __trace_context = if crate::trace::enabled("ole32") {
+                Some(crate::trace::trace_begin(
+                    "ole32",
+                    "CoCreateInstance",
+                    &[
+                        ("rclsid", &rclsid),
+                        ("pUnkOuter", &pUnkOuter),
+                        ("dwClsContext", &dwClsContext),
+                        ("riid", &riid),
+                        ("ppv", &ppv),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::ole32::CoCreateInstance(
+                machine,
+                rclsid,
+                pUnkOuter,
+                dwClsContext,
+                riid,
+                ppv,
+            );
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::ole32::CoCreateInstance_pos.0,
+                    winapi::ole32::CoCreateInstance_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn CoInitialize(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let pvReserved = <u32>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("ole32") {
+                Some(crate::trace::trace_begin(
+                    "ole32",
+                    "CoInitialize",
+                    &[("pvReserved", &pvReserved)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::ole32::CoInitialize(machine, pvReserved);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::ole32::CoInitialize_pos.0,
+                    winapi::ole32::CoInitialize_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn CoUninitialize(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let __trace_context = if crate::trace::enabled("ole32") {
+                Some(crate::trace::trace_begin("ole32", "CoUninitialize", &[]))
+            } else {
+                None
+            };
+            let result = winapi::ole32::CoUninitialize(machine);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::ole32::CoUninitialize_pos.0,
+                    winapi::ole32::CoUninitialize_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn OleInitialize(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let _pvReserved = <u32>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("ole32") {
+                Some(crate::trace::trace_begin(
+                    "ole32",
+                    "OleInitialize",
+                    &[("pvReserved", &_pvReserved)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::ole32::OleInitialize(machine, _pvReserved);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::ole32::OleInitialize_pos.0,
+                    winapi::ole32::OleInitialize_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
     }
-    mod shims {
-        use super::impls;
-        use super::Shim;
-        pub const OleInitialize: Shim = Shim {
+    const SHIMS: [Shim; 4usize] = [
+        Shim {
+            name: "CoCreateInstance",
+            func: Handler::Sync(wrappers::CoCreateInstance),
+        },
+        Shim {
+            name: "CoInitialize",
+            func: Handler::Sync(wrappers::CoInitialize),
+        },
+        Shim {
+            name: "CoUninitialize",
+            func: Handler::Sync(wrappers::CoUninitialize),
+        },
+        Shim {
             name: "OleInitialize",
-            func: impls::OleInitialize,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-    }
-    const SHIMS: [Shim; 1usize] = [shims::OleInitialize];
+            func: Handler::Sync(wrappers::OleInitialize),
+        },
+    ];
     pub const DLL: BuiltinDLL = BuiltinDLL {
         file_name: "ole32.dll",
         shims: &SHIMS,
@@ -4440,17 +9740,13 @@ pub mod ole32 {
 }
 pub mod oleaut32 {
     use super::*;
-    mod impls {
+    mod wrappers {
         use crate::{
             machine::Machine,
             winapi::{self, stack_args::*, types::*},
         };
         use memory::Extensions;
         use winapi::oleaut32::*;
-    }
-    mod shims {
-        use super::impls;
-        use super::Shim;
     }
     const SHIMS: [Shim; 0usize] = [];
     pub const DLL: BuiltinDLL = BuiltinDLL {
@@ -4461,58 +9757,50 @@ pub mod oleaut32 {
 }
 pub mod retrowin32_test {
     use super::*;
-    mod impls {
+    mod wrappers {
         use crate::{
             machine::Machine,
             winapi::{self, stack_args::*, types::*},
         };
         use memory::Extensions;
         use winapi::retrowin32_test::*;
-        pub unsafe fn retrowin32_test_callback1(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn retrowin32_test_callback1(
+            machine: &mut Machine,
+            stack_args: u32,
+        ) -> std::pin::Pin<Box<dyn std::future::Future<Output = u32>>> {
             let mem = machine.mem().detach();
-            let func = <u32>::from_stack(mem, esp + 4u32);
-            let data = <u32>::from_stack(mem, esp + 8u32);
-            #[cfg(feature = "x86-emu")]
-            {
-                let m: *mut Machine = machine;
-                let result = async move {
-                    use memory::Extensions;
-                    let machine = unsafe { &mut *m };
-                    let result =
-                        winapi::retrowin32_test::retrowin32_test_callback1(machine, func, data)
-                            .await;
-                    let cpu = &mut machine.emu.x86.cpu_mut();
-                    cpu.regs.eip = x86::ops::pop(cpu, machine.emu.memory.mem());
-                    *cpu.regs.get32_mut(x86::Register::ESP) += 8u32;
-                    cpu.regs.set32(x86::Register::EAX, result.to_raw());
-                };
-                machine
-                    .emu
-                    .x86
-                    .cpu_mut()
-                    .call_async(machine.emu.memory.mem(), Box::pin(result));
-                0
-            }
-            #[cfg(any(feature = "x86-64", feature = "x86-unicorn"))]
-            {
-                let pin = std::pin::pin!(winapi::retrowin32_test::retrowin32_test_callback1(
-                    machine, func, data
-                ));
-                crate::shims::call_sync(pin).to_raw()
-            }
+            let func = <u32>::from_stack(mem, stack_args + 0u32);
+            let data = <u32>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("retrowin32_test") {
+                Some(crate::trace::trace_begin(
+                    "retrowin32_test",
+                    "retrowin32_test_callback1",
+                    &[("func", &func), ("data", &data)],
+                ))
+            } else {
+                None
+            };
+            let machine: *mut Machine = machine;
+            Box::pin(async move {
+                let machine = unsafe { &mut *machine };
+                let result =
+                    winapi::retrowin32_test::retrowin32_test_callback1(machine, func, data).await;
+                if let Some(__trace_context) = __trace_context {
+                    crate::trace::trace_return(
+                        &__trace_context,
+                        winapi::retrowin32_test::retrowin32_test_callback1_pos.0,
+                        winapi::retrowin32_test::retrowin32_test_callback1_pos.1,
+                        &result,
+                    );
+                }
+                result.to_raw()
+            })
         }
     }
-    mod shims {
-        use super::impls;
-        use super::Shim;
-        pub const retrowin32_test_callback1: Shim = Shim {
-            name: "retrowin32_test_callback1",
-            func: impls::retrowin32_test_callback1,
-            stack_consumed: 8u32,
-            is_async: true,
-        };
-    }
-    const SHIMS: [Shim; 1usize] = [shims::retrowin32_test_callback1];
+    const SHIMS: [Shim; 1usize] = [Shim {
+        name: "retrowin32_test_callback1",
+        func: Handler::Async(wrappers::retrowin32_test_callback1),
+    }];
     pub const DLL: BuiltinDLL = BuiltinDLL {
         file_name: "retrowin32_test.dll",
         shims: &SHIMS,
@@ -4521,329 +9809,910 @@ pub mod retrowin32_test {
 }
 pub mod ucrtbase {
     use super::*;
-    mod impls {
+    mod wrappers {
         use crate::{
             machine::Machine,
             winapi::{self, stack_args::*, types::*},
         };
         use memory::Extensions;
         use winapi::ucrtbase::*;
-        pub unsafe fn __dllonexit(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn _XcptFilter(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let func = <u32>::from_stack(mem, esp + 4u32);
-            let d = <u32>::from_stack(mem, esp + 8u32);
-            let f = <u32>::from_stack(mem, esp + 12u32);
-            winapi::ucrtbase::__dllonexit(machine, func, d, f).to_raw()
-        }
-        pub unsafe fn __p___argc(machine: &mut Machine, esp: u32) -> u32 {
-            let mem = machine.mem().detach();
-            winapi::ucrtbase::__p___argc(machine).to_raw()
-        }
-        pub unsafe fn __p___argv(machine: &mut Machine, esp: u32) -> u32 {
-            let mem = machine.mem().detach();
-            winapi::ucrtbase::__p___argv(machine).to_raw()
-        }
-        pub unsafe fn __p__commode(machine: &mut Machine, esp: u32) -> u32 {
-            let mem = machine.mem().detach();
-            winapi::ucrtbase::__p__commode(machine).to_raw()
-        }
-        pub unsafe fn __p__fmode(machine: &mut Machine, esp: u32) -> u32 {
-            let mem = machine.mem().detach();
-            winapi::ucrtbase::__p__fmode(machine).to_raw()
-        }
-        pub unsafe fn __set_app_type(machine: &mut Machine, esp: u32) -> u32 {
-            let mem = machine.mem().detach();
-            let _app_type = <u32>::from_stack(mem, esp + 4u32);
-            winapi::ucrtbase::__set_app_type(machine, _app_type).to_raw()
-        }
-        pub unsafe fn _configthreadlocale(machine: &mut Machine, esp: u32) -> u32 {
-            let mem = machine.mem().detach();
-            let per_thread_locale_type = <i32>::from_stack(mem, esp + 4u32);
-            winapi::ucrtbase::_configthreadlocale(machine, per_thread_locale_type).to_raw()
-        }
-        pub unsafe fn _configure_narrow_argv(machine: &mut Machine, esp: u32) -> u32 {
-            let mem = machine.mem().detach();
-            let _mode = <u32>::from_stack(mem, esp + 4u32);
-            winapi::ucrtbase::_configure_narrow_argv(machine, _mode).to_raw()
-        }
-        pub unsafe fn _controlfp_s(machine: &mut Machine, esp: u32) -> u32 {
-            let mem = machine.mem().detach();
-            let _currentControl = <u32>::from_stack(mem, esp + 4u32);
-            let _newControl = <u32>::from_stack(mem, esp + 8u32);
-            let _mask = <u32>::from_stack(mem, esp + 12u32);
-            winapi::ucrtbase::_controlfp_s(machine, _currentControl, _newControl, _mask).to_raw()
-        }
-        pub unsafe fn _crt_atexit(machine: &mut Machine, esp: u32) -> u32 {
-            let mem = machine.mem().detach();
-            let _function = <u32>::from_stack(mem, esp + 4u32);
-            winapi::ucrtbase::_crt_atexit(machine, _function).to_raw()
-        }
-        pub unsafe fn _get_initial_narrow_environment(machine: &mut Machine, esp: u32) -> u32 {
-            let mem = machine.mem().detach();
-            winapi::ucrtbase::_get_initial_narrow_environment(machine).to_raw()
-        }
-        pub unsafe fn _initialize_narrow_environment(machine: &mut Machine, esp: u32) -> u32 {
-            let mem = machine.mem().detach();
-            winapi::ucrtbase::_initialize_narrow_environment(machine).to_raw()
-        }
-        pub unsafe fn _initterm(machine: &mut Machine, esp: u32) -> u32 {
-            let mem = machine.mem().detach();
-            let start = <u32>::from_stack(mem, esp + 4u32);
-            let end = <u32>::from_stack(mem, esp + 8u32);
-            #[cfg(feature = "x86-emu")]
-            {
-                let m: *mut Machine = machine;
-                let result = async move {
-                    use memory::Extensions;
-                    let machine = unsafe { &mut *m };
-                    let result = winapi::ucrtbase::_initterm(machine, start, end).await;
-                    let cpu = &mut machine.emu.x86.cpu_mut();
-                    cpu.regs.eip = x86::ops::pop(cpu, machine.emu.memory.mem());
-                    *cpu.regs.get32_mut(x86::Register::ESP) += 0u32;
-                    cpu.regs.set32(x86::Register::EAX, result.to_raw());
-                };
-                machine
-                    .emu
-                    .x86
-                    .cpu_mut()
-                    .call_async(machine.emu.memory.mem(), Box::pin(result));
-                0
+            let xcptnum = <u32>::from_stack(mem, stack_args + 0u32);
+            let pxcptinfoptrs = <u32>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("ucrtbase") {
+                Some(crate::trace::trace_begin(
+                    "ucrtbase",
+                    "_XcptFilter",
+                    &[("xcptnum", &xcptnum), ("pxcptinfoptrs", &pxcptinfoptrs)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::ucrtbase::_XcptFilter(machine, xcptnum, pxcptinfoptrs);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::ucrtbase::_XcptFilter_pos.0,
+                    winapi::ucrtbase::_XcptFilter_pos.1,
+                    &result,
+                );
             }
-            #[cfg(any(feature = "x86-64", feature = "x86-unicorn"))]
-            {
-                let pin = std::pin::pin!(winapi::ucrtbase::_initterm(machine, start, end));
-                crate::shims::call_sync(pin).to_raw()
+            result.to_raw()
+        }
+        pub unsafe fn __dllonexit(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let func = <u32>::from_stack(mem, stack_args + 0u32);
+            let d = <u32>::from_stack(mem, stack_args + 4u32);
+            let f = <u32>::from_stack(mem, stack_args + 8u32);
+            let __trace_context = if crate::trace::enabled("ucrtbase") {
+                Some(crate::trace::trace_begin(
+                    "ucrtbase",
+                    "__dllonexit",
+                    &[("func", &func), ("d", &d), ("f", &f)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::ucrtbase::__dllonexit(machine, func, d, f);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::ucrtbase::__dllonexit_pos.0,
+                    winapi::ucrtbase::__dllonexit_pos.1,
+                    &result,
+                );
             }
+            result.to_raw()
         }
-        pub unsafe fn _initterm_e(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn __getmainargs(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let start = <u32>::from_stack(mem, esp + 4u32);
-            let end = <u32>::from_stack(mem, esp + 8u32);
-            #[cfg(feature = "x86-emu")]
-            {
-                let m: *mut Machine = machine;
-                let result = async move {
-                    use memory::Extensions;
-                    let machine = unsafe { &mut *m };
-                    let result = winapi::ucrtbase::_initterm_e(machine, start, end).await;
-                    let cpu = &mut machine.emu.x86.cpu_mut();
-                    cpu.regs.eip = x86::ops::pop(cpu, machine.emu.memory.mem());
-                    *cpu.regs.get32_mut(x86::Register::ESP) += 0u32;
-                    cpu.regs.set32(x86::Register::EAX, result.to_raw());
-                };
-                machine
-                    .emu
-                    .x86
-                    .cpu_mut()
-                    .call_async(machine.emu.memory.mem(), Box::pin(result));
-                0
+            let argc = <Option<&mut u32>>::from_stack(mem, stack_args + 0u32);
+            let argv = <Option<&mut u32>>::from_stack(mem, stack_args + 4u32);
+            let env = <Option<&mut u32>>::from_stack(mem, stack_args + 8u32);
+            let doWildCard = <u32>::from_stack(mem, stack_args + 12u32);
+            let startInfo = <u32>::from_stack(mem, stack_args + 16u32);
+            let __trace_context = if crate::trace::enabled("ucrtbase") {
+                Some(crate::trace::trace_begin(
+                    "ucrtbase",
+                    "__getmainargs",
+                    &[
+                        ("argc", &argc),
+                        ("argv", &argv),
+                        ("env", &env),
+                        ("doWildCard", &doWildCard),
+                        ("startInfo", &startInfo),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result =
+                winapi::ucrtbase::__getmainargs(machine, argc, argv, env, doWildCard, startInfo);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::ucrtbase::__getmainargs_pos.0,
+                    winapi::ucrtbase::__getmainargs_pos.1,
+                    &result,
+                );
             }
-            #[cfg(any(feature = "x86-64", feature = "x86-unicorn"))]
-            {
-                let pin = std::pin::pin!(winapi::ucrtbase::_initterm_e(machine, start, end));
-                crate::shims::call_sync(pin).to_raw()
+            result.to_raw()
+        }
+        pub unsafe fn __p___argc(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let __trace_context = if crate::trace::enabled("ucrtbase") {
+                Some(crate::trace::trace_begin("ucrtbase", "__p___argc", &[]))
+            } else {
+                None
+            };
+            let result = winapi::ucrtbase::__p___argc(machine);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::ucrtbase::__p___argc_pos.0,
+                    winapi::ucrtbase::__p___argc_pos.1,
+                    &result,
+                );
             }
+            result.to_raw()
         }
-        pub unsafe fn _lock(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn __p___argv(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let locknum = <u32>::from_stack(mem, esp + 4u32);
-            winapi::ucrtbase::_lock(machine, locknum).to_raw()
+            let __trace_context = if crate::trace::enabled("ucrtbase") {
+                Some(crate::trace::trace_begin("ucrtbase", "__p___argv", &[]))
+            } else {
+                None
+            };
+            let result = winapi::ucrtbase::__p___argv(machine);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::ucrtbase::__p___argv_pos.0,
+                    winapi::ucrtbase::__p___argv_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn _set_app_type(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn __p__commode(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let _app_type = <u32>::from_stack(mem, esp + 4u32);
-            winapi::ucrtbase::_set_app_type(machine, _app_type).to_raw()
+            let __trace_context = if crate::trace::enabled("ucrtbase") {
+                Some(crate::trace::trace_begin("ucrtbase", "__p__commode", &[]))
+            } else {
+                None
+            };
+            let result = winapi::ucrtbase::__p__commode(machine);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::ucrtbase::__p__commode_pos.0,
+                    winapi::ucrtbase::__p__commode_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn _set_fmode(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn __p__fmode(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let _mode = <u32>::from_stack(mem, esp + 4u32);
-            winapi::ucrtbase::_set_fmode(machine, _mode).to_raw()
+            let __trace_context = if crate::trace::enabled("ucrtbase") {
+                Some(crate::trace::trace_begin("ucrtbase", "__p__fmode", &[]))
+            } else {
+                None
+            };
+            let result = winapi::ucrtbase::__p__fmode(machine);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::ucrtbase::__p__fmode_pos.0,
+                    winapi::ucrtbase::__p__fmode_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn _set_new_mode(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn __set_app_type(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let newhandlermode = <u32>::from_stack(mem, esp + 4u32);
-            winapi::ucrtbase::_set_new_mode(machine, newhandlermode).to_raw()
+            let _app_type = <u32>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("ucrtbase") {
+                Some(crate::trace::trace_begin(
+                    "ucrtbase",
+                    "__set_app_type",
+                    &[("app_type", &_app_type)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::ucrtbase::__set_app_type(machine, _app_type);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::ucrtbase::__set_app_type_pos.0,
+                    winapi::ucrtbase::__set_app_type_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn _unlock(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn __setusermatherr(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let locknum = <u32>::from_stack(mem, esp + 4u32);
-            winapi::ucrtbase::_unlock(machine, locknum).to_raw()
+            let pf = <u32>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("ucrtbase") {
+                Some(crate::trace::trace_begin(
+                    "ucrtbase",
+                    "__setusermatherr",
+                    &[("pf", &pf)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::ucrtbase::__setusermatherr(machine, pf);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::ucrtbase::__setusermatherr_pos.0,
+                    winapi::ucrtbase::__setusermatherr_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn exit(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn _configthreadlocale(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let status = <u32>::from_stack(mem, esp + 4u32);
-            winapi::ucrtbase::exit(machine, status).to_raw()
+            let per_thread_locale_type = <i32>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("ucrtbase") {
+                Some(crate::trace::trace_begin(
+                    "ucrtbase",
+                    "_configthreadlocale",
+                    &[("per_thread_locale_type", &per_thread_locale_type)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::ucrtbase::_configthreadlocale(machine, per_thread_locale_type);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::ucrtbase::_configthreadlocale_pos.0,
+                    winapi::ucrtbase::_configthreadlocale_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn free(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn _configure_narrow_argv(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let ptr = <u32>::from_stack(mem, esp + 4u32);
-            winapi::ucrtbase::free(machine, ptr).to_raw()
+            let _mode = <u32>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("ucrtbase") {
+                Some(crate::trace::trace_begin(
+                    "ucrtbase",
+                    "_configure_narrow_argv",
+                    &[("mode", &_mode)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::ucrtbase::_configure_narrow_argv(machine, _mode);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::ucrtbase::_configure_narrow_argv_pos.0,
+                    winapi::ucrtbase::_configure_narrow_argv_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn malloc(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn _controlfp(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let size = <u32>::from_stack(mem, esp + 4u32);
-            winapi::ucrtbase::malloc(machine, size).to_raw()
+            let _new = <u32>::from_stack(mem, stack_args + 0u32);
+            let _mask = <u32>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("ucrtbase") {
+                Some(crate::trace::trace_begin(
+                    "ucrtbase",
+                    "_controlfp",
+                    &[("new", &_new), ("mask", &_mask)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::ucrtbase::_controlfp(machine, _new, _mask);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::ucrtbase::_controlfp_pos.0,
+                    winapi::ucrtbase::_controlfp_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn _controlfp_s(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let _currentControl = <u32>::from_stack(mem, stack_args + 0u32);
+            let _newControl = <u32>::from_stack(mem, stack_args + 4u32);
+            let _mask = <u32>::from_stack(mem, stack_args + 8u32);
+            let __trace_context = if crate::trace::enabled("ucrtbase") {
+                Some(crate::trace::trace_begin(
+                    "ucrtbase",
+                    "_controlfp_s",
+                    &[
+                        ("currentControl", &_currentControl),
+                        ("newControl", &_newControl),
+                        ("mask", &_mask),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result =
+                winapi::ucrtbase::_controlfp_s(machine, _currentControl, _newControl, _mask);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::ucrtbase::_controlfp_s_pos.0,
+                    winapi::ucrtbase::_controlfp_s_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn _crt_atexit(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let _function = <u32>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("ucrtbase") {
+                Some(crate::trace::trace_begin(
+                    "ucrtbase",
+                    "_crt_atexit",
+                    &[("function", &_function)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::ucrtbase::_crt_atexit(machine, _function);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::ucrtbase::_crt_atexit_pos.0,
+                    winapi::ucrtbase::_crt_atexit_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn _except_handler3(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let exception_record = <u32>::from_stack(mem, stack_args + 0u32);
+            let registration = <u32>::from_stack(mem, stack_args + 4u32);
+            let context = <u32>::from_stack(mem, stack_args + 8u32);
+            let dispatcher = <u32>::from_stack(mem, stack_args + 12u32);
+            let __trace_context = if crate::trace::enabled("ucrtbase") {
+                Some(crate::trace::trace_begin(
+                    "ucrtbase",
+                    "_except_handler3",
+                    &[
+                        ("exception_record", &exception_record),
+                        ("registration", &registration),
+                        ("context", &context),
+                        ("dispatcher", &dispatcher),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::ucrtbase::_except_handler3(
+                machine,
+                exception_record,
+                registration,
+                context,
+                dispatcher,
+            );
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::ucrtbase::_except_handler3_pos.0,
+                    winapi::ucrtbase::_except_handler3_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn _exit(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let status = <u32>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("ucrtbase") {
+                Some(crate::trace::trace_begin(
+                    "ucrtbase",
+                    "_exit",
+                    &[("status", &status)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::ucrtbase::_exit(machine, status);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::ucrtbase::_exit_pos.0,
+                    winapi::ucrtbase::_exit_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn _get_initial_narrow_environment(
+            machine: &mut Machine,
+            stack_args: u32,
+        ) -> u32 {
+            let mem = machine.mem().detach();
+            let __trace_context = if crate::trace::enabled("ucrtbase") {
+                Some(crate::trace::trace_begin(
+                    "ucrtbase",
+                    "_get_initial_narrow_environment",
+                    &[],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::ucrtbase::_get_initial_narrow_environment(machine);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::ucrtbase::_get_initial_narrow_environment_pos.0,
+                    winapi::ucrtbase::_get_initial_narrow_environment_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn _initialize_narrow_environment(
+            machine: &mut Machine,
+            stack_args: u32,
+        ) -> u32 {
+            let mem = machine.mem().detach();
+            let __trace_context = if crate::trace::enabled("ucrtbase") {
+                Some(crate::trace::trace_begin(
+                    "ucrtbase",
+                    "_initialize_narrow_environment",
+                    &[],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::ucrtbase::_initialize_narrow_environment(machine);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::ucrtbase::_initialize_narrow_environment_pos.0,
+                    winapi::ucrtbase::_initialize_narrow_environment_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn _initterm(
+            machine: &mut Machine,
+            stack_args: u32,
+        ) -> std::pin::Pin<Box<dyn std::future::Future<Output = u32>>> {
+            let mem = machine.mem().detach();
+            let start = <u32>::from_stack(mem, stack_args + 0u32);
+            let end = <u32>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("ucrtbase") {
+                Some(crate::trace::trace_begin(
+                    "ucrtbase",
+                    "_initterm",
+                    &[("start", &start), ("end", &end)],
+                ))
+            } else {
+                None
+            };
+            let machine: *mut Machine = machine;
+            Box::pin(async move {
+                let machine = unsafe { &mut *machine };
+                let result = winapi::ucrtbase::_initterm(machine, start, end).await;
+                if let Some(__trace_context) = __trace_context {
+                    crate::trace::trace_return(
+                        &__trace_context,
+                        winapi::ucrtbase::_initterm_pos.0,
+                        winapi::ucrtbase::_initterm_pos.1,
+                        &result,
+                    );
+                }
+                result.to_raw()
+            })
+        }
+        pub unsafe fn _initterm_e(
+            machine: &mut Machine,
+            stack_args: u32,
+        ) -> std::pin::Pin<Box<dyn std::future::Future<Output = u32>>> {
+            let mem = machine.mem().detach();
+            let start = <u32>::from_stack(mem, stack_args + 0u32);
+            let end = <u32>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("ucrtbase") {
+                Some(crate::trace::trace_begin(
+                    "ucrtbase",
+                    "_initterm_e",
+                    &[("start", &start), ("end", &end)],
+                ))
+            } else {
+                None
+            };
+            let machine: *mut Machine = machine;
+            Box::pin(async move {
+                let machine = unsafe { &mut *machine };
+                let result = winapi::ucrtbase::_initterm_e(machine, start, end).await;
+                if let Some(__trace_context) = __trace_context {
+                    crate::trace::trace_return(
+                        &__trace_context,
+                        winapi::ucrtbase::_initterm_e_pos.0,
+                        winapi::ucrtbase::_initterm_e_pos.1,
+                        &result,
+                    );
+                }
+                result.to_raw()
+            })
+        }
+        pub unsafe fn _lock(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let locknum = <u32>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("ucrtbase") {
+                Some(crate::trace::trace_begin(
+                    "ucrtbase",
+                    "_lock",
+                    &[("locknum", &locknum)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::ucrtbase::_lock(machine, locknum);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::ucrtbase::_lock_pos.0,
+                    winapi::ucrtbase::_lock_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn _set_app_type(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let _app_type = <u32>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("ucrtbase") {
+                Some(crate::trace::trace_begin(
+                    "ucrtbase",
+                    "_set_app_type",
+                    &[("app_type", &_app_type)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::ucrtbase::_set_app_type(machine, _app_type);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::ucrtbase::_set_app_type_pos.0,
+                    winapi::ucrtbase::_set_app_type_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn _set_fmode(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let _mode = <u32>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("ucrtbase") {
+                Some(crate::trace::trace_begin(
+                    "ucrtbase",
+                    "_set_fmode",
+                    &[("mode", &_mode)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::ucrtbase::_set_fmode(machine, _mode);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::ucrtbase::_set_fmode_pos.0,
+                    winapi::ucrtbase::_set_fmode_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn _set_new_mode(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let newhandlermode = <u32>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("ucrtbase") {
+                Some(crate::trace::trace_begin(
+                    "ucrtbase",
+                    "_set_new_mode",
+                    &[("newhandlermode", &newhandlermode)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::ucrtbase::_set_new_mode(machine, newhandlermode);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::ucrtbase::_set_new_mode_pos.0,
+                    winapi::ucrtbase::_set_new_mode_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn _time64(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let destTime = <Option<&mut u64>>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("ucrtbase") {
+                Some(crate::trace::trace_begin(
+                    "ucrtbase",
+                    "_time64",
+                    &[("destTime", &destTime)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::ucrtbase::_time64(machine, destTime);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::ucrtbase::_time64_pos.0,
+                    winapi::ucrtbase::_time64_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn _unlock(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let locknum = <u32>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("ucrtbase") {
+                Some(crate::trace::trace_begin(
+                    "ucrtbase",
+                    "_unlock",
+                    &[("locknum", &locknum)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::ucrtbase::_unlock(machine, locknum);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::ucrtbase::_unlock_pos.0,
+                    winapi::ucrtbase::_unlock_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn exit(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let status = <u32>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("ucrtbase") {
+                Some(crate::trace::trace_begin(
+                    "ucrtbase",
+                    "exit",
+                    &[("status", &status)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::ucrtbase::exit(machine, status);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::ucrtbase::exit_pos.0,
+                    winapi::ucrtbase::exit_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn free(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let ptr = <u32>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("ucrtbase") {
+                Some(crate::trace::trace_begin(
+                    "ucrtbase",
+                    "free",
+                    &[("ptr", &ptr)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::ucrtbase::free(machine, ptr);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::ucrtbase::free_pos.0,
+                    winapi::ucrtbase::free_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn malloc(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let size = <u32>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("ucrtbase") {
+                Some(crate::trace::trace_begin(
+                    "ucrtbase",
+                    "malloc",
+                    &[("size", &size)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::ucrtbase::malloc(machine, size);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::ucrtbase::malloc_pos.0,
+                    winapi::ucrtbase::malloc_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn rand(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let __trace_context = if crate::trace::enabled("ucrtbase") {
+                Some(crate::trace::trace_begin("ucrtbase", "rand", &[]))
+            } else {
+                None
+            };
+            let result = winapi::ucrtbase::rand(machine);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::ucrtbase::rand_pos.0,
+                    winapi::ucrtbase::rand_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn srand(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let seed = <u32>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("ucrtbase") {
+                Some(crate::trace::trace_begin(
+                    "ucrtbase",
+                    "srand",
+                    &[("seed", &seed)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::ucrtbase::srand(machine, seed);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::ucrtbase::srand_pos.0,
+                    winapi::ucrtbase::srand_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn time(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let destTime = <Option<&mut u64>>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("ucrtbase") {
+                Some(crate::trace::trace_begin(
+                    "ucrtbase",
+                    "time",
+                    &[("destTime", &destTime)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::ucrtbase::time(machine, destTime);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::ucrtbase::time_pos.0,
+                    winapi::ucrtbase::time_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
     }
-    mod shims {
-        use super::impls;
-        use super::Shim;
-        pub const __dllonexit: Shim = Shim {
+    const SHIMS: [Shim; 32usize] = [
+        Shim {
+            name: "_XcptFilter",
+            func: Handler::Sync(wrappers::_XcptFilter),
+        },
+        Shim {
             name: "__dllonexit",
-            func: impls::__dllonexit,
-            stack_consumed: 0u32,
-            is_async: false,
-        };
-        pub const __p___argc: Shim = Shim {
+            func: Handler::Sync(wrappers::__dllonexit),
+        },
+        Shim {
+            name: "__getmainargs",
+            func: Handler::Sync(wrappers::__getmainargs),
+        },
+        Shim {
             name: "__p___argc",
-            func: impls::__p___argc,
-            stack_consumed: 0u32,
-            is_async: false,
-        };
-        pub const __p___argv: Shim = Shim {
+            func: Handler::Sync(wrappers::__p___argc),
+        },
+        Shim {
             name: "__p___argv",
-            func: impls::__p___argv,
-            stack_consumed: 0u32,
-            is_async: false,
-        };
-        pub const __p__commode: Shim = Shim {
+            func: Handler::Sync(wrappers::__p___argv),
+        },
+        Shim {
             name: "__p__commode",
-            func: impls::__p__commode,
-            stack_consumed: 0u32,
-            is_async: false,
-        };
-        pub const __p__fmode: Shim = Shim {
+            func: Handler::Sync(wrappers::__p__commode),
+        },
+        Shim {
             name: "__p__fmode",
-            func: impls::__p__fmode,
-            stack_consumed: 0u32,
-            is_async: false,
-        };
-        pub const __set_app_type: Shim = Shim {
+            func: Handler::Sync(wrappers::__p__fmode),
+        },
+        Shim {
             name: "__set_app_type",
-            func: impls::__set_app_type,
-            stack_consumed: 0u32,
-            is_async: false,
-        };
-        pub const _configthreadlocale: Shim = Shim {
+            func: Handler::Sync(wrappers::__set_app_type),
+        },
+        Shim {
+            name: "__setusermatherr",
+            func: Handler::Sync(wrappers::__setusermatherr),
+        },
+        Shim {
             name: "_configthreadlocale",
-            func: impls::_configthreadlocale,
-            stack_consumed: 0u32,
-            is_async: false,
-        };
-        pub const _configure_narrow_argv: Shim = Shim {
+            func: Handler::Sync(wrappers::_configthreadlocale),
+        },
+        Shim {
             name: "_configure_narrow_argv",
-            func: impls::_configure_narrow_argv,
-            stack_consumed: 0u32,
-            is_async: false,
-        };
-        pub const _controlfp_s: Shim = Shim {
+            func: Handler::Sync(wrappers::_configure_narrow_argv),
+        },
+        Shim {
+            name: "_controlfp",
+            func: Handler::Sync(wrappers::_controlfp),
+        },
+        Shim {
             name: "_controlfp_s",
-            func: impls::_controlfp_s,
-            stack_consumed: 0u32,
-            is_async: false,
-        };
-        pub const _crt_atexit: Shim = Shim {
+            func: Handler::Sync(wrappers::_controlfp_s),
+        },
+        Shim {
             name: "_crt_atexit",
-            func: impls::_crt_atexit,
-            stack_consumed: 0u32,
-            is_async: false,
-        };
-        pub const _get_initial_narrow_environment: Shim = Shim {
+            func: Handler::Sync(wrappers::_crt_atexit),
+        },
+        Shim {
+            name: "_except_handler3",
+            func: Handler::Sync(wrappers::_except_handler3),
+        },
+        Shim {
+            name: "_exit",
+            func: Handler::Sync(wrappers::_exit),
+        },
+        Shim {
             name: "_get_initial_narrow_environment",
-            func: impls::_get_initial_narrow_environment,
-            stack_consumed: 0u32,
-            is_async: false,
-        };
-        pub const _initialize_narrow_environment: Shim = Shim {
+            func: Handler::Sync(wrappers::_get_initial_narrow_environment),
+        },
+        Shim {
             name: "_initialize_narrow_environment",
-            func: impls::_initialize_narrow_environment,
-            stack_consumed: 0u32,
-            is_async: false,
-        };
-        pub const _initterm: Shim = Shim {
+            func: Handler::Sync(wrappers::_initialize_narrow_environment),
+        },
+        Shim {
             name: "_initterm",
-            func: impls::_initterm,
-            stack_consumed: 0u32,
-            is_async: true,
-        };
-        pub const _initterm_e: Shim = Shim {
+            func: Handler::Async(wrappers::_initterm),
+        },
+        Shim {
             name: "_initterm_e",
-            func: impls::_initterm_e,
-            stack_consumed: 0u32,
-            is_async: true,
-        };
-        pub const _lock: Shim = Shim {
+            func: Handler::Async(wrappers::_initterm_e),
+        },
+        Shim {
             name: "_lock",
-            func: impls::_lock,
-            stack_consumed: 0u32,
-            is_async: false,
-        };
-        pub const _set_app_type: Shim = Shim {
+            func: Handler::Sync(wrappers::_lock),
+        },
+        Shim {
             name: "_set_app_type",
-            func: impls::_set_app_type,
-            stack_consumed: 0u32,
-            is_async: false,
-        };
-        pub const _set_fmode: Shim = Shim {
+            func: Handler::Sync(wrappers::_set_app_type),
+        },
+        Shim {
             name: "_set_fmode",
-            func: impls::_set_fmode,
-            stack_consumed: 0u32,
-            is_async: false,
-        };
-        pub const _set_new_mode: Shim = Shim {
+            func: Handler::Sync(wrappers::_set_fmode),
+        },
+        Shim {
             name: "_set_new_mode",
-            func: impls::_set_new_mode,
-            stack_consumed: 0u32,
-            is_async: false,
-        };
-        pub const _unlock: Shim = Shim {
+            func: Handler::Sync(wrappers::_set_new_mode),
+        },
+        Shim {
+            name: "_time64",
+            func: Handler::Sync(wrappers::_time64),
+        },
+        Shim {
             name: "_unlock",
-            func: impls::_unlock,
-            stack_consumed: 0u32,
-            is_async: false,
-        };
-        pub const exit: Shim = Shim {
+            func: Handler::Sync(wrappers::_unlock),
+        },
+        Shim {
             name: "exit",
-            func: impls::exit,
-            stack_consumed: 0u32,
-            is_async: false,
-        };
-        pub const free: Shim = Shim {
+            func: Handler::Sync(wrappers::exit),
+        },
+        Shim {
             name: "free",
-            func: impls::free,
-            stack_consumed: 0u32,
-            is_async: false,
-        };
-        pub const malloc: Shim = Shim {
+            func: Handler::Sync(wrappers::free),
+        },
+        Shim {
             name: "malloc",
-            func: impls::malloc,
-            stack_consumed: 0u32,
-            is_async: false,
-        };
-    }
-    const SHIMS: [Shim; 22usize] = [
-        shims::__dllonexit,
-        shims::__p___argc,
-        shims::__p___argv,
-        shims::__p__commode,
-        shims::__p__fmode,
-        shims::__set_app_type,
-        shims::_configthreadlocale,
-        shims::_configure_narrow_argv,
-        shims::_controlfp_s,
-        shims::_crt_atexit,
-        shims::_get_initial_narrow_environment,
-        shims::_initialize_narrow_environment,
-        shims::_initterm,
-        shims::_initterm_e,
-        shims::_lock,
-        shims::_set_app_type,
-        shims::_set_fmode,
-        shims::_set_new_mode,
-        shims::_unlock,
-        shims::exit,
-        shims::free,
-        shims::malloc,
+            func: Handler::Sync(wrappers::malloc),
+        },
+        Shim {
+            name: "rand",
+            func: Handler::Sync(wrappers::rand),
+        },
+        Shim {
+            name: "srand",
+            func: Handler::Sync(wrappers::srand),
+        },
+        Shim {
+            name: "time",
+            func: Handler::Sync(wrappers::time),
+        },
     ];
     pub const DLL: BuiltinDLL = BuiltinDLL {
         file_name: "ucrtbase.dll",
@@ -4853,74 +10722,134 @@ pub mod ucrtbase {
 }
 pub mod vcruntime140 {
     use super::*;
-    mod impls {
+    mod wrappers {
         use crate::{
             machine::Machine,
             winapi::{self, stack_args::*, types::*},
         };
         use memory::Extensions;
         use winapi::vcruntime140::*;
-        pub unsafe fn _CxxThrowException(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn _CxxThrowException(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let pExceptionObject = <u32>::from_stack(mem, esp + 4u32);
-            let pThrowInfo = <u32>::from_stack(mem, esp + 8u32);
-            winapi::vcruntime140::_CxxThrowException(machine, pExceptionObject, pThrowInfo).to_raw()
+            let pExceptionObject = <u32>::from_stack(mem, stack_args + 0u32);
+            let pThrowInfo = <u32>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("vcruntime140") {
+                Some(crate::trace::trace_begin(
+                    "vcruntime140",
+                    "_CxxThrowException",
+                    &[
+                        ("pExceptionObject", &pExceptionObject),
+                        ("pThrowInfo", &pThrowInfo),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result =
+                winapi::vcruntime140::_CxxThrowException(machine, pExceptionObject, pThrowInfo);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::vcruntime140::_CxxThrowException_pos.0,
+                    winapi::vcruntime140::_CxxThrowException_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn memcmp(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn memcmp(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let lhs = <u32>::from_stack(mem, esp + 4u32);
-            let rhs = <u32>::from_stack(mem, esp + 8u32);
-            let len = <u32>::from_stack(mem, esp + 12u32);
-            winapi::vcruntime140::memcmp(machine, lhs, rhs, len).to_raw()
+            let lhs = <u32>::from_stack(mem, stack_args + 0u32);
+            let rhs = <u32>::from_stack(mem, stack_args + 4u32);
+            let len = <u32>::from_stack(mem, stack_args + 8u32);
+            let __trace_context = if crate::trace::enabled("vcruntime140") {
+                Some(crate::trace::trace_begin(
+                    "vcruntime140",
+                    "memcmp",
+                    &[("lhs", &lhs), ("rhs", &rhs), ("len", &len)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::vcruntime140::memcmp(machine, lhs, rhs, len);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::vcruntime140::memcmp_pos.0,
+                    winapi::vcruntime140::memcmp_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn memcpy(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn memcpy(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let dst = <u32>::from_stack(mem, esp + 4u32);
-            let src = <u32>::from_stack(mem, esp + 8u32);
-            let len = <u32>::from_stack(mem, esp + 12u32);
-            winapi::vcruntime140::memcpy(machine, dst, src, len).to_raw()
+            let dst = <u32>::from_stack(mem, stack_args + 0u32);
+            let src = <u32>::from_stack(mem, stack_args + 4u32);
+            let len = <u32>::from_stack(mem, stack_args + 8u32);
+            let __trace_context = if crate::trace::enabled("vcruntime140") {
+                Some(crate::trace::trace_begin(
+                    "vcruntime140",
+                    "memcpy",
+                    &[("dst", &dst), ("src", &src), ("len", &len)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::vcruntime140::memcpy(machine, dst, src, len);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::vcruntime140::memcpy_pos.0,
+                    winapi::vcruntime140::memcpy_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn memset(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn memset(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let dst = <u32>::from_stack(mem, esp + 4u32);
-            let val = <u32>::from_stack(mem, esp + 8u32);
-            let len = <u32>::from_stack(mem, esp + 12u32);
-            winapi::vcruntime140::memset(machine, dst, val, len).to_raw()
+            let dst = <u32>::from_stack(mem, stack_args + 0u32);
+            let val = <u32>::from_stack(mem, stack_args + 4u32);
+            let len = <u32>::from_stack(mem, stack_args + 8u32);
+            let __trace_context = if crate::trace::enabled("vcruntime140") {
+                Some(crate::trace::trace_begin(
+                    "vcruntime140",
+                    "memset",
+                    &[("dst", &dst), ("val", &val), ("len", &len)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::vcruntime140::memset(machine, dst, val, len);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::vcruntime140::memset_pos.0,
+                    winapi::vcruntime140::memset_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-    }
-    mod shims {
-        use super::impls;
-        use super::Shim;
-        pub const _CxxThrowException: Shim = Shim {
-            name: "_CxxThrowException",
-            func: impls::_CxxThrowException,
-            stack_consumed: 0u32,
-            is_async: false,
-        };
-        pub const memcmp: Shim = Shim {
-            name: "memcmp",
-            func: impls::memcmp,
-            stack_consumed: 0u32,
-            is_async: false,
-        };
-        pub const memcpy: Shim = Shim {
-            name: "memcpy",
-            func: impls::memcpy,
-            stack_consumed: 0u32,
-            is_async: false,
-        };
-        pub const memset: Shim = Shim {
-            name: "memset",
-            func: impls::memset,
-            stack_consumed: 0u32,
-            is_async: false,
-        };
     }
     const SHIMS: [Shim; 4usize] = [
-        shims::_CxxThrowException,
-        shims::memcmp,
-        shims::memcpy,
-        shims::memset,
+        Shim {
+            name: "_CxxThrowException",
+            func: Handler::Sync(wrappers::_CxxThrowException),
+        },
+        Shim {
+            name: "memcmp",
+            func: Handler::Sync(wrappers::memcmp),
+        },
+        Shim {
+            name: "memcpy",
+            func: Handler::Sync(wrappers::memcpy),
+        },
+        Shim {
+            name: "memset",
+            func: Handler::Sync(wrappers::memset),
+        },
     ];
     pub const DLL: BuiltinDLL = BuiltinDLL {
         file_name: "vcruntime140.dll",
@@ -4930,31 +10859,46 @@ pub mod vcruntime140 {
 }
 pub mod version {
     use super::*;
-    mod impls {
+    mod wrappers {
         use crate::{
             machine::Machine,
             winapi::{self, stack_args::*, types::*},
         };
         use memory::Extensions;
         use winapi::version::*;
-        pub unsafe fn GetFileVersionInfoSizeA(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn GetFileVersionInfoSizeA(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let lptstrFilename = <Option<&str>>::from_stack(mem, esp + 4u32);
-            let lpdwHandle = <Option<&mut u32>>::from_stack(mem, esp + 8u32);
-            winapi::version::GetFileVersionInfoSizeA(machine, lptstrFilename, lpdwHandle).to_raw()
+            let lptstrFilename = <Option<&str>>::from_stack(mem, stack_args + 0u32);
+            let lpdwHandle = <Option<&mut u32>>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("version") {
+                Some(crate::trace::trace_begin(
+                    "version",
+                    "GetFileVersionInfoSizeA",
+                    &[
+                        ("lptstrFilename", &lptstrFilename),
+                        ("lpdwHandle", &lpdwHandle),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result =
+                winapi::version::GetFileVersionInfoSizeA(machine, lptstrFilename, lpdwHandle);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::version::GetFileVersionInfoSizeA_pos.0,
+                    winapi::version::GetFileVersionInfoSizeA_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
     }
-    mod shims {
-        use super::impls;
-        use super::Shim;
-        pub const GetFileVersionInfoSizeA: Shim = Shim {
-            name: "GetFileVersionInfoSizeA",
-            func: impls::GetFileVersionInfoSizeA,
-            stack_consumed: 8u32,
-            is_async: false,
-        };
-    }
-    const SHIMS: [Shim; 1usize] = [shims::GetFileVersionInfoSizeA];
+    const SHIMS: [Shim; 1usize] = [Shim {
+        name: "GetFileVersionInfoSizeA",
+        func: Handler::Sync(wrappers::GetFileVersionInfoSizeA),
+    }];
     pub const DLL: BuiltinDLL = BuiltinDLL {
         file_name: "version.dll",
         shims: &SHIMS,
@@ -4963,124 +10907,376 @@ pub mod version {
 }
 pub mod user32 {
     use super::*;
-    mod impls {
+    mod wrappers {
         use crate::{
             machine::Machine,
             winapi::{self, stack_args::*, types::*},
         };
         use memory::Extensions;
         use winapi::user32::*;
-        pub unsafe fn AdjustWindowRect(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn AdjustWindowRect(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let lpRect = <Option<&mut RECT>>::from_stack(mem, esp + 4u32);
-            let dwStyle = <Result<WindowStyle, u32>>::from_stack(mem, esp + 8u32);
-            let bMenu = <bool>::from_stack(mem, esp + 12u32);
-            winapi::user32::AdjustWindowRect(machine, lpRect, dwStyle, bMenu).to_raw()
+            let lpRect = <Option<&mut RECT>>::from_stack(mem, stack_args + 0u32);
+            let dwStyle = <Result<WindowStyle, u32>>::from_stack(mem, stack_args + 4u32);
+            let bMenu = <bool>::from_stack(mem, stack_args + 8u32);
+            let __trace_context = if crate::trace::enabled("user32/window") {
+                Some(crate::trace::trace_begin(
+                    "user32/window",
+                    "AdjustWindowRect",
+                    &[
+                        ("lpRect", &lpRect),
+                        ("dwStyle", &dwStyle),
+                        ("bMenu", &bMenu),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::AdjustWindowRect(machine, lpRect, dwStyle, bMenu);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::AdjustWindowRect_pos.0,
+                    winapi::user32::AdjustWindowRect_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn AdjustWindowRectEx(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn AdjustWindowRectEx(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let lpRect = <Option<&mut RECT>>::from_stack(mem, esp + 4u32);
-            let dwStyle = <Result<WindowStyle, u32>>::from_stack(mem, esp + 8u32);
-            let bMenu = <bool>::from_stack(mem, esp + 12u32);
-            let dwExStyle = <Result<WindowStyleEx, u32>>::from_stack(mem, esp + 16u32);
-            winapi::user32::AdjustWindowRectEx(machine, lpRect, dwStyle, bMenu, dwExStyle).to_raw()
+            let lpRect = <Option<&mut RECT>>::from_stack(mem, stack_args + 0u32);
+            let dwStyle = <Result<WindowStyle, u32>>::from_stack(mem, stack_args + 4u32);
+            let bMenu = <bool>::from_stack(mem, stack_args + 8u32);
+            let dwExStyle = <Result<WindowStyleEx, u32>>::from_stack(mem, stack_args + 12u32);
+            let __trace_context = if crate::trace::enabled("user32/window") {
+                Some(crate::trace::trace_begin(
+                    "user32/window",
+                    "AdjustWindowRectEx",
+                    &[
+                        ("lpRect", &lpRect),
+                        ("dwStyle", &dwStyle),
+                        ("bMenu", &bMenu),
+                        ("dwExStyle", &dwExStyle),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result =
+                winapi::user32::AdjustWindowRectEx(machine, lpRect, dwStyle, bMenu, dwExStyle);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::AdjustWindowRectEx_pos.0,
+                    winapi::user32::AdjustWindowRectEx_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn AppendMenuA(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn AppendMenuA(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hMenu = <HMENU>::from_stack(mem, esp + 4u32);
-            let uFlags = <u32>::from_stack(mem, esp + 8u32);
-            let uIDNewItem = <u32>::from_stack(mem, esp + 12u32);
-            let lpNewItem = <Option<&str>>::from_stack(mem, esp + 16u32);
-            winapi::user32::AppendMenuA(machine, hMenu, uFlags, uIDNewItem, lpNewItem).to_raw()
+            let hMenu = <HMENU>::from_stack(mem, stack_args + 0u32);
+            let uFlags = <u32>::from_stack(mem, stack_args + 4u32);
+            let uIDNewItem = <u32>::from_stack(mem, stack_args + 8u32);
+            let lpNewItem = <Option<&str>>::from_stack(mem, stack_args + 12u32);
+            let __trace_context = if crate::trace::enabled("user32/menu") {
+                Some(crate::trace::trace_begin(
+                    "user32/menu",
+                    "AppendMenuA",
+                    &[
+                        ("hMenu", &hMenu),
+                        ("uFlags", &uFlags),
+                        ("uIDNewItem", &uIDNewItem),
+                        ("lpNewItem", &lpNewItem),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::AppendMenuA(machine, hMenu, uFlags, uIDNewItem, lpNewItem);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::AppendMenuA_pos.0,
+                    winapi::user32::AppendMenuA_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn BeginPaint(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn BeginPaint(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hWnd = <HWND>::from_stack(mem, esp + 4u32);
-            let lpPaint = <Option<&mut PAINTSTRUCT>>::from_stack(mem, esp + 8u32);
-            winapi::user32::BeginPaint(machine, hWnd, lpPaint).to_raw()
+            let hWnd = <HWND>::from_stack(mem, stack_args + 0u32);
+            let lpPaint = <Option<&mut PAINTSTRUCT>>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("user32/paint") {
+                Some(crate::trace::trace_begin(
+                    "user32/paint",
+                    "BeginPaint",
+                    &[("hWnd", &hWnd), ("lpPaint", &lpPaint)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::BeginPaint(machine, hWnd, lpPaint);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::BeginPaint_pos.0,
+                    winapi::user32::BeginPaint_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn CheckMenuItem(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn CheckDlgButton(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hMenu = <HMENU>::from_stack(mem, esp + 4u32);
-            let uIDCheckItem = <u32>::from_stack(mem, esp + 8u32);
-            let uCheck = <u32>::from_stack(mem, esp + 12u32);
-            winapi::user32::CheckMenuItem(machine, hMenu, uIDCheckItem, uCheck).to_raw()
+            let hDlg = <HWND>::from_stack(mem, stack_args + 0u32);
+            let nIDButton = <i32>::from_stack(mem, stack_args + 4u32);
+            let uCheck = <u32>::from_stack(mem, stack_args + 8u32);
+            let __trace_context = if crate::trace::enabled("user32/dialog") {
+                Some(crate::trace::trace_begin(
+                    "user32/dialog",
+                    "CheckDlgButton",
+                    &[
+                        ("hDlg", &hDlg),
+                        ("nIDButton", &nIDButton),
+                        ("uCheck", &uCheck),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::CheckDlgButton(machine, hDlg, nIDButton, uCheck);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::CheckDlgButton_pos.0,
+                    winapi::user32::CheckDlgButton_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn ClientToScreen(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn CheckMenuItem(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hWnd = <HWND>::from_stack(mem, esp + 4u32);
-            let lpPoint = <Option<&mut POINT>>::from_stack(mem, esp + 8u32);
-            winapi::user32::ClientToScreen(machine, hWnd, lpPoint).to_raw()
+            let hMenu = <HMENU>::from_stack(mem, stack_args + 0u32);
+            let uIDCheckItem = <u32>::from_stack(mem, stack_args + 4u32);
+            let uCheck = <u32>::from_stack(mem, stack_args + 8u32);
+            let __trace_context = if crate::trace::enabled("user32/menu") {
+                Some(crate::trace::trace_begin(
+                    "user32/menu",
+                    "CheckMenuItem",
+                    &[
+                        ("hMenu", &hMenu),
+                        ("uIDCheckItem", &uIDCheckItem),
+                        ("uCheck", &uCheck),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::CheckMenuItem(machine, hMenu, uIDCheckItem, uCheck);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::CheckMenuItem_pos.0,
+                    winapi::user32::CheckMenuItem_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn CreateCursor(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn CheckRadioButton(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hInst = <u32>::from_stack(mem, esp + 4u32);
-            let xHotSpot = <u32>::from_stack(mem, esp + 8u32);
-            let yHotSpot = <u32>::from_stack(mem, esp + 12u32);
-            let nWidth = <u32>::from_stack(mem, esp + 16u32);
-            let nHeight = <u32>::from_stack(mem, esp + 20u32);
-            let pvANDPlane = <u32>::from_stack(mem, esp + 24u32);
-            let pvXORPlane = <u32>::from_stack(mem, esp + 28u32);
-            winapi::user32::CreateCursor(
+            let hDlg = <HWND>::from_stack(mem, stack_args + 0u32);
+            let nIDFirstButton = <i32>::from_stack(mem, stack_args + 4u32);
+            let nIDLastButton = <i32>::from_stack(mem, stack_args + 8u32);
+            let nIDCheckButton = <i32>::from_stack(mem, stack_args + 12u32);
+            let __trace_context = if crate::trace::enabled("user32/dialog") {
+                Some(crate::trace::trace_begin(
+                    "user32/dialog",
+                    "CheckRadioButton",
+                    &[
+                        ("hDlg", &hDlg),
+                        ("nIDFirstButton", &nIDFirstButton),
+                        ("nIDLastButton", &nIDLastButton),
+                        ("nIDCheckButton", &nIDCheckButton),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::CheckRadioButton(
+                machine,
+                hDlg,
+                nIDFirstButton,
+                nIDLastButton,
+                nIDCheckButton,
+            );
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::CheckRadioButton_pos.0,
+                    winapi::user32::CheckRadioButton_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn ClientToScreen(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let hWnd = <HWND>::from_stack(mem, stack_args + 0u32);
+            let lpPoint = <Option<&mut POINT>>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("user32/window") {
+                Some(crate::trace::trace_begin(
+                    "user32/window",
+                    "ClientToScreen",
+                    &[("hWnd", &hWnd), ("lpPoint", &lpPoint)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::ClientToScreen(machine, hWnd, lpPoint);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::ClientToScreen_pos.0,
+                    winapi::user32::ClientToScreen_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn CopyRect(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let lprcDst = <Option<&mut RECT>>::from_stack(mem, stack_args + 0u32);
+            let lprcSrc = <Option<&RECT>>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("user32/rect") {
+                Some(crate::trace::trace_begin(
+                    "user32/rect",
+                    "CopyRect",
+                    &[("lprcDst", &lprcDst), ("lprcSrc", &lprcSrc)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::CopyRect(machine, lprcDst, lprcSrc);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::CopyRect_pos.0,
+                    winapi::user32::CopyRect_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn CreateCursor(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let hInst = <u32>::from_stack(mem, stack_args + 0u32);
+            let xHotSpot = <u32>::from_stack(mem, stack_args + 4u32);
+            let yHotSpot = <u32>::from_stack(mem, stack_args + 8u32);
+            let nWidth = <u32>::from_stack(mem, stack_args + 12u32);
+            let nHeight = <u32>::from_stack(mem, stack_args + 16u32);
+            let pvANDPlane = <u32>::from_stack(mem, stack_args + 20u32);
+            let pvXORPlane = <u32>::from_stack(mem, stack_args + 24u32);
+            let __trace_context = if crate::trace::enabled("user32/resource") {
+                Some(crate::trace::trace_begin(
+                    "user32/resource",
+                    "CreateCursor",
+                    &[
+                        ("hInst", &hInst),
+                        ("xHotSpot", &xHotSpot),
+                        ("yHotSpot", &yHotSpot),
+                        ("nWidth", &nWidth),
+                        ("nHeight", &nHeight),
+                        ("pvANDPlane", &pvANDPlane),
+                        ("pvXORPlane", &pvXORPlane),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::CreateCursor(
                 machine, hInst, xHotSpot, yHotSpot, nWidth, nHeight, pvANDPlane, pvXORPlane,
-            )
-            .to_raw()
-        }
-        pub unsafe fn CreatePopupMenu(machine: &mut Machine, esp: u32) -> u32 {
-            let mem = machine.mem().detach();
-            winapi::user32::CreatePopupMenu(machine).to_raw()
-        }
-        pub unsafe fn CreateWindowExA(machine: &mut Machine, esp: u32) -> u32 {
-            let mem = machine.mem().detach();
-            let dwExStyle = <Result<WindowStyleEx, u32>>::from_stack(mem, esp + 4u32);
-            let lpClassName = <CreateWindowClassName<'_, str>>::from_stack(mem, esp + 8u32);
-            let lpWindowName = <Option<&str>>::from_stack(mem, esp + 12u32);
-            let dwStyle = <Result<WindowStyle, u32>>::from_stack(mem, esp + 16u32);
-            let X = <u32>::from_stack(mem, esp + 20u32);
-            let Y = <u32>::from_stack(mem, esp + 24u32);
-            let nWidth = <u32>::from_stack(mem, esp + 28u32);
-            let nHeight = <u32>::from_stack(mem, esp + 32u32);
-            let hWndParent = <HWND>::from_stack(mem, esp + 36u32);
-            let hMenu = <u32>::from_stack(mem, esp + 40u32);
-            let hInstance = <u32>::from_stack(mem, esp + 44u32);
-            let lpParam = <u32>::from_stack(mem, esp + 48u32);
-            #[cfg(feature = "x86-emu")]
-            {
-                let m: *mut Machine = machine;
-                let result = async move {
-                    use memory::Extensions;
-                    let machine = unsafe { &mut *m };
-                    let result = winapi::user32::CreateWindowExA(
-                        machine,
-                        dwExStyle,
-                        lpClassName,
-                        lpWindowName,
-                        dwStyle,
-                        X,
-                        Y,
-                        nWidth,
-                        nHeight,
-                        hWndParent,
-                        hMenu,
-                        hInstance,
-                        lpParam,
-                    )
-                    .await;
-                    let cpu = &mut machine.emu.x86.cpu_mut();
-                    cpu.regs.eip = x86::ops::pop(cpu, machine.emu.memory.mem());
-                    *cpu.regs.get32_mut(x86::Register::ESP) += 48u32;
-                    cpu.regs.set32(x86::Register::EAX, result.to_raw());
-                };
-                machine
-                    .emu
-                    .x86
-                    .cpu_mut()
-                    .call_async(machine.emu.memory.mem(), Box::pin(result));
-                0
+            );
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::CreateCursor_pos.0,
+                    winapi::user32::CreateCursor_pos.1,
+                    &result,
+                );
             }
-            #[cfg(any(feature = "x86-64", feature = "x86-unicorn"))]
-            {
-                let pin = std::pin::pin!(winapi::user32::CreateWindowExA(
+            result.to_raw()
+        }
+        pub unsafe fn CreatePopupMenu(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let __trace_context = if crate::trace::enabled("user32/menu") {
+                Some(crate::trace::trace_begin(
+                    "user32/menu",
+                    "CreatePopupMenu",
+                    &[],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::CreatePopupMenu(machine);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::CreatePopupMenu_pos.0,
+                    winapi::user32::CreatePopupMenu_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn CreateWindowExA(
+            machine: &mut Machine,
+            stack_args: u32,
+        ) -> std::pin::Pin<Box<dyn std::future::Future<Output = u32>>> {
+            let mem = machine.mem().detach();
+            let dwExStyle = <Result<WindowStyleEx, u32>>::from_stack(mem, stack_args + 0u32);
+            let lpClassName = <CreateWindowClassName<'_, str>>::from_stack(mem, stack_args + 4u32);
+            let lpWindowName = <Option<&str>>::from_stack(mem, stack_args + 8u32);
+            let dwStyle = <Result<WindowStyle, u32>>::from_stack(mem, stack_args + 12u32);
+            let X = <u32>::from_stack(mem, stack_args + 16u32);
+            let Y = <u32>::from_stack(mem, stack_args + 20u32);
+            let nWidth = <u32>::from_stack(mem, stack_args + 24u32);
+            let nHeight = <u32>::from_stack(mem, stack_args + 28u32);
+            let hWndParent = <HWND>::from_stack(mem, stack_args + 32u32);
+            let hMenu = <u32>::from_stack(mem, stack_args + 36u32);
+            let hInstance = <u32>::from_stack(mem, stack_args + 40u32);
+            let lpParam = <u32>::from_stack(mem, stack_args + 44u32);
+            let __trace_context = if crate::trace::enabled("user32/window") {
+                Some(crate::trace::trace_begin(
+                    "user32/window",
+                    "CreateWindowExA",
+                    &[
+                        ("dwExStyle", &dwExStyle),
+                        ("lpClassName", &lpClassName),
+                        ("lpWindowName", &lpWindowName),
+                        ("dwStyle", &dwStyle),
+                        ("X", &X),
+                        ("Y", &Y),
+                        ("nWidth", &nWidth),
+                        ("nHeight", &nHeight),
+                        ("hWndParent", &hWndParent),
+                        ("hMenu", &hMenu),
+                        ("hInstance", &hInstance),
+                        ("lpParam", &lpParam),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let machine: *mut Machine = machine;
+            Box::pin(async move {
+                let machine = unsafe { &mut *machine };
+                let result = winapi::user32::CreateWindowExA(
                     machine,
                     dwExStyle,
                     lpClassName,
@@ -5093,62 +11289,64 @@ pub mod user32 {
                     hWndParent,
                     hMenu,
                     hInstance,
-                    lpParam
-                ));
-                crate::shims::call_sync(pin).to_raw()
-            }
+                    lpParam,
+                )
+                .await;
+                if let Some(__trace_context) = __trace_context {
+                    crate::trace::trace_return(
+                        &__trace_context,
+                        winapi::user32::CreateWindowExA_pos.0,
+                        winapi::user32::CreateWindowExA_pos.1,
+                        &result,
+                    );
+                }
+                result.to_raw()
+            })
         }
-        pub unsafe fn CreateWindowExW(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn CreateWindowExW(
+            machine: &mut Machine,
+            stack_args: u32,
+        ) -> std::pin::Pin<Box<dyn std::future::Future<Output = u32>>> {
             let mem = machine.mem().detach();
-            let dwExStyle = <Result<WindowStyleEx, u32>>::from_stack(mem, esp + 4u32);
-            let lpClassName = <CreateWindowClassName<'_, Str16>>::from_stack(mem, esp + 8u32);
-            let lpWindowName = <Option<&Str16>>::from_stack(mem, esp + 12u32);
-            let dwStyle = <Result<WindowStyle, u32>>::from_stack(mem, esp + 16u32);
-            let X = <u32>::from_stack(mem, esp + 20u32);
-            let Y = <u32>::from_stack(mem, esp + 24u32);
-            let nWidth = <u32>::from_stack(mem, esp + 28u32);
-            let nHeight = <u32>::from_stack(mem, esp + 32u32);
-            let hWndParent = <HWND>::from_stack(mem, esp + 36u32);
-            let hMenu = <u32>::from_stack(mem, esp + 40u32);
-            let hInstance = <u32>::from_stack(mem, esp + 44u32);
-            let lpParam = <u32>::from_stack(mem, esp + 48u32);
-            #[cfg(feature = "x86-emu")]
-            {
-                let m: *mut Machine = machine;
-                let result = async move {
-                    use memory::Extensions;
-                    let machine = unsafe { &mut *m };
-                    let result = winapi::user32::CreateWindowExW(
-                        machine,
-                        dwExStyle,
-                        lpClassName,
-                        lpWindowName,
-                        dwStyle,
-                        X,
-                        Y,
-                        nWidth,
-                        nHeight,
-                        hWndParent,
-                        hMenu,
-                        hInstance,
-                        lpParam,
-                    )
-                    .await;
-                    let cpu = &mut machine.emu.x86.cpu_mut();
-                    cpu.regs.eip = x86::ops::pop(cpu, machine.emu.memory.mem());
-                    *cpu.regs.get32_mut(x86::Register::ESP) += 48u32;
-                    cpu.regs.set32(x86::Register::EAX, result.to_raw());
-                };
-                machine
-                    .emu
-                    .x86
-                    .cpu_mut()
-                    .call_async(machine.emu.memory.mem(), Box::pin(result));
-                0
-            }
-            #[cfg(any(feature = "x86-64", feature = "x86-unicorn"))]
-            {
-                let pin = std::pin::pin!(winapi::user32::CreateWindowExW(
+            let dwExStyle = <Result<WindowStyleEx, u32>>::from_stack(mem, stack_args + 0u32);
+            let lpClassName =
+                <CreateWindowClassName<'_, Str16>>::from_stack(mem, stack_args + 4u32);
+            let lpWindowName = <Option<&Str16>>::from_stack(mem, stack_args + 8u32);
+            let dwStyle = <Result<WindowStyle, u32>>::from_stack(mem, stack_args + 12u32);
+            let X = <u32>::from_stack(mem, stack_args + 16u32);
+            let Y = <u32>::from_stack(mem, stack_args + 20u32);
+            let nWidth = <u32>::from_stack(mem, stack_args + 24u32);
+            let nHeight = <u32>::from_stack(mem, stack_args + 28u32);
+            let hWndParent = <HWND>::from_stack(mem, stack_args + 32u32);
+            let hMenu = <u32>::from_stack(mem, stack_args + 36u32);
+            let hInstance = <u32>::from_stack(mem, stack_args + 40u32);
+            let lpParam = <u32>::from_stack(mem, stack_args + 44u32);
+            let __trace_context = if crate::trace::enabled("user32/window") {
+                Some(crate::trace::trace_begin(
+                    "user32/window",
+                    "CreateWindowExW",
+                    &[
+                        ("dwExStyle", &dwExStyle),
+                        ("lpClassName", &lpClassName),
+                        ("lpWindowName", &lpWindowName),
+                        ("dwStyle", &dwStyle),
+                        ("X", &X),
+                        ("Y", &Y),
+                        ("nWidth", &nWidth),
+                        ("nHeight", &nHeight),
+                        ("hWndParent", &hWndParent),
+                        ("hMenu", &hMenu),
+                        ("hInstance", &hInstance),
+                        ("lpParam", &lpParam),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let machine: *mut Machine = machine;
+            Box::pin(async move {
+                let machine = unsafe { &mut *machine };
+                let result = winapi::user32::CreateWindowExW(
                     machine,
                     dwExStyle,
                     lpClassName,
@@ -5161,757 +11359,2607 @@ pub mod user32 {
                     hWndParent,
                     hMenu,
                     hInstance,
-                    lpParam
-                ));
-                crate::shims::call_sync(pin).to_raw()
-            }
+                    lpParam,
+                )
+                .await;
+                if let Some(__trace_context) = __trace_context {
+                    crate::trace::trace_return(
+                        &__trace_context,
+                        winapi::user32::CreateWindowExW_pos.0,
+                        winapi::user32::CreateWindowExW_pos.1,
+                        &result,
+                    );
+                }
+                result.to_raw()
+            })
         }
-        pub unsafe fn DefWindowProcA(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn DefWindowProcA(
+            machine: &mut Machine,
+            stack_args: u32,
+        ) -> std::pin::Pin<Box<dyn std::future::Future<Output = u32>>> {
             let mem = machine.mem().detach();
-            let hWnd = <HWND>::from_stack(mem, esp + 4u32);
-            let msg = <Result<WM, u32>>::from_stack(mem, esp + 8u32);
-            let wParam = <u32>::from_stack(mem, esp + 12u32);
-            let lParam = <u32>::from_stack(mem, esp + 16u32);
-            #[cfg(feature = "x86-emu")]
-            {
-                let m: *mut Machine = machine;
-                let result = async move {
-                    use memory::Extensions;
-                    let machine = unsafe { &mut *m };
-                    let result =
-                        winapi::user32::DefWindowProcA(machine, hWnd, msg, wParam, lParam).await;
-                    let cpu = &mut machine.emu.x86.cpu_mut();
-                    cpu.regs.eip = x86::ops::pop(cpu, machine.emu.memory.mem());
-                    *cpu.regs.get32_mut(x86::Register::ESP) += 16u32;
-                    cpu.regs.set32(x86::Register::EAX, result.to_raw());
-                };
-                machine
-                    .emu
-                    .x86
-                    .cpu_mut()
-                    .call_async(machine.emu.memory.mem(), Box::pin(result));
-                0
-            }
-            #[cfg(any(feature = "x86-64", feature = "x86-unicorn"))]
-            {
-                let pin = std::pin::pin!(winapi::user32::DefWindowProcA(
-                    machine, hWnd, msg, wParam, lParam
-                ));
-                crate::shims::call_sync(pin).to_raw()
-            }
+            let hWnd = <HWND>::from_stack(mem, stack_args + 0u32);
+            let msg = <Result<WM, u32>>::from_stack(mem, stack_args + 4u32);
+            let wParam = <u32>::from_stack(mem, stack_args + 8u32);
+            let lParam = <u32>::from_stack(mem, stack_args + 12u32);
+            let __trace_context = if crate::trace::enabled("user32/window") {
+                Some(crate::trace::trace_begin(
+                    "user32/window",
+                    "DefWindowProcA",
+                    &[
+                        ("hWnd", &hWnd),
+                        ("msg", &msg),
+                        ("wParam", &wParam),
+                        ("lParam", &lParam),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let machine: *mut Machine = machine;
+            Box::pin(async move {
+                let machine = unsafe { &mut *machine };
+                let result =
+                    winapi::user32::DefWindowProcA(machine, hWnd, msg, wParam, lParam).await;
+                if let Some(__trace_context) = __trace_context {
+                    crate::trace::trace_return(
+                        &__trace_context,
+                        winapi::user32::DefWindowProcA_pos.0,
+                        winapi::user32::DefWindowProcA_pos.1,
+                        &result,
+                    );
+                }
+                result.to_raw()
+            })
         }
-        pub unsafe fn DefWindowProcW(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn DefWindowProcW(
+            machine: &mut Machine,
+            stack_args: u32,
+        ) -> std::pin::Pin<Box<dyn std::future::Future<Output = u32>>> {
             let mem = machine.mem().detach();
-            let hWnd = <HWND>::from_stack(mem, esp + 4u32);
-            let msg = <Result<WM, u32>>::from_stack(mem, esp + 8u32);
-            let wParam = <u32>::from_stack(mem, esp + 12u32);
-            let lParam = <u32>::from_stack(mem, esp + 16u32);
-            #[cfg(feature = "x86-emu")]
-            {
-                let m: *mut Machine = machine;
-                let result = async move {
-                    use memory::Extensions;
-                    let machine = unsafe { &mut *m };
-                    let result =
-                        winapi::user32::DefWindowProcW(machine, hWnd, msg, wParam, lParam).await;
-                    let cpu = &mut machine.emu.x86.cpu_mut();
-                    cpu.regs.eip = x86::ops::pop(cpu, machine.emu.memory.mem());
-                    *cpu.regs.get32_mut(x86::Register::ESP) += 16u32;
-                    cpu.regs.set32(x86::Register::EAX, result.to_raw());
-                };
-                machine
-                    .emu
-                    .x86
-                    .cpu_mut()
-                    .call_async(machine.emu.memory.mem(), Box::pin(result));
-                0
-            }
-            #[cfg(any(feature = "x86-64", feature = "x86-unicorn"))]
-            {
-                let pin = std::pin::pin!(winapi::user32::DefWindowProcW(
-                    machine, hWnd, msg, wParam, lParam
-                ));
-                crate::shims::call_sync(pin).to_raw()
-            }
+            let hWnd = <HWND>::from_stack(mem, stack_args + 0u32);
+            let msg = <Result<WM, u32>>::from_stack(mem, stack_args + 4u32);
+            let wParam = <u32>::from_stack(mem, stack_args + 8u32);
+            let lParam = <u32>::from_stack(mem, stack_args + 12u32);
+            let __trace_context = if crate::trace::enabled("user32/window") {
+                Some(crate::trace::trace_begin(
+                    "user32/window",
+                    "DefWindowProcW",
+                    &[
+                        ("hWnd", &hWnd),
+                        ("msg", &msg),
+                        ("wParam", &wParam),
+                        ("lParam", &lParam),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let machine: *mut Machine = machine;
+            Box::pin(async move {
+                let machine = unsafe { &mut *machine };
+                let result =
+                    winapi::user32::DefWindowProcW(machine, hWnd, msg, wParam, lParam).await;
+                if let Some(__trace_context) = __trace_context {
+                    crate::trace::trace_return(
+                        &__trace_context,
+                        winapi::user32::DefWindowProcW_pos.0,
+                        winapi::user32::DefWindowProcW_pos.1,
+                        &result,
+                    );
+                }
+                result.to_raw()
+            })
         }
-        pub unsafe fn DestroyWindow(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn DestroyWindow(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hWnd = <HWND>::from_stack(mem, esp + 4u32);
-            winapi::user32::DestroyWindow(machine, hWnd).to_raw()
+            let hWnd = <HWND>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("user32/window") {
+                Some(crate::trace::trace_begin(
+                    "user32/window",
+                    "DestroyWindow",
+                    &[("hWnd", &hWnd)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::DestroyWindow(machine, hWnd);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::DestroyWindow_pos.0,
+                    winapi::user32::DestroyWindow_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn DialogBoxIndirectParamA(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn DialogBoxIndirectParamA(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hInstance = <u32>::from_stack(mem, esp + 4u32);
-            let hDialogTemplate = <u32>::from_stack(mem, esp + 8u32);
-            let hWndParent = <HWND>::from_stack(mem, esp + 12u32);
-            let lpDialogFunc = <u32>::from_stack(mem, esp + 16u32);
-            let dwInitParam = <u32>::from_stack(mem, esp + 20u32);
-            winapi::user32::DialogBoxIndirectParamA(
+            let hInstance = <u32>::from_stack(mem, stack_args + 0u32);
+            let hDialogTemplate = <u32>::from_stack(mem, stack_args + 4u32);
+            let hWndParent = <HWND>::from_stack(mem, stack_args + 8u32);
+            let lpDialogFunc = <u32>::from_stack(mem, stack_args + 12u32);
+            let dwInitParam = <u32>::from_stack(mem, stack_args + 16u32);
+            let __trace_context = if crate::trace::enabled("user32/dialog") {
+                Some(crate::trace::trace_begin(
+                    "user32/dialog",
+                    "DialogBoxIndirectParamA",
+                    &[
+                        ("hInstance", &hInstance),
+                        ("hDialogTemplate", &hDialogTemplate),
+                        ("hWndParent", &hWndParent),
+                        ("lpDialogFunc", &lpDialogFunc),
+                        ("dwInitParam", &dwInitParam),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::DialogBoxIndirectParamA(
                 machine,
                 hInstance,
                 hDialogTemplate,
                 hWndParent,
                 lpDialogFunc,
                 dwInitParam,
-            )
-            .to_raw()
+            );
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::DialogBoxIndirectParamA_pos.0,
+                    winapi::user32::DialogBoxIndirectParamA_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn DialogBoxParamA(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn DialogBoxParamA(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hInstance = <u32>::from_stack(mem, esp + 4u32);
-            let lpTemplateName = <u32>::from_stack(mem, esp + 8u32);
-            let hWndParent = <HWND>::from_stack(mem, esp + 12u32);
-            let lpDialogFunc = <u32>::from_stack(mem, esp + 16u32);
-            let dwInitParam = <u32>::from_stack(mem, esp + 20u32);
-            winapi::user32::DialogBoxParamA(
+            let hInstance = <u32>::from_stack(mem, stack_args + 0u32);
+            let lpTemplateName = <u32>::from_stack(mem, stack_args + 4u32);
+            let hWndParent = <HWND>::from_stack(mem, stack_args + 8u32);
+            let lpDialogFunc = <u32>::from_stack(mem, stack_args + 12u32);
+            let dwInitParam = <u32>::from_stack(mem, stack_args + 16u32);
+            let __trace_context = if crate::trace::enabled("user32/dialog") {
+                Some(crate::trace::trace_begin(
+                    "user32/dialog",
+                    "DialogBoxParamA",
+                    &[
+                        ("hInstance", &hInstance),
+                        ("lpTemplateName", &lpTemplateName),
+                        ("hWndParent", &hWndParent),
+                        ("lpDialogFunc", &lpDialogFunc),
+                        ("dwInitParam", &dwInitParam),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::DialogBoxParamA(
                 machine,
                 hInstance,
                 lpTemplateName,
                 hWndParent,
                 lpDialogFunc,
                 dwInitParam,
-            )
-            .to_raw()
-        }
-        pub unsafe fn DispatchMessageA(machine: &mut Machine, esp: u32) -> u32 {
-            let mem = machine.mem().detach();
-            let lpMsg = <Option<&MSG>>::from_stack(mem, esp + 4u32);
-            #[cfg(feature = "x86-emu")]
-            {
-                let m: *mut Machine = machine;
-                let result = async move {
-                    use memory::Extensions;
-                    let machine = unsafe { &mut *m };
-                    let result = winapi::user32::DispatchMessageA(machine, lpMsg).await;
-                    let cpu = &mut machine.emu.x86.cpu_mut();
-                    cpu.regs.eip = x86::ops::pop(cpu, machine.emu.memory.mem());
-                    *cpu.regs.get32_mut(x86::Register::ESP) += 4u32;
-                    cpu.regs.set32(x86::Register::EAX, result.to_raw());
-                };
-                machine
-                    .emu
-                    .x86
-                    .cpu_mut()
-                    .call_async(machine.emu.memory.mem(), Box::pin(result));
-                0
+            );
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::DialogBoxParamA_pos.0,
+                    winapi::user32::DialogBoxParamA_pos.1,
+                    &result,
+                );
             }
-            #[cfg(any(feature = "x86-64", feature = "x86-unicorn"))]
-            {
-                let pin = std::pin::pin!(winapi::user32::DispatchMessageA(machine, lpMsg));
-                crate::shims::call_sync(pin).to_raw()
+            result.to_raw()
+        }
+        pub unsafe fn DialogBoxParamW(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let hInstance = <u32>::from_stack(mem, stack_args + 0u32);
+            let lpTemplateName = <u32>::from_stack(mem, stack_args + 4u32);
+            let hWndParent = <HWND>::from_stack(mem, stack_args + 8u32);
+            let lpDialogFunc = <u32>::from_stack(mem, stack_args + 12u32);
+            let dwInitParam = <u32>::from_stack(mem, stack_args + 16u32);
+            let __trace_context = if crate::trace::enabled("user32/dialog") {
+                Some(crate::trace::trace_begin(
+                    "user32/dialog",
+                    "DialogBoxParamW",
+                    &[
+                        ("hInstance", &hInstance),
+                        ("lpTemplateName", &lpTemplateName),
+                        ("hWndParent", &hWndParent),
+                        ("lpDialogFunc", &lpDialogFunc),
+                        ("dwInitParam", &dwInitParam),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::DialogBoxParamW(
+                machine,
+                hInstance,
+                lpTemplateName,
+                hWndParent,
+                lpDialogFunc,
+                dwInitParam,
+            );
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::DialogBoxParamW_pos.0,
+                    winapi::user32::DialogBoxParamW_pos.1,
+                    &result,
+                );
             }
+            result.to_raw()
         }
-        pub unsafe fn DispatchMessageW(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn DispatchMessageA(
+            machine: &mut Machine,
+            stack_args: u32,
+        ) -> std::pin::Pin<Box<dyn std::future::Future<Output = u32>>> {
             let mem = machine.mem().detach();
-            let lpMsg = <Option<&MSG>>::from_stack(mem, esp + 4u32);
-            #[cfg(feature = "x86-emu")]
-            {
-                let m: *mut Machine = machine;
-                let result = async move {
-                    use memory::Extensions;
-                    let machine = unsafe { &mut *m };
-                    let result = winapi::user32::DispatchMessageW(machine, lpMsg).await;
-                    let cpu = &mut machine.emu.x86.cpu_mut();
-                    cpu.regs.eip = x86::ops::pop(cpu, machine.emu.memory.mem());
-                    *cpu.regs.get32_mut(x86::Register::ESP) += 4u32;
-                    cpu.regs.set32(x86::Register::EAX, result.to_raw());
-                };
-                machine
-                    .emu
-                    .x86
-                    .cpu_mut()
-                    .call_async(machine.emu.memory.mem(), Box::pin(result));
-                0
+            let lpMsg = <Option<&MSG>>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("user32/message") {
+                Some(crate::trace::trace_begin(
+                    "user32/message",
+                    "DispatchMessageA",
+                    &[("lpMsg", &lpMsg)],
+                ))
+            } else {
+                None
+            };
+            let machine: *mut Machine = machine;
+            Box::pin(async move {
+                let machine = unsafe { &mut *machine };
+                let result = winapi::user32::DispatchMessageA(machine, lpMsg).await;
+                if let Some(__trace_context) = __trace_context {
+                    crate::trace::trace_return(
+                        &__trace_context,
+                        winapi::user32::DispatchMessageA_pos.0,
+                        winapi::user32::DispatchMessageA_pos.1,
+                        &result,
+                    );
+                }
+                result.to_raw()
+            })
+        }
+        pub unsafe fn DispatchMessageW(
+            machine: &mut Machine,
+            stack_args: u32,
+        ) -> std::pin::Pin<Box<dyn std::future::Future<Output = u32>>> {
+            let mem = machine.mem().detach();
+            let lpMsg = <Option<&MSG>>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("user32/message") {
+                Some(crate::trace::trace_begin(
+                    "user32/message",
+                    "DispatchMessageW",
+                    &[("lpMsg", &lpMsg)],
+                ))
+            } else {
+                None
+            };
+            let machine: *mut Machine = machine;
+            Box::pin(async move {
+                let machine = unsafe { &mut *machine };
+                let result = winapi::user32::DispatchMessageW(machine, lpMsg).await;
+                if let Some(__trace_context) = __trace_context {
+                    crate::trace::trace_return(
+                        &__trace_context,
+                        winapi::user32::DispatchMessageW_pos.0,
+                        winapi::user32::DispatchMessageW_pos.1,
+                        &result,
+                    );
+                }
+                result.to_raw()
+            })
+        }
+        pub unsafe fn DrawTextW(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let hDC = <HDC>::from_stack(mem, stack_args + 0u32);
+            let lpString = <Option<&Str16>>::from_stack(mem, stack_args + 4u32);
+            let nCount = <i32>::from_stack(mem, stack_args + 8u32);
+            let lpRect = <Option<&RECT>>::from_stack(mem, stack_args + 12u32);
+            let uFormat = <u32>::from_stack(mem, stack_args + 16u32);
+            let __trace_context = if crate::trace::enabled("user32/paint") {
+                Some(crate::trace::trace_begin(
+                    "user32/paint",
+                    "DrawTextW",
+                    &[
+                        ("hDC", &hDC),
+                        ("lpString", &lpString),
+                        ("nCount", &nCount),
+                        ("lpRect", &lpRect),
+                        ("uFormat", &uFormat),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::DrawTextW(machine, hDC, lpString, nCount, lpRect, uFormat);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::DrawTextW_pos.0,
+                    winapi::user32::DrawTextW_pos.1,
+                    &result,
+                );
             }
-            #[cfg(any(feature = "x86-64", feature = "x86-unicorn"))]
-            {
-                let pin = std::pin::pin!(winapi::user32::DispatchMessageW(machine, lpMsg));
-                crate::shims::call_sync(pin).to_raw()
+            result.to_raw()
+        }
+        pub unsafe fn EnableMenuItem(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let hMenu = <HMENU>::from_stack(mem, stack_args + 0u32);
+            let uIDEnableItem = <u32>::from_stack(mem, stack_args + 4u32);
+            let uEnable = <u32>::from_stack(mem, stack_args + 8u32);
+            let __trace_context = if crate::trace::enabled("user32/menu") {
+                Some(crate::trace::trace_begin(
+                    "user32/menu",
+                    "EnableMenuItem",
+                    &[
+                        ("hMenu", &hMenu),
+                        ("uIDEnableItem", &uIDEnableItem),
+                        ("uEnable", &uEnable),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::EnableMenuItem(machine, hMenu, uIDEnableItem, uEnable);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::EnableMenuItem_pos.0,
+                    winapi::user32::EnableMenuItem_pos.1,
+                    &result,
+                );
             }
+            result.to_raw()
         }
-        pub unsafe fn DrawTextW(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn EnableWindow(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hDC = <HDC>::from_stack(mem, esp + 4u32);
-            let lpString = <Option<&Str16>>::from_stack(mem, esp + 8u32);
-            let nCount = <i32>::from_stack(mem, esp + 12u32);
-            let lpRect = <Option<&RECT>>::from_stack(mem, esp + 16u32);
-            let uFormat = <u32>::from_stack(mem, esp + 20u32);
-            winapi::user32::DrawTextW(machine, hDC, lpString, nCount, lpRect, uFormat).to_raw()
-        }
-        pub unsafe fn EndPaint(machine: &mut Machine, esp: u32) -> u32 {
-            let mem = machine.mem().detach();
-            let hWnd = <HWND>::from_stack(mem, esp + 4u32);
-            let lpPaint = <Option<&PAINTSTRUCT>>::from_stack(mem, esp + 8u32);
-            winapi::user32::EndPaint(machine, hWnd, lpPaint).to_raw()
-        }
-        pub unsafe fn FillRect(machine: &mut Machine, esp: u32) -> u32 {
-            let mem = machine.mem().detach();
-            let hDC = <HDC>::from_stack(mem, esp + 4u32);
-            let lprc = <Option<&RECT>>::from_stack(mem, esp + 8u32);
-            let hbr = <BrushOrColor>::from_stack(mem, esp + 12u32);
-            winapi::user32::FillRect(machine, hDC, lprc, hbr).to_raw()
-        }
-        pub unsafe fn FindWindowA(machine: &mut Machine, esp: u32) -> u32 {
-            let mem = machine.mem().detach();
-            let lpClassName = <Option<&str>>::from_stack(mem, esp + 4u32);
-            let lpWindowName = <Option<&str>>::from_stack(mem, esp + 8u32);
-            winapi::user32::FindWindowA(machine, lpClassName, lpWindowName).to_raw()
-        }
-        pub unsafe fn FrameRect(machine: &mut Machine, esp: u32) -> u32 {
-            let mem = machine.mem().detach();
-            let hDC = <HDC>::from_stack(mem, esp + 4u32);
-            let lprc = <Option<&RECT>>::from_stack(mem, esp + 8u32);
-            let hbr = <HBRUSH>::from_stack(mem, esp + 12u32);
-            winapi::user32::FrameRect(machine, hDC, lprc, hbr).to_raw()
-        }
-        pub unsafe fn GetActiveWindow(machine: &mut Machine, esp: u32) -> u32 {
-            let mem = machine.mem().detach();
-            winapi::user32::GetActiveWindow(machine).to_raw()
-        }
-        pub unsafe fn GetClientRect(machine: &mut Machine, esp: u32) -> u32 {
-            let mem = machine.mem().detach();
-            let hWnd = <HWND>::from_stack(mem, esp + 4u32);
-            let lpRect = <Option<&mut RECT>>::from_stack(mem, esp + 8u32);
-            winapi::user32::GetClientRect(machine, hWnd, lpRect).to_raw()
-        }
-        pub unsafe fn GetDC(machine: &mut Machine, esp: u32) -> u32 {
-            let mem = machine.mem().detach();
-            let hWnd = <HWND>::from_stack(mem, esp + 4u32);
-            winapi::user32::GetDC(machine, hWnd).to_raw()
-        }
-        pub unsafe fn GetDesktopWindow(machine: &mut Machine, esp: u32) -> u32 {
-            let mem = machine.mem().detach();
-            winapi::user32::GetDesktopWindow(machine).to_raw()
-        }
-        pub unsafe fn GetFocus(machine: &mut Machine, esp: u32) -> u32 {
-            let mem = machine.mem().detach();
-            winapi::user32::GetFocus(machine).to_raw()
-        }
-        pub unsafe fn GetForegroundWindow(machine: &mut Machine, esp: u32) -> u32 {
-            let mem = machine.mem().detach();
-            winapi::user32::GetForegroundWindow(machine).to_raw()
-        }
-        pub unsafe fn GetKeyState(machine: &mut Machine, esp: u32) -> u32 {
-            let mem = machine.mem().detach();
-            let nVirtKey = <u32>::from_stack(mem, esp + 4u32);
-            winapi::user32::GetKeyState(machine, nVirtKey).to_raw()
-        }
-        pub unsafe fn GetLastActivePopup(machine: &mut Machine, esp: u32) -> u32 {
-            let mem = machine.mem().detach();
-            winapi::user32::GetLastActivePopup(machine).to_raw()
-        }
-        pub unsafe fn GetMessageA(machine: &mut Machine, esp: u32) -> u32 {
-            let mem = machine.mem().detach();
-            let lpMsg = <Option<&mut MSG>>::from_stack(mem, esp + 4u32);
-            let hWnd = <HWND>::from_stack(mem, esp + 8u32);
-            let wMsgFilterMin = <u32>::from_stack(mem, esp + 12u32);
-            let wMsgFilterMax = <u32>::from_stack(mem, esp + 16u32);
-            #[cfg(feature = "x86-emu")]
-            {
-                let m: *mut Machine = machine;
-                let result = async move {
-                    use memory::Extensions;
-                    let machine = unsafe { &mut *m };
-                    let result = winapi::user32::GetMessageA(
-                        machine,
-                        lpMsg,
-                        hWnd,
-                        wMsgFilterMin,
-                        wMsgFilterMax,
-                    )
-                    .await;
-                    let cpu = &mut machine.emu.x86.cpu_mut();
-                    cpu.regs.eip = x86::ops::pop(cpu, machine.emu.memory.mem());
-                    *cpu.regs.get32_mut(x86::Register::ESP) += 16u32;
-                    cpu.regs.set32(x86::Register::EAX, result.to_raw());
-                };
-                machine
-                    .emu
-                    .x86
-                    .cpu_mut()
-                    .call_async(machine.emu.memory.mem(), Box::pin(result));
-                0
+            let hWnd = <HWND>::from_stack(mem, stack_args + 0u32);
+            let bEnable = <bool>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("user32/window") {
+                Some(crate::trace::trace_begin(
+                    "user32/window",
+                    "EnableWindow",
+                    &[("hWnd", &hWnd), ("bEnable", &bEnable)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::EnableWindow(machine, hWnd, bEnable);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::EnableWindow_pos.0,
+                    winapi::user32::EnableWindow_pos.1,
+                    &result,
+                );
             }
-            #[cfg(any(feature = "x86-64", feature = "x86-unicorn"))]
-            {
-                let pin = std::pin::pin!(winapi::user32::GetMessageA(
-                    machine,
-                    lpMsg,
-                    hWnd,
-                    wMsgFilterMin,
-                    wMsgFilterMax
-                ));
-                crate::shims::call_sync(pin).to_raw()
+            result.to_raw()
+        }
+        pub unsafe fn EndDialog(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let hDlg = <HWND>::from_stack(mem, stack_args + 0u32);
+            let nResult = <Option<&mut u32>>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("user32/dialog") {
+                Some(crate::trace::trace_begin(
+                    "user32/dialog",
+                    "EndDialog",
+                    &[("hDlg", &hDlg), ("nResult", &nResult)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::EndDialog(machine, hDlg, nResult);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::EndDialog_pos.0,
+                    winapi::user32::EndDialog_pos.1,
+                    &result,
+                );
             }
+            result.to_raw()
         }
-        pub unsafe fn GetMessageW(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn EndPaint(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let lpMsg = <Option<&mut MSG>>::from_stack(mem, esp + 4u32);
-            let hWnd = <HWND>::from_stack(mem, esp + 8u32);
-            let wMsgFilterMin = <u32>::from_stack(mem, esp + 12u32);
-            let wMsgFilterMax = <u32>::from_stack(mem, esp + 16u32);
-            #[cfg(feature = "x86-emu")]
-            {
-                let m: *mut Machine = machine;
-                let result = async move {
-                    use memory::Extensions;
-                    let machine = unsafe { &mut *m };
-                    let result = winapi::user32::GetMessageW(
-                        machine,
-                        lpMsg,
-                        hWnd,
-                        wMsgFilterMin,
-                        wMsgFilterMax,
-                    )
-                    .await;
-                    let cpu = &mut machine.emu.x86.cpu_mut();
-                    cpu.regs.eip = x86::ops::pop(cpu, machine.emu.memory.mem());
-                    *cpu.regs.get32_mut(x86::Register::ESP) += 16u32;
-                    cpu.regs.set32(x86::Register::EAX, result.to_raw());
-                };
-                machine
-                    .emu
-                    .x86
-                    .cpu_mut()
-                    .call_async(machine.emu.memory.mem(), Box::pin(result));
-                0
+            let hWnd = <HWND>::from_stack(mem, stack_args + 0u32);
+            let lpPaint = <Option<&PAINTSTRUCT>>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("user32/paint") {
+                Some(crate::trace::trace_begin(
+                    "user32/paint",
+                    "EndPaint",
+                    &[("hWnd", &hWnd), ("lpPaint", &lpPaint)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::EndPaint(machine, hWnd, lpPaint);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::EndPaint_pos.0,
+                    winapi::user32::EndPaint_pos.1,
+                    &result,
+                );
             }
-            #[cfg(any(feature = "x86-64", feature = "x86-unicorn"))]
-            {
-                let pin = std::pin::pin!(winapi::user32::GetMessageW(
-                    machine,
-                    lpMsg,
-                    hWnd,
-                    wMsgFilterMin,
-                    wMsgFilterMax
-                ));
-                crate::shims::call_sync(pin).to_raw()
+            result.to_raw()
+        }
+        pub unsafe fn FillRect(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let hDC = <HDC>::from_stack(mem, stack_args + 0u32);
+            let lprc = <Option<&RECT>>::from_stack(mem, stack_args + 4u32);
+            let hbr = <BrushOrColor>::from_stack(mem, stack_args + 8u32);
+            let __trace_context = if crate::trace::enabled("user32/paint") {
+                Some(crate::trace::trace_begin(
+                    "user32/paint",
+                    "FillRect",
+                    &[("hDC", &hDC), ("lprc", &lprc), ("hbr", &hbr)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::FillRect(machine, hDC, lprc, hbr);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::FillRect_pos.0,
+                    winapi::user32::FillRect_pos.1,
+                    &result,
+                );
             }
+            result.to_raw()
         }
-        pub unsafe fn GetSubMenu(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn FindWindowA(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hMenu = <HMENU>::from_stack(mem, esp + 4u32);
-            let nPos = <i32>::from_stack(mem, esp + 8u32);
-            winapi::user32::GetSubMenu(machine, hMenu, nPos).to_raw()
+            let lpClassName = <Option<&str>>::from_stack(mem, stack_args + 0u32);
+            let lpWindowName = <Option<&str>>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("user32/window") {
+                Some(crate::trace::trace_begin(
+                    "user32/window",
+                    "FindWindowA",
+                    &[
+                        ("lpClassName", &lpClassName),
+                        ("lpWindowName", &lpWindowName),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::FindWindowA(machine, lpClassName, lpWindowName);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::FindWindowA_pos.0,
+                    winapi::user32::FindWindowA_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn GetSystemMenu(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn FrameRect(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hWnd = <HWND>::from_stack(mem, esp + 4u32);
-            let bRevert = <bool>::from_stack(mem, esp + 8u32);
-            winapi::user32::GetSystemMenu(machine, hWnd, bRevert).to_raw()
+            let hDC = <HDC>::from_stack(mem, stack_args + 0u32);
+            let lprc = <Option<&RECT>>::from_stack(mem, stack_args + 4u32);
+            let hbr = <HBRUSH>::from_stack(mem, stack_args + 8u32);
+            let __trace_context = if crate::trace::enabled("user32/paint") {
+                Some(crate::trace::trace_begin(
+                    "user32/paint",
+                    "FrameRect",
+                    &[("hDC", &hDC), ("lprc", &lprc), ("hbr", &hbr)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::FrameRect(machine, hDC, lprc, hbr);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::FrameRect_pos.0,
+                    winapi::user32::FrameRect_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn GetSystemMetrics(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn GetActiveWindow(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let nIndex = <Result<SystemMetric, u32>>::from_stack(mem, esp + 4u32);
-            winapi::user32::GetSystemMetrics(machine, nIndex).to_raw()
+            let __trace_context = if crate::trace::enabled("user32/window") {
+                Some(crate::trace::trace_begin(
+                    "user32/window",
+                    "GetActiveWindow",
+                    &[],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::GetActiveWindow(machine);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::GetActiveWindow_pos.0,
+                    winapi::user32::GetActiveWindow_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn GetWindowDC(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn GetCapture(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hWnd = <HWND>::from_stack(mem, esp + 4u32);
-            winapi::user32::GetWindowDC(machine, hWnd).to_raw()
+            let __trace_context = if crate::trace::enabled("user32/window") {
+                Some(crate::trace::trace_begin(
+                    "user32/window",
+                    "GetCapture",
+                    &[],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::GetCapture(machine);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::GetCapture_pos.0,
+                    winapi::user32::GetCapture_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn GetWindowLongA(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn GetClientRect(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hWnd = <HWND>::from_stack(mem, esp + 4u32);
-            let nIndex = <i32>::from_stack(mem, esp + 8u32);
-            winapi::user32::GetWindowLongA(machine, hWnd, nIndex).to_raw()
+            let hWnd = <HWND>::from_stack(mem, stack_args + 0u32);
+            let lpRect = <Option<&mut RECT>>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("user32/window") {
+                Some(crate::trace::trace_begin(
+                    "user32/window",
+                    "GetClientRect",
+                    &[("hWnd", &hWnd), ("lpRect", &lpRect)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::GetClientRect(machine, hWnd, lpRect);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::GetClientRect_pos.0,
+                    winapi::user32::GetClientRect_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn GetWindowPlacement(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn GetDC(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hWnd = <HWND>::from_stack(mem, esp + 4u32);
-            let lpwndpl = <Option<&mut u32>>::from_stack(mem, esp + 8u32);
-            winapi::user32::GetWindowPlacement(machine, hWnd, lpwndpl).to_raw()
+            let hWnd = <HWND>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("user32/window") {
+                Some(crate::trace::trace_begin(
+                    "user32/window",
+                    "GetDC",
+                    &[("hWnd", &hWnd)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::GetDC(machine, hWnd);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::GetDC_pos.0,
+                    winapi::user32::GetDC_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn GetWindowRect(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn GetDesktopWindow(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hWnd = <HWND>::from_stack(mem, esp + 4u32);
-            let lpRect = <Option<&mut RECT>>::from_stack(mem, esp + 8u32);
-            winapi::user32::GetWindowRect(machine, hWnd, lpRect).to_raw()
+            let __trace_context = if crate::trace::enabled("user32/window") {
+                Some(crate::trace::trace_begin(
+                    "user32/window",
+                    "GetDesktopWindow",
+                    &[],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::GetDesktopWindow(machine);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::GetDesktopWindow_pos.0,
+                    winapi::user32::GetDesktopWindow_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn IntersectRect(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn GetDlgItem(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let lprcDst = <Option<&mut RECT>>::from_stack(mem, esp + 4u32);
-            let lprcSrc1 = <Option<&RECT>>::from_stack(mem, esp + 8u32);
-            let lprcSrc2 = <Option<&RECT>>::from_stack(mem, esp + 12u32);
-            winapi::user32::IntersectRect(machine, lprcDst, lprcSrc1, lprcSrc2).to_raw()
+            let hDlg = <HWND>::from_stack(mem, stack_args + 0u32);
+            let nIDDlgItem = <i32>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("user32/dialog") {
+                Some(crate::trace::trace_begin(
+                    "user32/dialog",
+                    "GetDlgItem",
+                    &[("hDlg", &hDlg), ("nIDDlgItem", &nIDDlgItem)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::GetDlgItem(machine, hDlg, nIDDlgItem);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::GetDlgItem_pos.0,
+                    winapi::user32::GetDlgItem_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn InvalidateRect(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn GetDlgItemInt(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hWnd = <HWND>::from_stack(mem, esp + 4u32);
-            let lpRect = <Option<&RECT>>::from_stack(mem, esp + 8u32);
-            let bErase = <bool>::from_stack(mem, esp + 12u32);
-            winapi::user32::InvalidateRect(machine, hWnd, lpRect, bErase).to_raw()
+            let hDlg = <HWND>::from_stack(mem, stack_args + 0u32);
+            let nIDDlgItem = <i32>::from_stack(mem, stack_args + 4u32);
+            let lpTranslated = <Option<&mut u32>>::from_stack(mem, stack_args + 8u32);
+            let bSigned = <bool>::from_stack(mem, stack_args + 12u32);
+            let __trace_context = if crate::trace::enabled("user32/dialog") {
+                Some(crate::trace::trace_begin(
+                    "user32/dialog",
+                    "GetDlgItemInt",
+                    &[
+                        ("hDlg", &hDlg),
+                        ("nIDDlgItem", &nIDDlgItem),
+                        ("lpTranslated", &lpTranslated),
+                        ("bSigned", &bSigned),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result =
+                winapi::user32::GetDlgItemInt(machine, hDlg, nIDDlgItem, lpTranslated, bSigned);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::GetDlgItemInt_pos.0,
+                    winapi::user32::GetDlgItemInt_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn InvalidateRgn(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn GetDlgItemTextW(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hWnd = <HWND>::from_stack(mem, esp + 4u32);
-            let hRgn = <HRGN>::from_stack(mem, esp + 8u32);
-            let bErase = <bool>::from_stack(mem, esp + 12u32);
-            winapi::user32::InvalidateRgn(machine, hWnd, hRgn, bErase).to_raw()
+            let hDlg = <HWND>::from_stack(mem, stack_args + 0u32);
+            let nIDDlgItem = <i32>::from_stack(mem, stack_args + 4u32);
+            let lpString = <ArrayWithSizeMut<u16>>::from_stack(mem, stack_args + 8u32);
+            let __trace_context = if crate::trace::enabled("user32/dialog") {
+                Some(crate::trace::trace_begin(
+                    "user32/dialog",
+                    "GetDlgItemTextW",
+                    &[
+                        ("hDlg", &hDlg),
+                        ("nIDDlgItem", &nIDDlgItem),
+                        ("lpString", &lpString),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::GetDlgItemTextW(machine, hDlg, nIDDlgItem, lpString);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::GetDlgItemTextW_pos.0,
+                    winapi::user32::GetDlgItemTextW_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn IsIconic(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn GetFocus(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hwnd = <HWND>::from_stack(mem, esp + 4u32);
-            winapi::user32::IsIconic(machine, hwnd).to_raw()
+            let __trace_context = if crate::trace::enabled("user32/window") {
+                Some(crate::trace::trace_begin("user32/window", "GetFocus", &[]))
+            } else {
+                None
+            };
+            let result = winapi::user32::GetFocus(machine);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::GetFocus_pos.0,
+                    winapi::user32::GetFocus_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn IsRectEmpty(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn GetForegroundWindow(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let lprc = <Option<&RECT>>::from_stack(mem, esp + 4u32);
-            winapi::user32::IsRectEmpty(machine, lprc).to_raw()
+            let __trace_context = if crate::trace::enabled("user32/window") {
+                Some(crate::trace::trace_begin(
+                    "user32/window",
+                    "GetForegroundWindow",
+                    &[],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::GetForegroundWindow(machine);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::GetForegroundWindow_pos.0,
+                    winapi::user32::GetForegroundWindow_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn LoadAcceleratorsW(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn GetKeyState(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hInstance = <u32>::from_stack(mem, esp + 4u32);
-            let lpTableName = <u32>::from_stack(mem, esp + 8u32);
-            winapi::user32::LoadAcceleratorsW(machine, hInstance, lpTableName).to_raw()
+            let nVirtKey = <u32>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("user32/misc") {
+                Some(crate::trace::trace_begin(
+                    "user32/misc",
+                    "GetKeyState",
+                    &[("nVirtKey", &nVirtKey)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::GetKeyState(machine, nVirtKey);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::GetKeyState_pos.0,
+                    winapi::user32::GetKeyState_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn LoadBitmapA(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn GetLastActivePopup(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hInstance = <HINSTANCE>::from_stack(mem, esp + 4u32);
-            let lpBitmapName = <ResourceKey<&str>>::from_stack(mem, esp + 8u32);
-            winapi::user32::LoadBitmapA(machine, hInstance, lpBitmapName).to_raw()
+            let __trace_context = if crate::trace::enabled("user32/window") {
+                Some(crate::trace::trace_begin(
+                    "user32/window",
+                    "GetLastActivePopup",
+                    &[],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::GetLastActivePopup(machine);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::GetLastActivePopup_pos.0,
+                    winapi::user32::GetLastActivePopup_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn LoadCursorA(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn GetMenu(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hInstance = <u32>::from_stack(mem, esp + 4u32);
-            let lpCursorName = <u32>::from_stack(mem, esp + 8u32);
-            winapi::user32::LoadCursorA(machine, hInstance, lpCursorName).to_raw()
+            let hWnd = <HWND>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("user32/menu") {
+                Some(crate::trace::trace_begin(
+                    "user32/menu",
+                    "GetMenu",
+                    &[("hWnd", &hWnd)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::GetMenu(machine, hWnd);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::GetMenu_pos.0,
+                    winapi::user32::GetMenu_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn LoadCursorW(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn GetMenuItemRect(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hInstance = <u32>::from_stack(mem, esp + 4u32);
-            let lpCursorName = <u32>::from_stack(mem, esp + 8u32);
-            winapi::user32::LoadCursorW(machine, hInstance, lpCursorName).to_raw()
+            let hWnd = <HWND>::from_stack(mem, stack_args + 0u32);
+            let hMenu = <HMENU>::from_stack(mem, stack_args + 4u32);
+            let uItem = <u32>::from_stack(mem, stack_args + 8u32);
+            let lprcItem = <Option<&mut RECT>>::from_stack(mem, stack_args + 12u32);
+            let __trace_context = if crate::trace::enabled("user32/menu") {
+                Some(crate::trace::trace_begin(
+                    "user32/menu",
+                    "GetMenuItemRect",
+                    &[
+                        ("hWnd", &hWnd),
+                        ("hMenu", &hMenu),
+                        ("uItem", &uItem),
+                        ("lprcItem", &lprcItem),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::GetMenuItemRect(machine, hWnd, hMenu, uItem, lprcItem);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::GetMenuItemRect_pos.0,
+                    winapi::user32::GetMenuItemRect_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn LoadIconA(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn GetMessageA(
+            machine: &mut Machine,
+            stack_args: u32,
+        ) -> std::pin::Pin<Box<dyn std::future::Future<Output = u32>>> {
             let mem = machine.mem().detach();
-            let hInstance = <u32>::from_stack(mem, esp + 4u32);
-            let lpIconName = <u32>::from_stack(mem, esp + 8u32);
-            winapi::user32::LoadIconA(machine, hInstance, lpIconName).to_raw()
+            let lpMsg = <Option<&mut MSG>>::from_stack(mem, stack_args + 0u32);
+            let hWnd = <HWND>::from_stack(mem, stack_args + 4u32);
+            let wMsgFilterMin = <u32>::from_stack(mem, stack_args + 8u32);
+            let wMsgFilterMax = <u32>::from_stack(mem, stack_args + 12u32);
+            let __trace_context = if crate::trace::enabled("user32/message") {
+                Some(crate::trace::trace_begin(
+                    "user32/message",
+                    "GetMessageA",
+                    &[
+                        ("lpMsg", &lpMsg),
+                        ("hWnd", &hWnd),
+                        ("wMsgFilterMin", &wMsgFilterMin),
+                        ("wMsgFilterMax", &wMsgFilterMax),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let machine: *mut Machine = machine;
+            Box::pin(async move {
+                let machine = unsafe { &mut *machine };
+                let result =
+                    winapi::user32::GetMessageA(machine, lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax)
+                        .await;
+                if let Some(__trace_context) = __trace_context {
+                    crate::trace::trace_return(
+                        &__trace_context,
+                        winapi::user32::GetMessageA_pos.0,
+                        winapi::user32::GetMessageA_pos.1,
+                        &result,
+                    );
+                }
+                result.to_raw()
+            })
         }
-        pub unsafe fn LoadIconW(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn GetMessageW(
+            machine: &mut Machine,
+            stack_args: u32,
+        ) -> std::pin::Pin<Box<dyn std::future::Future<Output = u32>>> {
             let mem = machine.mem().detach();
-            let hInstance = <u32>::from_stack(mem, esp + 4u32);
-            let lpIconName = <u32>::from_stack(mem, esp + 8u32);
-            winapi::user32::LoadIconW(machine, hInstance, lpIconName).to_raw()
+            let lpMsg = <Option<&mut MSG>>::from_stack(mem, stack_args + 0u32);
+            let hWnd = <HWND>::from_stack(mem, stack_args + 4u32);
+            let wMsgFilterMin = <u32>::from_stack(mem, stack_args + 8u32);
+            let wMsgFilterMax = <u32>::from_stack(mem, stack_args + 12u32);
+            let __trace_context = if crate::trace::enabled("user32/message") {
+                Some(crate::trace::trace_begin(
+                    "user32/message",
+                    "GetMessageW",
+                    &[
+                        ("lpMsg", &lpMsg),
+                        ("hWnd", &hWnd),
+                        ("wMsgFilterMin", &wMsgFilterMin),
+                        ("wMsgFilterMax", &wMsgFilterMax),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let machine: *mut Machine = machine;
+            Box::pin(async move {
+                let machine = unsafe { &mut *machine };
+                let result =
+                    winapi::user32::GetMessageW(machine, lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax)
+                        .await;
+                if let Some(__trace_context) = __trace_context {
+                    crate::trace::trace_return(
+                        &__trace_context,
+                        winapi::user32::GetMessageW_pos.0,
+                        winapi::user32::GetMessageW_pos.1,
+                        &result,
+                    );
+                }
+                result.to_raw()
+            })
         }
-        pub unsafe fn LoadImageA(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn GetSubMenu(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hInstance = <u32>::from_stack(mem, esp + 4u32);
-            let name = <ResourceKey<&str>>::from_stack(mem, esp + 8u32);
-            let typ = <u32>::from_stack(mem, esp + 12u32);
-            let cx = <u32>::from_stack(mem, esp + 16u32);
-            let cy = <u32>::from_stack(mem, esp + 20u32);
-            let fuLoad = <u32>::from_stack(mem, esp + 24u32);
-            winapi::user32::LoadImageA(machine, hInstance, name, typ, cx, cy, fuLoad).to_raw()
+            let hMenu = <HMENU>::from_stack(mem, stack_args + 0u32);
+            let nPos = <i32>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("user32/menu") {
+                Some(crate::trace::trace_begin(
+                    "user32/menu",
+                    "GetSubMenu",
+                    &[("hMenu", &hMenu), ("nPos", &nPos)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::GetSubMenu(machine, hMenu, nPos);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::GetSubMenu_pos.0,
+                    winapi::user32::GetSubMenu_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn LoadImageW(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn GetSysColor(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hInstance = <u32>::from_stack(mem, esp + 4u32);
-            let name = <ResourceKey<&Str16>>::from_stack(mem, esp + 8u32);
-            let typ = <u32>::from_stack(mem, esp + 12u32);
-            let cx = <u32>::from_stack(mem, esp + 16u32);
-            let cy = <u32>::from_stack(mem, esp + 20u32);
-            let fuLoad = <u32>::from_stack(mem, esp + 24u32);
-            winapi::user32::LoadImageW(machine, hInstance, name, typ, cx, cy, fuLoad).to_raw()
+            let nIndex = <i32>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("user32/misc") {
+                Some(crate::trace::trace_begin(
+                    "user32/misc",
+                    "GetSysColor",
+                    &[("nIndex", &nIndex)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::GetSysColor(machine, nIndex);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::GetSysColor_pos.0,
+                    winapi::user32::GetSysColor_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn LoadMenuA(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn GetSystemMenu(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hInstance = <u32>::from_stack(mem, esp + 4u32);
-            let lpMenuName = <u32>::from_stack(mem, esp + 8u32);
-            winapi::user32::LoadMenuA(machine, hInstance, lpMenuName).to_raw()
+            let hWnd = <HWND>::from_stack(mem, stack_args + 0u32);
+            let bRevert = <bool>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("user32/menu") {
+                Some(crate::trace::trace_begin(
+                    "user32/menu",
+                    "GetSystemMenu",
+                    &[("hWnd", &hWnd), ("bRevert", &bRevert)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::GetSystemMenu(machine, hWnd, bRevert);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::GetSystemMenu_pos.0,
+                    winapi::user32::GetSystemMenu_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn LoadMenuW(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn GetSystemMetrics(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hInstance = <u32>::from_stack(mem, esp + 4u32);
-            let lpMenuName = <u32>::from_stack(mem, esp + 8u32);
-            winapi::user32::LoadMenuW(machine, hInstance, lpMenuName).to_raw()
+            let nIndex = <Result<SystemMetric, u32>>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("user32/misc") {
+                Some(crate::trace::trace_begin(
+                    "user32/misc",
+                    "GetSystemMetrics",
+                    &[("nIndex", &nIndex)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::GetSystemMetrics(machine, nIndex);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::GetSystemMetrics_pos.0,
+                    winapi::user32::GetSystemMetrics_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn LoadStringA(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn GetWindowDC(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hInstance = <u32>::from_stack(mem, esp + 4u32);
-            let uID = <u32>::from_stack(mem, esp + 8u32);
-            let lpBuffer = <u32>::from_stack(mem, esp + 12u32);
-            let cchBufferMax = <u32>::from_stack(mem, esp + 16u32);
-            winapi::user32::LoadStringA(machine, hInstance, uID, lpBuffer, cchBufferMax).to_raw()
+            let hWnd = <HWND>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("user32/window") {
+                Some(crate::trace::trace_begin(
+                    "user32/window",
+                    "GetWindowDC",
+                    &[("hWnd", &hWnd)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::GetWindowDC(machine, hWnd);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::GetWindowDC_pos.0,
+                    winapi::user32::GetWindowDC_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn LoadStringW(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn GetWindowLongA(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hInstance = <u32>::from_stack(mem, esp + 4u32);
-            let uID = <u32>::from_stack(mem, esp + 8u32);
-            let lpBuffer = <u32>::from_stack(mem, esp + 12u32);
-            let cchBufferMax = <u32>::from_stack(mem, esp + 16u32);
-            winapi::user32::LoadStringW(machine, hInstance, uID, lpBuffer, cchBufferMax).to_raw()
+            let hWnd = <HWND>::from_stack(mem, stack_args + 0u32);
+            let nIndex = <i32>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("user32/window") {
+                Some(crate::trace::trace_begin(
+                    "user32/window",
+                    "GetWindowLongA",
+                    &[("hWnd", &hWnd), ("nIndex", &nIndex)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::GetWindowLongA(machine, hWnd, nIndex);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::GetWindowLongA_pos.0,
+                    winapi::user32::GetWindowLongA_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn MapWindowPoints(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn GetWindowPlacement(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hWndFrom = <HWND>::from_stack(mem, esp + 4u32);
-            let hWndTo = <HWND>::from_stack(mem, esp + 8u32);
-            let lpPoints = <ArrayWithSize<POINT>>::from_stack(mem, esp + 12u32);
-            winapi::user32::MapWindowPoints(machine, hWndFrom, hWndTo, lpPoints).to_raw()
+            let hWnd = <HWND>::from_stack(mem, stack_args + 0u32);
+            let lpwndpl = <Option<&mut WINDOWPLACEMENT>>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("user32/window") {
+                Some(crate::trace::trace_begin(
+                    "user32/window",
+                    "GetWindowPlacement",
+                    &[("hWnd", &hWnd), ("lpwndpl", &lpwndpl)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::GetWindowPlacement(machine, hWnd, lpwndpl);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::GetWindowPlacement_pos.0,
+                    winapi::user32::GetWindowPlacement_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn MessageBoxA(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn GetWindowRect(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hWnd = <HWND>::from_stack(mem, esp + 4u32);
-            let lpText = <Option<&str>>::from_stack(mem, esp + 8u32);
-            let lpCaption = <Option<&str>>::from_stack(mem, esp + 12u32);
-            let uType = <u32>::from_stack(mem, esp + 16u32);
-            winapi::user32::MessageBoxA(machine, hWnd, lpText, lpCaption, uType).to_raw()
+            let hWnd = <HWND>::from_stack(mem, stack_args + 0u32);
+            let lpRect = <Option<&mut RECT>>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("user32/window") {
+                Some(crate::trace::trace_begin(
+                    "user32/window",
+                    "GetWindowRect",
+                    &[("hWnd", &hWnd), ("lpRect", &lpRect)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::GetWindowRect(machine, hWnd, lpRect);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::GetWindowRect_pos.0,
+                    winapi::user32::GetWindowRect_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn MessageBoxW(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn InflateRect(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hWnd = <HWND>::from_stack(mem, esp + 4u32);
-            let lpText = <Option<&Str16>>::from_stack(mem, esp + 8u32);
-            let lpCaption = <Option<&Str16>>::from_stack(mem, esp + 12u32);
-            let uType = <u32>::from_stack(mem, esp + 16u32);
-            winapi::user32::MessageBoxW(machine, hWnd, lpText, lpCaption, uType).to_raw()
+            let lprc = <Option<&mut RECT>>::from_stack(mem, stack_args + 0u32);
+            let dx = <i32>::from_stack(mem, stack_args + 4u32);
+            let dy = <i32>::from_stack(mem, stack_args + 8u32);
+            let __trace_context = if crate::trace::enabled("user32/rect") {
+                Some(crate::trace::trace_begin(
+                    "user32/rect",
+                    "InflateRect",
+                    &[("lprc", &lprc), ("dx", &dx), ("dy", &dy)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::InflateRect(machine, lprc, dx, dy);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::InflateRect_pos.0,
+                    winapi::user32::InflateRect_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn MoveWindow(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn IntersectRect(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hWnd = <HWND>::from_stack(mem, esp + 4u32);
-            let X = <u32>::from_stack(mem, esp + 8u32);
-            let Y = <u32>::from_stack(mem, esp + 12u32);
-            let nWidth = <u32>::from_stack(mem, esp + 16u32);
-            let nHeight = <u32>::from_stack(mem, esp + 20u32);
-            let bRepaint = <bool>::from_stack(mem, esp + 24u32);
-            winapi::user32::MoveWindow(machine, hWnd, X, Y, nWidth, nHeight, bRepaint).to_raw()
+            let lprcDst = <Option<&mut RECT>>::from_stack(mem, stack_args + 0u32);
+            let lprcSrc1 = <Option<&RECT>>::from_stack(mem, stack_args + 4u32);
+            let lprcSrc2 = <Option<&RECT>>::from_stack(mem, stack_args + 8u32);
+            let __trace_context = if crate::trace::enabled("user32/rect") {
+                Some(crate::trace::trace_begin(
+                    "user32/rect",
+                    "IntersectRect",
+                    &[
+                        ("lprcDst", &lprcDst),
+                        ("lprcSrc1", &lprcSrc1),
+                        ("lprcSrc2", &lprcSrc2),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::IntersectRect(machine, lprcDst, lprcSrc1, lprcSrc2);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::IntersectRect_pos.0,
+                    winapi::user32::IntersectRect_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn MsgWaitForMultipleObjects(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn InvalidateRect(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let nCount = <u32>::from_stack(mem, esp + 4u32);
-            let pHandles = <u32>::from_stack(mem, esp + 8u32);
-            let fWaitAll = <bool>::from_stack(mem, esp + 12u32);
-            let dwMilliseconds = <u32>::from_stack(mem, esp + 16u32);
-            let dwWakeMask = <u32>::from_stack(mem, esp + 20u32);
-            winapi::user32::MsgWaitForMultipleObjects(
+            let hWnd = <HWND>::from_stack(mem, stack_args + 0u32);
+            let lpRect = <Option<&RECT>>::from_stack(mem, stack_args + 4u32);
+            let bErase = <bool>::from_stack(mem, stack_args + 8u32);
+            let __trace_context = if crate::trace::enabled("user32/paint") {
+                Some(crate::trace::trace_begin(
+                    "user32/paint",
+                    "InvalidateRect",
+                    &[("hWnd", &hWnd), ("lpRect", &lpRect), ("bErase", &bErase)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::InvalidateRect(machine, hWnd, lpRect, bErase);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::InvalidateRect_pos.0,
+                    winapi::user32::InvalidateRect_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn InvalidateRgn(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let hWnd = <HWND>::from_stack(mem, stack_args + 0u32);
+            let hRgn = <HRGN>::from_stack(mem, stack_args + 4u32);
+            let bErase = <bool>::from_stack(mem, stack_args + 8u32);
+            let __trace_context = if crate::trace::enabled("user32/paint") {
+                Some(crate::trace::trace_begin(
+                    "user32/paint",
+                    "InvalidateRgn",
+                    &[("hWnd", &hWnd), ("hRgn", &hRgn), ("bErase", &bErase)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::InvalidateRgn(machine, hWnd, hRgn, bErase);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::InvalidateRgn_pos.0,
+                    winapi::user32::InvalidateRgn_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn InvertRect(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let hDC = <HDC>::from_stack(mem, stack_args + 0u32);
+            let lpr = <Option<&RECT>>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("user32/paint") {
+                Some(crate::trace::trace_begin(
+                    "user32/paint",
+                    "InvertRect",
+                    &[("hDC", &hDC), ("lpr", &lpr)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::InvertRect(machine, hDC, lpr);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::InvertRect_pos.0,
+                    winapi::user32::InvertRect_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn IsDlgButtonChecked(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let hDlg = <HWND>::from_stack(mem, stack_args + 0u32);
+            let nIDButton = <i32>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("user32/dialog") {
+                Some(crate::trace::trace_begin(
+                    "user32/dialog",
+                    "IsDlgButtonChecked",
+                    &[("hDlg", &hDlg), ("nIDButton", &nIDButton)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::IsDlgButtonChecked(machine, hDlg, nIDButton);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::IsDlgButtonChecked_pos.0,
+                    winapi::user32::IsDlgButtonChecked_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn IsIconic(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let hwnd = <HWND>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("user32/misc") {
+                Some(crate::trace::trace_begin(
+                    "user32/misc",
+                    "IsIconic",
+                    &[("hwnd", &hwnd)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::IsIconic(machine, hwnd);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::IsIconic_pos.0,
+                    winapi::user32::IsIconic_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn IsRectEmpty(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let lprc = <Option<&RECT>>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("user32/rect") {
+                Some(crate::trace::trace_begin(
+                    "user32/rect",
+                    "IsRectEmpty",
+                    &[("lprc", &lprc)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::IsRectEmpty(machine, lprc);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::IsRectEmpty_pos.0,
+                    winapi::user32::IsRectEmpty_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn KillTimer(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let hWnd = <HWND>::from_stack(mem, stack_args + 0u32);
+            let uIDEvent = <u32>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("user32/timer") {
+                Some(crate::trace::trace_begin(
+                    "user32/timer",
+                    "KillTimer",
+                    &[("hWnd", &hWnd), ("uIDEvent", &uIDEvent)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::KillTimer(machine, hWnd, uIDEvent);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::KillTimer_pos.0,
+                    winapi::user32::KillTimer_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn LoadAcceleratorsW(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let hInstance = <u32>::from_stack(mem, stack_args + 0u32);
+            let lpTableName = <u32>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("user32/resource") {
+                Some(crate::trace::trace_begin(
+                    "user32/resource",
+                    "LoadAcceleratorsW",
+                    &[("hInstance", &hInstance), ("lpTableName", &lpTableName)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::LoadAcceleratorsW(machine, hInstance, lpTableName);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::LoadAcceleratorsW_pos.0,
+                    winapi::user32::LoadAcceleratorsW_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn LoadBitmapA(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let hInstance = <HINSTANCE>::from_stack(mem, stack_args + 0u32);
+            let lpBitmapName = <ResourceKey<&str>>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("user32/resource") {
+                Some(crate::trace::trace_begin(
+                    "user32/resource",
+                    "LoadBitmapA",
+                    &[("hInstance", &hInstance), ("lpBitmapName", &lpBitmapName)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::LoadBitmapA(machine, hInstance, lpBitmapName);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::LoadBitmapA_pos.0,
+                    winapi::user32::LoadBitmapA_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn LoadCursorA(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let hInstance = <u32>::from_stack(mem, stack_args + 0u32);
+            let lpCursorName = <u32>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("user32/resource") {
+                Some(crate::trace::trace_begin(
+                    "user32/resource",
+                    "LoadCursorA",
+                    &[("hInstance", &hInstance), ("lpCursorName", &lpCursorName)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::LoadCursorA(machine, hInstance, lpCursorName);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::LoadCursorA_pos.0,
+                    winapi::user32::LoadCursorA_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn LoadCursorW(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let hInstance = <u32>::from_stack(mem, stack_args + 0u32);
+            let lpCursorName = <u32>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("user32/resource") {
+                Some(crate::trace::trace_begin(
+                    "user32/resource",
+                    "LoadCursorW",
+                    &[("hInstance", &hInstance), ("lpCursorName", &lpCursorName)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::LoadCursorW(machine, hInstance, lpCursorName);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::LoadCursorW_pos.0,
+                    winapi::user32::LoadCursorW_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn LoadIconA(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let hInstance = <u32>::from_stack(mem, stack_args + 0u32);
+            let lpIconName = <u32>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("user32/resource") {
+                Some(crate::trace::trace_begin(
+                    "user32/resource",
+                    "LoadIconA",
+                    &[("hInstance", &hInstance), ("lpIconName", &lpIconName)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::LoadIconA(machine, hInstance, lpIconName);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::LoadIconA_pos.0,
+                    winapi::user32::LoadIconA_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn LoadIconW(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let hInstance = <u32>::from_stack(mem, stack_args + 0u32);
+            let lpIconName = <u32>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("user32/resource") {
+                Some(crate::trace::trace_begin(
+                    "user32/resource",
+                    "LoadIconW",
+                    &[("hInstance", &hInstance), ("lpIconName", &lpIconName)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::LoadIconW(machine, hInstance, lpIconName);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::LoadIconW_pos.0,
+                    winapi::user32::LoadIconW_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn LoadImageA(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let hInstance = <u32>::from_stack(mem, stack_args + 0u32);
+            let name = <ResourceKey<&str>>::from_stack(mem, stack_args + 4u32);
+            let typ = <u32>::from_stack(mem, stack_args + 8u32);
+            let cx = <u32>::from_stack(mem, stack_args + 12u32);
+            let cy = <u32>::from_stack(mem, stack_args + 16u32);
+            let fuLoad = <u32>::from_stack(mem, stack_args + 20u32);
+            let __trace_context = if crate::trace::enabled("user32/resource") {
+                Some(crate::trace::trace_begin(
+                    "user32/resource",
+                    "LoadImageA",
+                    &[
+                        ("hInstance", &hInstance),
+                        ("name", &name),
+                        ("typ", &typ),
+                        ("cx", &cx),
+                        ("cy", &cy),
+                        ("fuLoad", &fuLoad),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::LoadImageA(machine, hInstance, name, typ, cx, cy, fuLoad);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::LoadImageA_pos.0,
+                    winapi::user32::LoadImageA_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn LoadImageW(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let hInstance = <u32>::from_stack(mem, stack_args + 0u32);
+            let name = <ResourceKey<&Str16>>::from_stack(mem, stack_args + 4u32);
+            let typ = <u32>::from_stack(mem, stack_args + 8u32);
+            let cx = <u32>::from_stack(mem, stack_args + 12u32);
+            let cy = <u32>::from_stack(mem, stack_args + 16u32);
+            let fuLoad = <u32>::from_stack(mem, stack_args + 20u32);
+            let __trace_context = if crate::trace::enabled("user32/resource") {
+                Some(crate::trace::trace_begin(
+                    "user32/resource",
+                    "LoadImageW",
+                    &[
+                        ("hInstance", &hInstance),
+                        ("name", &name),
+                        ("typ", &typ),
+                        ("cx", &cx),
+                        ("cy", &cy),
+                        ("fuLoad", &fuLoad),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::LoadImageW(machine, hInstance, name, typ, cx, cy, fuLoad);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::LoadImageW_pos.0,
+                    winapi::user32::LoadImageW_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn LoadMenuA(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let hInstance = <u32>::from_stack(mem, stack_args + 0u32);
+            let lpMenuName = <u32>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("user32/menu") {
+                Some(crate::trace::trace_begin(
+                    "user32/menu",
+                    "LoadMenuA",
+                    &[("hInstance", &hInstance), ("lpMenuName", &lpMenuName)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::LoadMenuA(machine, hInstance, lpMenuName);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::LoadMenuA_pos.0,
+                    winapi::user32::LoadMenuA_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn LoadMenuW(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let hInstance = <u32>::from_stack(mem, stack_args + 0u32);
+            let lpMenuName = <u32>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("user32/resource") {
+                Some(crate::trace::trace_begin(
+                    "user32/resource",
+                    "LoadMenuW",
+                    &[("hInstance", &hInstance), ("lpMenuName", &lpMenuName)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::LoadMenuW(machine, hInstance, lpMenuName);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::LoadMenuW_pos.0,
+                    winapi::user32::LoadMenuW_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn LoadStringA(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let hInstance = <u32>::from_stack(mem, stack_args + 0u32);
+            let uID = <u32>::from_stack(mem, stack_args + 4u32);
+            let lpBuffer = <u32>::from_stack(mem, stack_args + 8u32);
+            let cchBufferMax = <u32>::from_stack(mem, stack_args + 12u32);
+            let __trace_context = if crate::trace::enabled("user32/resource") {
+                Some(crate::trace::trace_begin(
+                    "user32/resource",
+                    "LoadStringA",
+                    &[
+                        ("hInstance", &hInstance),
+                        ("uID", &uID),
+                        ("lpBuffer", &lpBuffer),
+                        ("cchBufferMax", &cchBufferMax),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result =
+                winapi::user32::LoadStringA(machine, hInstance, uID, lpBuffer, cchBufferMax);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::LoadStringA_pos.0,
+                    winapi::user32::LoadStringA_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn LoadStringW(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let hInstance = <u32>::from_stack(mem, stack_args + 0u32);
+            let uID = <u32>::from_stack(mem, stack_args + 4u32);
+            let lpBuffer = <u32>::from_stack(mem, stack_args + 8u32);
+            let cchBufferMax = <u32>::from_stack(mem, stack_args + 12u32);
+            let __trace_context = if crate::trace::enabled("user32/resource") {
+                Some(crate::trace::trace_begin(
+                    "user32/resource",
+                    "LoadStringW",
+                    &[
+                        ("hInstance", &hInstance),
+                        ("uID", &uID),
+                        ("lpBuffer", &lpBuffer),
+                        ("cchBufferMax", &cchBufferMax),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result =
+                winapi::user32::LoadStringW(machine, hInstance, uID, lpBuffer, cchBufferMax);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::LoadStringW_pos.0,
+                    winapi::user32::LoadStringW_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn MapWindowPoints(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let hWndFrom = <HWND>::from_stack(mem, stack_args + 0u32);
+            let hWndTo = <HWND>::from_stack(mem, stack_args + 4u32);
+            let lpPoints = <ArrayWithSize<POINT>>::from_stack(mem, stack_args + 8u32);
+            let __trace_context = if crate::trace::enabled("user32/window") {
+                Some(crate::trace::trace_begin(
+                    "user32/window",
+                    "MapWindowPoints",
+                    &[
+                        ("hWndFrom", &hWndFrom),
+                        ("hWndTo", &hWndTo),
+                        ("lpPoints", &lpPoints),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::MapWindowPoints(machine, hWndFrom, hWndTo, lpPoints);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::MapWindowPoints_pos.0,
+                    winapi::user32::MapWindowPoints_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn MessageBoxA(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let hWnd = <HWND>::from_stack(mem, stack_args + 0u32);
+            let lpText = <Option<&str>>::from_stack(mem, stack_args + 4u32);
+            let lpCaption = <Option<&str>>::from_stack(mem, stack_args + 8u32);
+            let uType = <u32>::from_stack(mem, stack_args + 12u32);
+            let __trace_context = if crate::trace::enabled("user32/dialog") {
+                Some(crate::trace::trace_begin(
+                    "user32/dialog",
+                    "MessageBoxA",
+                    &[
+                        ("hWnd", &hWnd),
+                        ("lpText", &lpText),
+                        ("lpCaption", &lpCaption),
+                        ("uType", &uType),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::MessageBoxA(machine, hWnd, lpText, lpCaption, uType);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::MessageBoxA_pos.0,
+                    winapi::user32::MessageBoxA_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn MessageBoxW(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let hWnd = <HWND>::from_stack(mem, stack_args + 0u32);
+            let lpText = <Option<&Str16>>::from_stack(mem, stack_args + 4u32);
+            let lpCaption = <Option<&Str16>>::from_stack(mem, stack_args + 8u32);
+            let uType = <u32>::from_stack(mem, stack_args + 12u32);
+            let __trace_context = if crate::trace::enabled("user32/dialog") {
+                Some(crate::trace::trace_begin(
+                    "user32/dialog",
+                    "MessageBoxW",
+                    &[
+                        ("hWnd", &hWnd),
+                        ("lpText", &lpText),
+                        ("lpCaption", &lpCaption),
+                        ("uType", &uType),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::MessageBoxW(machine, hWnd, lpText, lpCaption, uType);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::MessageBoxW_pos.0,
+                    winapi::user32::MessageBoxW_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn MoveWindow(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let hWnd = <HWND>::from_stack(mem, stack_args + 0u32);
+            let X = <u32>::from_stack(mem, stack_args + 4u32);
+            let Y = <u32>::from_stack(mem, stack_args + 8u32);
+            let nWidth = <u32>::from_stack(mem, stack_args + 12u32);
+            let nHeight = <u32>::from_stack(mem, stack_args + 16u32);
+            let bRepaint = <bool>::from_stack(mem, stack_args + 20u32);
+            let __trace_context = if crate::trace::enabled("user32/window") {
+                Some(crate::trace::trace_begin(
+                    "user32/window",
+                    "MoveWindow",
+                    &[
+                        ("hWnd", &hWnd),
+                        ("X", &X),
+                        ("Y", &Y),
+                        ("nWidth", &nWidth),
+                        ("nHeight", &nHeight),
+                        ("bRepaint", &bRepaint),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::MoveWindow(machine, hWnd, X, Y, nWidth, nHeight, bRepaint);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::MoveWindow_pos.0,
+                    winapi::user32::MoveWindow_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn MsgWaitForMultipleObjects(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let nCount = <u32>::from_stack(mem, stack_args + 0u32);
+            let pHandles = <u32>::from_stack(mem, stack_args + 4u32);
+            let fWaitAll = <bool>::from_stack(mem, stack_args + 8u32);
+            let dwMilliseconds = <u32>::from_stack(mem, stack_args + 12u32);
+            let dwWakeMask = <u32>::from_stack(mem, stack_args + 16u32);
+            let __trace_context = if crate::trace::enabled("user32/message") {
+                Some(crate::trace::trace_begin(
+                    "user32/message",
+                    "MsgWaitForMultipleObjects",
+                    &[
+                        ("nCount", &nCount),
+                        ("pHandles", &pHandles),
+                        ("fWaitAll", &fWaitAll),
+                        ("dwMilliseconds", &dwMilliseconds),
+                        ("dwWakeMask", &dwWakeMask),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::MsgWaitForMultipleObjects(
                 machine,
                 nCount,
                 pHandles,
                 fWaitAll,
                 dwMilliseconds,
                 dwWakeMask,
-            )
-            .to_raw()
+            );
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::MsgWaitForMultipleObjects_pos.0,
+                    winapi::user32::MsgWaitForMultipleObjects_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn PeekMessageA(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn PeekMessageA(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let lpMsg = <Option<&mut MSG>>::from_stack(mem, esp + 4u32);
-            let hWnd = <HWND>::from_stack(mem, esp + 8u32);
-            let wMsgFilterMin = <u32>::from_stack(mem, esp + 12u32);
-            let wMsgFilterMax = <u32>::from_stack(mem, esp + 16u32);
-            let wRemoveMsg = <Result<RemoveMsg, u32>>::from_stack(mem, esp + 20u32);
-            winapi::user32::PeekMessageA(
+            let lpMsg = <Option<&mut MSG>>::from_stack(mem, stack_args + 0u32);
+            let hWnd = <HWND>::from_stack(mem, stack_args + 4u32);
+            let wMsgFilterMin = <u32>::from_stack(mem, stack_args + 8u32);
+            let wMsgFilterMax = <u32>::from_stack(mem, stack_args + 12u32);
+            let wRemoveMsg = <Result<RemoveMsg, u32>>::from_stack(mem, stack_args + 16u32);
+            let __trace_context = if crate::trace::enabled("user32/message") {
+                Some(crate::trace::trace_begin(
+                    "user32/message",
+                    "PeekMessageA",
+                    &[
+                        ("lpMsg", &lpMsg),
+                        ("hWnd", &hWnd),
+                        ("wMsgFilterMin", &wMsgFilterMin),
+                        ("wMsgFilterMax", &wMsgFilterMax),
+                        ("wRemoveMsg", &wRemoveMsg),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::PeekMessageA(
                 machine,
                 lpMsg,
                 hWnd,
                 wMsgFilterMin,
                 wMsgFilterMax,
                 wRemoveMsg,
-            )
-            .to_raw()
+            );
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::PeekMessageA_pos.0,
+                    winapi::user32::PeekMessageA_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn PeekMessageW(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn PeekMessageW(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let lpMsg = <Option<&mut MSG>>::from_stack(mem, esp + 4u32);
-            let hWnd = <HWND>::from_stack(mem, esp + 8u32);
-            let wMsgFilterMin = <u32>::from_stack(mem, esp + 12u32);
-            let wMsgFilterMax = <u32>::from_stack(mem, esp + 16u32);
-            let wRemoveMsg = <Result<RemoveMsg, u32>>::from_stack(mem, esp + 20u32);
-            winapi::user32::PeekMessageW(
+            let lpMsg = <Option<&mut MSG>>::from_stack(mem, stack_args + 0u32);
+            let hWnd = <HWND>::from_stack(mem, stack_args + 4u32);
+            let wMsgFilterMin = <u32>::from_stack(mem, stack_args + 8u32);
+            let wMsgFilterMax = <u32>::from_stack(mem, stack_args + 12u32);
+            let wRemoveMsg = <Result<RemoveMsg, u32>>::from_stack(mem, stack_args + 16u32);
+            let __trace_context = if crate::trace::enabled("user32/message") {
+                Some(crate::trace::trace_begin(
+                    "user32/message",
+                    "PeekMessageW",
+                    &[
+                        ("lpMsg", &lpMsg),
+                        ("hWnd", &hWnd),
+                        ("wMsgFilterMin", &wMsgFilterMin),
+                        ("wMsgFilterMax", &wMsgFilterMax),
+                        ("wRemoveMsg", &wRemoveMsg),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::PeekMessageW(
                 machine,
                 lpMsg,
                 hWnd,
                 wMsgFilterMin,
                 wMsgFilterMax,
                 wRemoveMsg,
-            )
-            .to_raw()
-        }
-        pub unsafe fn PostMessageW(machine: &mut Machine, esp: u32) -> u32 {
-            let mem = machine.mem().detach();
-            let hWnd = <HWND>::from_stack(mem, esp + 4u32);
-            let Msg = <u32>::from_stack(mem, esp + 8u32);
-            let wParam = <u32>::from_stack(mem, esp + 12u32);
-            let lParam = <u32>::from_stack(mem, esp + 16u32);
-            winapi::user32::PostMessageW(machine, hWnd, Msg, wParam, lParam).to_raw()
-        }
-        pub unsafe fn PostQuitMessage(machine: &mut Machine, esp: u32) -> u32 {
-            let mem = machine.mem().detach();
-            let nExitCode = <i32>::from_stack(mem, esp + 4u32);
-            winapi::user32::PostQuitMessage(machine, nExitCode).to_raw()
-        }
-        pub unsafe fn PtInRect(machine: &mut Machine, esp: u32) -> u32 {
-            let mem = machine.mem().detach();
-            let lprc = <Option<&RECT>>::from_stack(mem, esp + 4u32);
-            let pt = <POINT>::from_stack(mem, esp + 8u32);
-            winapi::user32::PtInRect(machine, lprc, pt).to_raw()
-        }
-        pub unsafe fn RegisterClassA(machine: &mut Machine, esp: u32) -> u32 {
-            let mem = machine.mem().detach();
-            let lpWndClass = <Option<&WNDCLASSA>>::from_stack(mem, esp + 4u32);
-            winapi::user32::RegisterClassA(machine, lpWndClass).to_raw()
-        }
-        pub unsafe fn RegisterClassExA(machine: &mut Machine, esp: u32) -> u32 {
-            let mem = machine.mem().detach();
-            let lpWndClassEx = <Option<&WNDCLASSEXA>>::from_stack(mem, esp + 4u32);
-            winapi::user32::RegisterClassExA(machine, lpWndClassEx).to_raw()
-        }
-        pub unsafe fn RegisterClassExW(machine: &mut Machine, esp: u32) -> u32 {
-            let mem = machine.mem().detach();
-            let lpWndClassEx = <Option<&WNDCLASSEXW>>::from_stack(mem, esp + 4u32);
-            winapi::user32::RegisterClassExW(machine, lpWndClassEx).to_raw()
-        }
-        pub unsafe fn RegisterClassW(machine: &mut Machine, esp: u32) -> u32 {
-            let mem = machine.mem().detach();
-            let lpWndClass = <Option<&WNDCLASSA>>::from_stack(mem, esp + 4u32);
-            winapi::user32::RegisterClassW(machine, lpWndClass).to_raw()
-        }
-        pub unsafe fn RegisterWindowMessageW(machine: &mut Machine, esp: u32) -> u32 {
-            let mem = machine.mem().detach();
-            let lpString = <Option<&Str16>>::from_stack(mem, esp + 4u32);
-            winapi::user32::RegisterWindowMessageW(machine, lpString).to_raw()
-        }
-        pub unsafe fn ReleaseCapture(machine: &mut Machine, esp: u32) -> u32 {
-            let mem = machine.mem().detach();
-            winapi::user32::ReleaseCapture(machine).to_raw()
-        }
-        pub unsafe fn ReleaseDC(machine: &mut Machine, esp: u32) -> u32 {
-            let mem = machine.mem().detach();
-            let hwnd = <HWND>::from_stack(mem, esp + 4u32);
-            let hdc = <HDC>::from_stack(mem, esp + 8u32);
-            winapi::user32::ReleaseDC(machine, hwnd, hdc).to_raw()
-        }
-        pub unsafe fn SendMessageA(machine: &mut Machine, esp: u32) -> u32 {
-            let mem = machine.mem().detach();
-            let hWnd = <HWND>::from_stack(mem, esp + 4u32);
-            let Msg = <Result<WM, u32>>::from_stack(mem, esp + 8u32);
-            let wParam = <u32>::from_stack(mem, esp + 12u32);
-            let lParam = <u32>::from_stack(mem, esp + 16u32);
-            #[cfg(feature = "x86-emu")]
-            {
-                let m: *mut Machine = machine;
-                let result = async move {
-                    use memory::Extensions;
-                    let machine = unsafe { &mut *m };
-                    let result =
-                        winapi::user32::SendMessageA(machine, hWnd, Msg, wParam, lParam).await;
-                    let cpu = &mut machine.emu.x86.cpu_mut();
-                    cpu.regs.eip = x86::ops::pop(cpu, machine.emu.memory.mem());
-                    *cpu.regs.get32_mut(x86::Register::ESP) += 16u32;
-                    cpu.regs.set32(x86::Register::EAX, result.to_raw());
-                };
-                machine
-                    .emu
-                    .x86
-                    .cpu_mut()
-                    .call_async(machine.emu.memory.mem(), Box::pin(result));
-                0
+            );
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::PeekMessageW_pos.0,
+                    winapi::user32::PeekMessageW_pos.1,
+                    &result,
+                );
             }
-            #[cfg(any(feature = "x86-64", feature = "x86-unicorn"))]
-            {
-                let pin = std::pin::pin!(winapi::user32::SendMessageA(
-                    machine, hWnd, Msg, wParam, lParam
-                ));
-                crate::shims::call_sync(pin).to_raw()
+            result.to_raw()
+        }
+        pub unsafe fn PostMessageW(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let hWnd = <HWND>::from_stack(mem, stack_args + 0u32);
+            let Msg = <u32>::from_stack(mem, stack_args + 4u32);
+            let wParam = <u32>::from_stack(mem, stack_args + 8u32);
+            let lParam = <u32>::from_stack(mem, stack_args + 12u32);
+            let __trace_context = if crate::trace::enabled("user32/message") {
+                Some(crate::trace::trace_begin(
+                    "user32/message",
+                    "PostMessageW",
+                    &[
+                        ("hWnd", &hWnd),
+                        ("Msg", &Msg),
+                        ("wParam", &wParam),
+                        ("lParam", &lParam),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::PostMessageW(machine, hWnd, Msg, wParam, lParam);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::PostMessageW_pos.0,
+                    winapi::user32::PostMessageW_pos.1,
+                    &result,
+                );
             }
+            result.to_raw()
         }
-        pub unsafe fn SetCapture(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn PostQuitMessage(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hwnd = <HWND>::from_stack(mem, esp + 4u32);
-            winapi::user32::SetCapture(machine, hwnd).to_raw()
-        }
-        pub unsafe fn SetCursor(machine: &mut Machine, esp: u32) -> u32 {
-            let mem = machine.mem().detach();
-            let hCursor = <u32>::from_stack(mem, esp + 4u32);
-            winapi::user32::SetCursor(machine, hCursor).to_raw()
-        }
-        pub unsafe fn SetFocus(machine: &mut Machine, esp: u32) -> u32 {
-            let mem = machine.mem().detach();
-            let hWnd = <HWND>::from_stack(mem, esp + 4u32);
-            winapi::user32::SetFocus(machine, hWnd).to_raw()
-        }
-        pub unsafe fn SetForegroundWindow(machine: &mut Machine, esp: u32) -> u32 {
-            let mem = machine.mem().detach();
-            let hWnd = <HWND>::from_stack(mem, esp + 4u32);
-            winapi::user32::SetForegroundWindow(machine, hWnd).to_raw()
-        }
-        pub unsafe fn SetMenu(machine: &mut Machine, esp: u32) -> u32 {
-            let mem = machine.mem().detach();
-            let hWnd = <HWND>::from_stack(mem, esp + 4u32);
-            let hMenu = <HMENU>::from_stack(mem, esp + 8u32);
-            winapi::user32::SetMenu(machine, hWnd, hMenu).to_raw()
-        }
-        pub unsafe fn SetMenuItemInfoA(machine: &mut Machine, esp: u32) -> u32 {
-            let mem = machine.mem().detach();
-            let hMenu = <HMENU>::from_stack(mem, esp + 4u32);
-            let item = <u32>::from_stack(mem, esp + 8u32);
-            let fByPosition = <bool>::from_stack(mem, esp + 12u32);
-            let lpmii = <u32>::from_stack(mem, esp + 16u32);
-            winapi::user32::SetMenuItemInfoA(machine, hMenu, item, fByPosition, lpmii).to_raw()
-        }
-        pub unsafe fn SetRect(machine: &mut Machine, esp: u32) -> u32 {
-            let mem = machine.mem().detach();
-            let lprc = <Option<&mut RECT>>::from_stack(mem, esp + 4u32);
-            let xLeft = <i32>::from_stack(mem, esp + 8u32);
-            let yTop = <i32>::from_stack(mem, esp + 12u32);
-            let xRight = <i32>::from_stack(mem, esp + 16u32);
-            let yBottom = <i32>::from_stack(mem, esp + 20u32);
-            winapi::user32::SetRect(machine, lprc, xLeft, yTop, xRight, yBottom).to_raw()
-        }
-        pub unsafe fn SetRectEmpty(machine: &mut Machine, esp: u32) -> u32 {
-            let mem = machine.mem().detach();
-            let lprc = <Option<&mut RECT>>::from_stack(mem, esp + 4u32);
-            winapi::user32::SetRectEmpty(machine, lprc).to_raw()
-        }
-        pub unsafe fn SetTimer(machine: &mut Machine, esp: u32) -> u32 {
-            let mem = machine.mem().detach();
-            let hWnd = <HWND>::from_stack(mem, esp + 4u32);
-            let nIDEvent = <u32>::from_stack(mem, esp + 8u32);
-            let uElapse = <u32>::from_stack(mem, esp + 12u32);
-            let lpTimerFunc = <u32>::from_stack(mem, esp + 16u32);
-            winapi::user32::SetTimer(machine, hWnd, nIDEvent, uElapse, lpTimerFunc).to_raw()
-        }
-        pub unsafe fn SetWindowPos(machine: &mut Machine, esp: u32) -> u32 {
-            let mem = machine.mem().detach();
-            let hWnd = <HWND>::from_stack(mem, esp + 4u32);
-            let hWndInsertAfter = <HWND>::from_stack(mem, esp + 8u32);
-            let X = <i32>::from_stack(mem, esp + 12u32);
-            let Y = <i32>::from_stack(mem, esp + 16u32);
-            let cx = <i32>::from_stack(mem, esp + 20u32);
-            let cy = <i32>::from_stack(mem, esp + 24u32);
-            let uFlags = <Result<SWP, u32>>::from_stack(mem, esp + 28u32);
-            #[cfg(feature = "x86-emu")]
-            {
-                let m: *mut Machine = machine;
-                let result = async move {
-                    use memory::Extensions;
-                    let machine = unsafe { &mut *m };
-                    let result = winapi::user32::SetWindowPos(
-                        machine,
-                        hWnd,
-                        hWndInsertAfter,
-                        X,
-                        Y,
-                        cx,
-                        cy,
-                        uFlags,
-                    )
-                    .await;
-                    let cpu = &mut machine.emu.x86.cpu_mut();
-                    cpu.regs.eip = x86::ops::pop(cpu, machine.emu.memory.mem());
-                    *cpu.regs.get32_mut(x86::Register::ESP) += 28u32;
-                    cpu.regs.set32(x86::Register::EAX, result.to_raw());
-                };
-                machine
-                    .emu
-                    .x86
-                    .cpu_mut()
-                    .call_async(machine.emu.memory.mem(), Box::pin(result));
-                0
+            let nExitCode = <i32>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("user32/message") {
+                Some(crate::trace::trace_begin(
+                    "user32/message",
+                    "PostQuitMessage",
+                    &[("nExitCode", &nExitCode)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::PostQuitMessage(machine, nExitCode);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::PostQuitMessage_pos.0,
+                    winapi::user32::PostQuitMessage_pos.1,
+                    &result,
+                );
             }
-            #[cfg(any(feature = "x86-64", feature = "x86-unicorn"))]
-            {
-                let pin = std::pin::pin!(winapi::user32::SetWindowPos(
+            result.to_raw()
+        }
+        pub unsafe fn PtInRect(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let lprc = <Option<&RECT>>::from_stack(mem, stack_args + 0u32);
+            let pt = <POINT>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("user32/rect") {
+                Some(crate::trace::trace_begin(
+                    "user32/rect",
+                    "PtInRect",
+                    &[("lprc", &lprc), ("pt", &pt)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::PtInRect(machine, lprc, pt);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::PtInRect_pos.0,
+                    winapi::user32::PtInRect_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn RegisterClassA(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let lpWndClass = <Option<&WNDCLASSA>>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("user32/window") {
+                Some(crate::trace::trace_begin(
+                    "user32/window",
+                    "RegisterClassA",
+                    &[("lpWndClass", &lpWndClass)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::RegisterClassA(machine, lpWndClass);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::RegisterClassA_pos.0,
+                    winapi::user32::RegisterClassA_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn RegisterClassExA(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let lpWndClassEx = <Option<&WNDCLASSEXA>>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("user32/window") {
+                Some(crate::trace::trace_begin(
+                    "user32/window",
+                    "RegisterClassExA",
+                    &[("lpWndClassEx", &lpWndClassEx)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::RegisterClassExA(machine, lpWndClassEx);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::RegisterClassExA_pos.0,
+                    winapi::user32::RegisterClassExA_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn RegisterClassExW(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let lpWndClassEx = <Option<&WNDCLASSEXW>>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("user32/window") {
+                Some(crate::trace::trace_begin(
+                    "user32/window",
+                    "RegisterClassExW",
+                    &[("lpWndClassEx", &lpWndClassEx)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::RegisterClassExW(machine, lpWndClassEx);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::RegisterClassExW_pos.0,
+                    winapi::user32::RegisterClassExW_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn RegisterClassW(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let lpWndClass = <Option<&WNDCLASSA>>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("user32/window") {
+                Some(crate::trace::trace_begin(
+                    "user32/window",
+                    "RegisterClassW",
+                    &[("lpWndClass", &lpWndClass)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::RegisterClassW(machine, lpWndClass);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::RegisterClassW_pos.0,
+                    winapi::user32::RegisterClassW_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn RegisterWindowMessageW(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let lpString = <Option<&Str16>>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("user32/window") {
+                Some(crate::trace::trace_begin(
+                    "user32/window",
+                    "RegisterWindowMessageW",
+                    &[("lpString", &lpString)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::RegisterWindowMessageW(machine, lpString);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::RegisterWindowMessageW_pos.0,
+                    winapi::user32::RegisterWindowMessageW_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn ReleaseCapture(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let __trace_context = if crate::trace::enabled("user32/window") {
+                Some(crate::trace::trace_begin(
+                    "user32/window",
+                    "ReleaseCapture",
+                    &[],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::ReleaseCapture(machine);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::ReleaseCapture_pos.0,
+                    winapi::user32::ReleaseCapture_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn ReleaseDC(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let hwnd = <HWND>::from_stack(mem, stack_args + 0u32);
+            let hdc = <HDC>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("user32/window") {
+                Some(crate::trace::trace_begin(
+                    "user32/window",
+                    "ReleaseDC",
+                    &[("hwnd", &hwnd), ("hdc", &hdc)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::ReleaseDC(machine, hwnd, hdc);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::ReleaseDC_pos.0,
+                    winapi::user32::ReleaseDC_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn SendMessageA(
+            machine: &mut Machine,
+            stack_args: u32,
+        ) -> std::pin::Pin<Box<dyn std::future::Future<Output = u32>>> {
+            let mem = machine.mem().detach();
+            let hWnd = <HWND>::from_stack(mem, stack_args + 0u32);
+            let Msg = <Result<WM, u32>>::from_stack(mem, stack_args + 4u32);
+            let wParam = <u32>::from_stack(mem, stack_args + 8u32);
+            let lParam = <u32>::from_stack(mem, stack_args + 12u32);
+            let __trace_context = if crate::trace::enabled("user32/message") {
+                Some(crate::trace::trace_begin(
+                    "user32/message",
+                    "SendMessageA",
+                    &[
+                        ("hWnd", &hWnd),
+                        ("Msg", &Msg),
+                        ("wParam", &wParam),
+                        ("lParam", &lParam),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let machine: *mut Machine = machine;
+            Box::pin(async move {
+                let machine = unsafe { &mut *machine };
+                let result = winapi::user32::SendMessageA(machine, hWnd, Msg, wParam, lParam).await;
+                if let Some(__trace_context) = __trace_context {
+                    crate::trace::trace_return(
+                        &__trace_context,
+                        winapi::user32::SendMessageA_pos.0,
+                        winapi::user32::SendMessageA_pos.1,
+                        &result,
+                    );
+                }
+                result.to_raw()
+            })
+        }
+        pub unsafe fn SendMessageW(
+            machine: &mut Machine,
+            stack_args: u32,
+        ) -> std::pin::Pin<Box<dyn std::future::Future<Output = u32>>> {
+            let mem = machine.mem().detach();
+            let hWnd = <HWND>::from_stack(mem, stack_args + 0u32);
+            let Msg = <Result<WM, u32>>::from_stack(mem, stack_args + 4u32);
+            let wParam = <u32>::from_stack(mem, stack_args + 8u32);
+            let lParam = <u32>::from_stack(mem, stack_args + 12u32);
+            let __trace_context = if crate::trace::enabled("user32/message") {
+                Some(crate::trace::trace_begin(
+                    "user32/message",
+                    "SendMessageW",
+                    &[
+                        ("hWnd", &hWnd),
+                        ("Msg", &Msg),
+                        ("wParam", &wParam),
+                        ("lParam", &lParam),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let machine: *mut Machine = machine;
+            Box::pin(async move {
+                let machine = unsafe { &mut *machine };
+                let result = winapi::user32::SendMessageW(machine, hWnd, Msg, wParam, lParam).await;
+                if let Some(__trace_context) = __trace_context {
+                    crate::trace::trace_return(
+                        &__trace_context,
+                        winapi::user32::SendMessageW_pos.0,
+                        winapi::user32::SendMessageW_pos.1,
+                        &result,
+                    );
+                }
+                result.to_raw()
+            })
+        }
+        pub unsafe fn SetCapture(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let hwnd = <HWND>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("user32/window") {
+                Some(crate::trace::trace_begin(
+                    "user32/window",
+                    "SetCapture",
+                    &[("hwnd", &hwnd)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::SetCapture(machine, hwnd);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::SetCapture_pos.0,
+                    winapi::user32::SetCapture_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn SetCursor(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let hCursor = <u32>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("user32/resource") {
+                Some(crate::trace::trace_begin(
+                    "user32/resource",
+                    "SetCursor",
+                    &[("hCursor", &hCursor)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::SetCursor(machine, hCursor);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::SetCursor_pos.0,
+                    winapi::user32::SetCursor_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn SetCursorPos(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let x = <i32>::from_stack(mem, stack_args + 0u32);
+            let y = <i32>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("user32/misc") {
+                Some(crate::trace::trace_begin(
+                    "user32/misc",
+                    "SetCursorPos",
+                    &[("x", &x), ("y", &y)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::SetCursorPos(machine, x, y);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::SetCursorPos_pos.0,
+                    winapi::user32::SetCursorPos_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn SetDlgItemInt(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let hDlg = <HWND>::from_stack(mem, stack_args + 0u32);
+            let nIDDlgItem = <i32>::from_stack(mem, stack_args + 4u32);
+            let uValue = <u32>::from_stack(mem, stack_args + 8u32);
+            let _bSigned = <bool>::from_stack(mem, stack_args + 12u32);
+            let __trace_context = if crate::trace::enabled("user32/dialog") {
+                Some(crate::trace::trace_begin(
+                    "user32/dialog",
+                    "SetDlgItemInt",
+                    &[
+                        ("hDlg", &hDlg),
+                        ("nIDDlgItem", &nIDDlgItem),
+                        ("uValue", &uValue),
+                        ("bSigned", &_bSigned),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::SetDlgItemInt(machine, hDlg, nIDDlgItem, uValue, _bSigned);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::SetDlgItemInt_pos.0,
+                    winapi::user32::SetDlgItemInt_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn SetDlgItemTextA(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let hDlg = <HWND>::from_stack(mem, stack_args + 0u32);
+            let nIDDlgItem = <i32>::from_stack(mem, stack_args + 4u32);
+            let lpString = <Option<&str>>::from_stack(mem, stack_args + 8u32);
+            let __trace_context = if crate::trace::enabled("user32/dialog") {
+                Some(crate::trace::trace_begin(
+                    "user32/dialog",
+                    "SetDlgItemTextA",
+                    &[
+                        ("hDlg", &hDlg),
+                        ("nIDDlgItem", &nIDDlgItem),
+                        ("lpString", &lpString),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::SetDlgItemTextA(machine, hDlg, nIDDlgItem, lpString);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::SetDlgItemTextA_pos.0,
+                    winapi::user32::SetDlgItemTextA_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn SetDlgItemTextW(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let hDlg = <HWND>::from_stack(mem, stack_args + 0u32);
+            let nIDDlgItem = <i32>::from_stack(mem, stack_args + 4u32);
+            let lpString = <Option<&Str16>>::from_stack(mem, stack_args + 8u32);
+            let __trace_context = if crate::trace::enabled("user32/dialog") {
+                Some(crate::trace::trace_begin(
+                    "user32/dialog",
+                    "SetDlgItemTextW",
+                    &[
+                        ("hDlg", &hDlg),
+                        ("nIDDlgItem", &nIDDlgItem),
+                        ("lpString", &lpString),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::SetDlgItemTextW(machine, hDlg, nIDDlgItem, lpString);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::SetDlgItemTextW_pos.0,
+                    winapi::user32::SetDlgItemTextW_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn SetFocus(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let hWnd = <HWND>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("user32/window") {
+                Some(crate::trace::trace_begin(
+                    "user32/window",
+                    "SetFocus",
+                    &[("hWnd", &hWnd)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::SetFocus(machine, hWnd);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::SetFocus_pos.0,
+                    winapi::user32::SetFocus_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn SetForegroundWindow(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let hWnd = <HWND>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("user32/window") {
+                Some(crate::trace::trace_begin(
+                    "user32/window",
+                    "SetForegroundWindow",
+                    &[("hWnd", &hWnd)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::SetForegroundWindow(machine, hWnd);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::SetForegroundWindow_pos.0,
+                    winapi::user32::SetForegroundWindow_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn SetMenu(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let hWnd = <HWND>::from_stack(mem, stack_args + 0u32);
+            let hMenu = <HMENU>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("user32/menu") {
+                Some(crate::trace::trace_begin(
+                    "user32/menu",
+                    "SetMenu",
+                    &[("hWnd", &hWnd), ("hMenu", &hMenu)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::SetMenu(machine, hWnd, hMenu);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::SetMenu_pos.0,
+                    winapi::user32::SetMenu_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn SetMenuItemInfoA(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let hMenu = <HMENU>::from_stack(mem, stack_args + 0u32);
+            let item = <u32>::from_stack(mem, stack_args + 4u32);
+            let fByPosition = <bool>::from_stack(mem, stack_args + 8u32);
+            let lpmii = <u32>::from_stack(mem, stack_args + 12u32);
+            let __trace_context = if crate::trace::enabled("user32/menu") {
+                Some(crate::trace::trace_begin(
+                    "user32/menu",
+                    "SetMenuItemInfoA",
+                    &[
+                        ("hMenu", &hMenu),
+                        ("item", &item),
+                        ("fByPosition", &fByPosition),
+                        ("lpmii", &lpmii),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::SetMenuItemInfoA(machine, hMenu, item, fByPosition, lpmii);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::SetMenuItemInfoA_pos.0,
+                    winapi::user32::SetMenuItemInfoA_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn SetRect(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let lprc = <Option<&mut RECT>>::from_stack(mem, stack_args + 0u32);
+            let xLeft = <i32>::from_stack(mem, stack_args + 4u32);
+            let yTop = <i32>::from_stack(mem, stack_args + 8u32);
+            let xRight = <i32>::from_stack(mem, stack_args + 12u32);
+            let yBottom = <i32>::from_stack(mem, stack_args + 16u32);
+            let __trace_context = if crate::trace::enabled("user32/rect") {
+                Some(crate::trace::trace_begin(
+                    "user32/rect",
+                    "SetRect",
+                    &[
+                        ("lprc", &lprc),
+                        ("xLeft", &xLeft),
+                        ("yTop", &yTop),
+                        ("xRight", &xRight),
+                        ("yBottom", &yBottom),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::SetRect(machine, lprc, xLeft, yTop, xRight, yBottom);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::SetRect_pos.0,
+                    winapi::user32::SetRect_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn SetRectEmpty(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let lprc = <Option<&mut RECT>>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("user32/rect") {
+                Some(crate::trace::trace_begin(
+                    "user32/rect",
+                    "SetRectEmpty",
+                    &[("lprc", &lprc)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::SetRectEmpty(machine, lprc);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::SetRectEmpty_pos.0,
+                    winapi::user32::SetRectEmpty_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn SetTimer(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let hWnd = <HWND>::from_stack(mem, stack_args + 0u32);
+            let nIDEvent = <u32>::from_stack(mem, stack_args + 4u32);
+            let uElapse = <u32>::from_stack(mem, stack_args + 8u32);
+            let lpTimerFunc = <u32>::from_stack(mem, stack_args + 12u32);
+            let __trace_context = if crate::trace::enabled("user32/timer") {
+                Some(crate::trace::trace_begin(
+                    "user32/timer",
+                    "SetTimer",
+                    &[
+                        ("hWnd", &hWnd),
+                        ("nIDEvent", &nIDEvent),
+                        ("uElapse", &uElapse),
+                        ("lpTimerFunc", &lpTimerFunc),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::SetTimer(machine, hWnd, nIDEvent, uElapse, lpTimerFunc);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::SetTimer_pos.0,
+                    winapi::user32::SetTimer_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn SetWindowPos(
+            machine: &mut Machine,
+            stack_args: u32,
+        ) -> std::pin::Pin<Box<dyn std::future::Future<Output = u32>>> {
+            let mem = machine.mem().detach();
+            let hWnd = <HWND>::from_stack(mem, stack_args + 0u32);
+            let hWndInsertAfter = <HWND>::from_stack(mem, stack_args + 4u32);
+            let X = <i32>::from_stack(mem, stack_args + 8u32);
+            let Y = <i32>::from_stack(mem, stack_args + 12u32);
+            let cx = <i32>::from_stack(mem, stack_args + 16u32);
+            let cy = <i32>::from_stack(mem, stack_args + 20u32);
+            let uFlags = <Result<SWP, u32>>::from_stack(mem, stack_args + 24u32);
+            let __trace_context = if crate::trace::enabled("user32/window") {
+                Some(crate::trace::trace_begin(
+                    "user32/window",
+                    "SetWindowPos",
+                    &[
+                        ("hWnd", &hWnd),
+                        ("hWndInsertAfter", &hWndInsertAfter),
+                        ("X", &X),
+                        ("Y", &Y),
+                        ("cx", &cx),
+                        ("cy", &cy),
+                        ("uFlags", &uFlags),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let machine: *mut Machine = machine;
+            Box::pin(async move {
+                let machine = unsafe { &mut *machine };
+                let result = winapi::user32::SetWindowPos(
                     machine,
                     hWnd,
                     hWndInsertAfter,
@@ -5919,765 +13967,788 @@ pub mod user32 {
                     Y,
                     cx,
                     cy,
-                    uFlags
-                ));
-                crate::shims::call_sync(pin).to_raw()
+                    uFlags,
+                )
+                .await;
+                if let Some(__trace_context) = __trace_context {
+                    crate::trace::trace_return(
+                        &__trace_context,
+                        winapi::user32::SetWindowPos_pos.0,
+                        winapi::user32::SetWindowPos_pos.1,
+                        &result,
+                    );
+                }
+                result.to_raw()
+            })
+        }
+        pub unsafe fn SetWindowTextA(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let hWnd = <HWND>::from_stack(mem, stack_args + 0u32);
+            let lpString = <Option<&str>>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("user32/window") {
+                Some(crate::trace::trace_begin(
+                    "user32/window",
+                    "SetWindowTextA",
+                    &[("hWnd", &hWnd), ("lpString", &lpString)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::SetWindowTextA(machine, hWnd, lpString);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::SetWindowTextA_pos.0,
+                    winapi::user32::SetWindowTextA_pos.1,
+                    &result,
+                );
             }
+            result.to_raw()
         }
-        pub unsafe fn SetWindowTextA(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn ShowCursor(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hWnd = <HWND>::from_stack(mem, esp + 4u32);
-            let lpString = <Option<&str>>::from_stack(mem, esp + 8u32);
-            winapi::user32::SetWindowTextA(machine, hWnd, lpString).to_raw()
-        }
-        pub unsafe fn ShowCursor(machine: &mut Machine, esp: u32) -> u32 {
-            let mem = machine.mem().detach();
-            let bShow = <bool>::from_stack(mem, esp + 4u32);
-            winapi::user32::ShowCursor(machine, bShow).to_raw()
-        }
-        pub unsafe fn ShowWindow(machine: &mut Machine, esp: u32) -> u32 {
-            let mem = machine.mem().detach();
-            let hWnd = <HWND>::from_stack(mem, esp + 4u32);
-            let nCmdShow = <Result<SW, u32>>::from_stack(mem, esp + 8u32);
-            #[cfg(feature = "x86-emu")]
-            {
-                let m: *mut Machine = machine;
-                let result = async move {
-                    use memory::Extensions;
-                    let machine = unsafe { &mut *m };
-                    let result = winapi::user32::ShowWindow(machine, hWnd, nCmdShow).await;
-                    let cpu = &mut machine.emu.x86.cpu_mut();
-                    cpu.regs.eip = x86::ops::pop(cpu, machine.emu.memory.mem());
-                    *cpu.regs.get32_mut(x86::Register::ESP) += 8u32;
-                    cpu.regs.set32(x86::Register::EAX, result.to_raw());
-                };
-                machine
-                    .emu
-                    .x86
-                    .cpu_mut()
-                    .call_async(machine.emu.memory.mem(), Box::pin(result));
-                0
+            let bShow = <bool>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("user32/resource") {
+                Some(crate::trace::trace_begin(
+                    "user32/resource",
+                    "ShowCursor",
+                    &[("bShow", &bShow)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::ShowCursor(machine, bShow);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::ShowCursor_pos.0,
+                    winapi::user32::ShowCursor_pos.1,
+                    &result,
+                );
             }
-            #[cfg(any(feature = "x86-64", feature = "x86-unicorn"))]
-            {
-                let pin = std::pin::pin!(winapi::user32::ShowWindow(machine, hWnd, nCmdShow));
-                crate::shims::call_sync(pin).to_raw()
+            result.to_raw()
+        }
+        pub unsafe fn ShowWindow(
+            machine: &mut Machine,
+            stack_args: u32,
+        ) -> std::pin::Pin<Box<dyn std::future::Future<Output = u32>>> {
+            let mem = machine.mem().detach();
+            let hWnd = <HWND>::from_stack(mem, stack_args + 0u32);
+            let nCmdShow = <Result<SW, u32>>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("user32/window") {
+                Some(crate::trace::trace_begin(
+                    "user32/window",
+                    "ShowWindow",
+                    &[("hWnd", &hWnd), ("nCmdShow", &nCmdShow)],
+                ))
+            } else {
+                None
+            };
+            let machine: *mut Machine = machine;
+            Box::pin(async move {
+                let machine = unsafe { &mut *machine };
+                let result = winapi::user32::ShowWindow(machine, hWnd, nCmdShow).await;
+                if let Some(__trace_context) = __trace_context {
+                    crate::trace::trace_return(
+                        &__trace_context,
+                        winapi::user32::ShowWindow_pos.0,
+                        winapi::user32::ShowWindow_pos.1,
+                        &result,
+                    );
+                }
+                result.to_raw()
+            })
+        }
+        pub unsafe fn TranslateAcceleratorW(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let hWnd = <HWND>::from_stack(mem, stack_args + 0u32);
+            let hAccTable = <u32>::from_stack(mem, stack_args + 4u32);
+            let lpMsg = <Option<&MSG>>::from_stack(mem, stack_args + 8u32);
+            let __trace_context = if crate::trace::enabled("user32/message") {
+                Some(crate::trace::trace_begin(
+                    "user32/message",
+                    "TranslateAcceleratorW",
+                    &[
+                        ("hWnd", &hWnd),
+                        ("hAccTable", &hAccTable),
+                        ("lpMsg", &lpMsg),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::TranslateAcceleratorW(machine, hWnd, hAccTable, lpMsg);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::TranslateAcceleratorW_pos.0,
+                    winapi::user32::TranslateAcceleratorW_pos.1,
+                    &result,
+                );
             }
+            result.to_raw()
         }
-        pub unsafe fn TranslateAcceleratorW(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn TranslateMessage(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hWnd = <HWND>::from_stack(mem, esp + 4u32);
-            let hAccTable = <u32>::from_stack(mem, esp + 8u32);
-            let lpMsg = <Option<&MSG>>::from_stack(mem, esp + 12u32);
-            winapi::user32::TranslateAcceleratorW(machine, hWnd, hAccTable, lpMsg).to_raw()
-        }
-        pub unsafe fn TranslateMessage(machine: &mut Machine, esp: u32) -> u32 {
-            let mem = machine.mem().detach();
-            let lpMsg = <Option<&MSG>>::from_stack(mem, esp + 4u32);
-            winapi::user32::TranslateMessage(machine, lpMsg).to_raw()
-        }
-        pub unsafe fn UpdateWindow(machine: &mut Machine, esp: u32) -> u32 {
-            let mem = machine.mem().detach();
-            let hWnd = <HWND>::from_stack(mem, esp + 4u32);
-            #[cfg(feature = "x86-emu")]
-            {
-                let m: *mut Machine = machine;
-                let result = async move {
-                    use memory::Extensions;
-                    let machine = unsafe { &mut *m };
-                    let result = winapi::user32::UpdateWindow(machine, hWnd).await;
-                    let cpu = &mut machine.emu.x86.cpu_mut();
-                    cpu.regs.eip = x86::ops::pop(cpu, machine.emu.memory.mem());
-                    *cpu.regs.get32_mut(x86::Register::ESP) += 4u32;
-                    cpu.regs.set32(x86::Register::EAX, result.to_raw());
-                };
-                machine
-                    .emu
-                    .x86
-                    .cpu_mut()
-                    .call_async(machine.emu.memory.mem(), Box::pin(result));
-                0
+            let lpMsg = <Option<&MSG>>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("user32/message") {
+                Some(crate::trace::trace_begin(
+                    "user32/message",
+                    "TranslateMessage",
+                    &[("lpMsg", &lpMsg)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::TranslateMessage(machine, lpMsg);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::TranslateMessage_pos.0,
+                    winapi::user32::TranslateMessage_pos.1,
+                    &result,
+                );
             }
-            #[cfg(any(feature = "x86-64", feature = "x86-unicorn"))]
-            {
-                let pin = std::pin::pin!(winapi::user32::UpdateWindow(machine, hWnd));
-                crate::shims::call_sync(pin).to_raw()
+            result.to_raw()
+        }
+        pub unsafe fn UpdateWindow(
+            machine: &mut Machine,
+            stack_args: u32,
+        ) -> std::pin::Pin<Box<dyn std::future::Future<Output = u32>>> {
+            let mem = machine.mem().detach();
+            let hWnd = <HWND>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("user32/window") {
+                Some(crate::trace::trace_begin(
+                    "user32/window",
+                    "UpdateWindow",
+                    &[("hWnd", &hWnd)],
+                ))
+            } else {
+                None
+            };
+            let machine: *mut Machine = machine;
+            Box::pin(async move {
+                let machine = unsafe { &mut *machine };
+                let result = winapi::user32::UpdateWindow(machine, hWnd).await;
+                if let Some(__trace_context) = __trace_context {
+                    crate::trace::trace_return(
+                        &__trace_context,
+                        winapi::user32::UpdateWindow_pos.0,
+                        winapi::user32::UpdateWindow_pos.1,
+                        &result,
+                    );
+                }
+                result.to_raw()
+            })
+        }
+        pub unsafe fn ValidateRect(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let hWnd = <HWND>::from_stack(mem, stack_args + 0u32);
+            let lpRect = <Option<&RECT>>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("user32/paint") {
+                Some(crate::trace::trace_begin(
+                    "user32/paint",
+                    "ValidateRect",
+                    &[("hWnd", &hWnd), ("lpRect", &lpRect)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::ValidateRect(machine, hWnd, lpRect);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::ValidateRect_pos.0,
+                    winapi::user32::ValidateRect_pos.1,
+                    &result,
+                );
             }
+            result.to_raw()
         }
-        pub unsafe fn ValidateRect(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn WaitMessage(
+            machine: &mut Machine,
+            stack_args: u32,
+        ) -> std::pin::Pin<Box<dyn std::future::Future<Output = u32>>> {
             let mem = machine.mem().detach();
-            let hWnd = <HWND>::from_stack(mem, esp + 4u32);
-            let lpRect = <Option<&RECT>>::from_stack(mem, esp + 8u32);
-            winapi::user32::ValidateRect(machine, hWnd, lpRect).to_raw()
+            let __trace_context = if crate::trace::enabled("user32/message") {
+                Some(crate::trace::trace_begin(
+                    "user32/message",
+                    "WaitMessage",
+                    &[],
+                ))
+            } else {
+                None
+            };
+            let machine: *mut Machine = machine;
+            Box::pin(async move {
+                let machine = unsafe { &mut *machine };
+                let result = winapi::user32::WaitMessage(machine).await;
+                if let Some(__trace_context) = __trace_context {
+                    crate::trace::trace_return(
+                        &__trace_context,
+                        winapi::user32::WaitMessage_pos.0,
+                        winapi::user32::WaitMessage_pos.1,
+                        &result,
+                    );
+                }
+                result.to_raw()
+            })
         }
-        pub unsafe fn WaitMessage(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn WinHelpW(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            winapi::user32::WaitMessage(machine).to_raw()
+            let hWndMain = <HWND>::from_stack(mem, stack_args + 0u32);
+            let lpszHelp = <Option<&Str16>>::from_stack(mem, stack_args + 4u32);
+            let uCommand = <u32>::from_stack(mem, stack_args + 8u32);
+            let dwData = <u32>::from_stack(mem, stack_args + 12u32);
+            let __trace_context = if crate::trace::enabled("user32/misc") {
+                Some(crate::trace::trace_begin(
+                    "user32/misc",
+                    "WinHelpW",
+                    &[
+                        ("hWndMain", &hWndMain),
+                        ("lpszHelp", &lpszHelp),
+                        ("uCommand", &uCommand),
+                        ("dwData", &dwData),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::WinHelpW(machine, hWndMain, lpszHelp, uCommand, dwData);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::WinHelpW_pos.0,
+                    winapi::user32::WinHelpW_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn wsprintfA(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn wsprintfA(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let buf = <u32>::from_stack(mem, esp + 4u32);
-            let fmt = <Option<&str>>::from_stack(mem, esp + 8u32);
-            let args = <VarArgs>::from_stack(mem, esp + 12u32);
-            winapi::user32::wsprintfA(machine, buf, fmt, args).to_raw()
+            let buf = <u32>::from_stack(mem, stack_args + 0u32);
+            let fmt = <Option<&str>>::from_stack(mem, stack_args + 4u32);
+            let args = <VarArgs>::from_stack(mem, stack_args + 8u32);
+            let __trace_context = if crate::trace::enabled("user32/misc") {
+                Some(crate::trace::trace_begin(
+                    "user32/misc",
+                    "wsprintfA",
+                    &[("buf", &buf), ("fmt", &fmt), ("args", &args)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::wsprintfA(machine, buf, fmt, args);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::wsprintfA_pos.0,
+                    winapi::user32::wsprintfA_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn wsprintfW(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let buf = <u32>::from_stack(mem, stack_args + 0u32);
+            let fmt = <Option<&Str16>>::from_stack(mem, stack_args + 4u32);
+            let args = <VarArgs>::from_stack(mem, stack_args + 8u32);
+            let __trace_context = if crate::trace::enabled("user32/misc") {
+                Some(crate::trace::trace_begin(
+                    "user32/misc",
+                    "wsprintfW",
+                    &[("buf", &buf), ("fmt", &fmt), ("args", &args)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::user32::wsprintfW(machine, buf, fmt, args);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::user32::wsprintfW_pos.0,
+                    winapi::user32::wsprintfW_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
     }
-    mod shims {
-        use super::impls;
-        use super::Shim;
-        pub const AdjustWindowRect: Shim = Shim {
+    const SHIMS: [Shim; 118usize] = [
+        Shim {
             name: "AdjustWindowRect",
-            func: impls::AdjustWindowRect,
-            stack_consumed: 12u32,
-            is_async: false,
-        };
-        pub const AdjustWindowRectEx: Shim = Shim {
+            func: Handler::Sync(wrappers::AdjustWindowRect),
+        },
+        Shim {
             name: "AdjustWindowRectEx",
-            func: impls::AdjustWindowRectEx,
-            stack_consumed: 16u32,
-            is_async: false,
-        };
-        pub const AppendMenuA: Shim = Shim {
+            func: Handler::Sync(wrappers::AdjustWindowRectEx),
+        },
+        Shim {
             name: "AppendMenuA",
-            func: impls::AppendMenuA,
-            stack_consumed: 16u32,
-            is_async: false,
-        };
-        pub const BeginPaint: Shim = Shim {
+            func: Handler::Sync(wrappers::AppendMenuA),
+        },
+        Shim {
             name: "BeginPaint",
-            func: impls::BeginPaint,
-            stack_consumed: 8u32,
-            is_async: false,
-        };
-        pub const CheckMenuItem: Shim = Shim {
+            func: Handler::Sync(wrappers::BeginPaint),
+        },
+        Shim {
+            name: "CheckDlgButton",
+            func: Handler::Sync(wrappers::CheckDlgButton),
+        },
+        Shim {
             name: "CheckMenuItem",
-            func: impls::CheckMenuItem,
-            stack_consumed: 12u32,
-            is_async: false,
-        };
-        pub const ClientToScreen: Shim = Shim {
+            func: Handler::Sync(wrappers::CheckMenuItem),
+        },
+        Shim {
+            name: "CheckRadioButton",
+            func: Handler::Sync(wrappers::CheckRadioButton),
+        },
+        Shim {
             name: "ClientToScreen",
-            func: impls::ClientToScreen,
-            stack_consumed: 8u32,
-            is_async: false,
-        };
-        pub const CreateCursor: Shim = Shim {
+            func: Handler::Sync(wrappers::ClientToScreen),
+        },
+        Shim {
+            name: "CopyRect",
+            func: Handler::Sync(wrappers::CopyRect),
+        },
+        Shim {
             name: "CreateCursor",
-            func: impls::CreateCursor,
-            stack_consumed: 28u32,
-            is_async: false,
-        };
-        pub const CreatePopupMenu: Shim = Shim {
+            func: Handler::Sync(wrappers::CreateCursor),
+        },
+        Shim {
             name: "CreatePopupMenu",
-            func: impls::CreatePopupMenu,
-            stack_consumed: 0u32,
-            is_async: false,
-        };
-        pub const CreateWindowExA: Shim = Shim {
+            func: Handler::Sync(wrappers::CreatePopupMenu),
+        },
+        Shim {
             name: "CreateWindowExA",
-            func: impls::CreateWindowExA,
-            stack_consumed: 48u32,
-            is_async: true,
-        };
-        pub const CreateWindowExW: Shim = Shim {
+            func: Handler::Async(wrappers::CreateWindowExA),
+        },
+        Shim {
             name: "CreateWindowExW",
-            func: impls::CreateWindowExW,
-            stack_consumed: 48u32,
-            is_async: true,
-        };
-        pub const DefWindowProcA: Shim = Shim {
+            func: Handler::Async(wrappers::CreateWindowExW),
+        },
+        Shim {
             name: "DefWindowProcA",
-            func: impls::DefWindowProcA,
-            stack_consumed: 16u32,
-            is_async: true,
-        };
-        pub const DefWindowProcW: Shim = Shim {
+            func: Handler::Async(wrappers::DefWindowProcA),
+        },
+        Shim {
             name: "DefWindowProcW",
-            func: impls::DefWindowProcW,
-            stack_consumed: 16u32,
-            is_async: true,
-        };
-        pub const DestroyWindow: Shim = Shim {
+            func: Handler::Async(wrappers::DefWindowProcW),
+        },
+        Shim {
             name: "DestroyWindow",
-            func: impls::DestroyWindow,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const DialogBoxIndirectParamA: Shim = Shim {
+            func: Handler::Sync(wrappers::DestroyWindow),
+        },
+        Shim {
             name: "DialogBoxIndirectParamA",
-            func: impls::DialogBoxIndirectParamA,
-            stack_consumed: 20u32,
-            is_async: false,
-        };
-        pub const DialogBoxParamA: Shim = Shim {
+            func: Handler::Sync(wrappers::DialogBoxIndirectParamA),
+        },
+        Shim {
             name: "DialogBoxParamA",
-            func: impls::DialogBoxParamA,
-            stack_consumed: 20u32,
-            is_async: false,
-        };
-        pub const DispatchMessageA: Shim = Shim {
+            func: Handler::Sync(wrappers::DialogBoxParamA),
+        },
+        Shim {
+            name: "DialogBoxParamW",
+            func: Handler::Sync(wrappers::DialogBoxParamW),
+        },
+        Shim {
             name: "DispatchMessageA",
-            func: impls::DispatchMessageA,
-            stack_consumed: 4u32,
-            is_async: true,
-        };
-        pub const DispatchMessageW: Shim = Shim {
+            func: Handler::Async(wrappers::DispatchMessageA),
+        },
+        Shim {
             name: "DispatchMessageW",
-            func: impls::DispatchMessageW,
-            stack_consumed: 4u32,
-            is_async: true,
-        };
-        pub const DrawTextW: Shim = Shim {
+            func: Handler::Async(wrappers::DispatchMessageW),
+        },
+        Shim {
             name: "DrawTextW",
-            func: impls::DrawTextW,
-            stack_consumed: 20u32,
-            is_async: false,
-        };
-        pub const EndPaint: Shim = Shim {
+            func: Handler::Sync(wrappers::DrawTextW),
+        },
+        Shim {
+            name: "EnableMenuItem",
+            func: Handler::Sync(wrappers::EnableMenuItem),
+        },
+        Shim {
+            name: "EnableWindow",
+            func: Handler::Sync(wrappers::EnableWindow),
+        },
+        Shim {
+            name: "EndDialog",
+            func: Handler::Sync(wrappers::EndDialog),
+        },
+        Shim {
             name: "EndPaint",
-            func: impls::EndPaint,
-            stack_consumed: 8u32,
-            is_async: false,
-        };
-        pub const FillRect: Shim = Shim {
+            func: Handler::Sync(wrappers::EndPaint),
+        },
+        Shim {
             name: "FillRect",
-            func: impls::FillRect,
-            stack_consumed: 12u32,
-            is_async: false,
-        };
-        pub const FindWindowA: Shim = Shim {
+            func: Handler::Sync(wrappers::FillRect),
+        },
+        Shim {
             name: "FindWindowA",
-            func: impls::FindWindowA,
-            stack_consumed: 8u32,
-            is_async: false,
-        };
-        pub const FrameRect: Shim = Shim {
+            func: Handler::Sync(wrappers::FindWindowA),
+        },
+        Shim {
             name: "FrameRect",
-            func: impls::FrameRect,
-            stack_consumed: 12u32,
-            is_async: false,
-        };
-        pub const GetActiveWindow: Shim = Shim {
+            func: Handler::Sync(wrappers::FrameRect),
+        },
+        Shim {
             name: "GetActiveWindow",
-            func: impls::GetActiveWindow,
-            stack_consumed: 0u32,
-            is_async: false,
-        };
-        pub const GetClientRect: Shim = Shim {
+            func: Handler::Sync(wrappers::GetActiveWindow),
+        },
+        Shim {
+            name: "GetCapture",
+            func: Handler::Sync(wrappers::GetCapture),
+        },
+        Shim {
             name: "GetClientRect",
-            func: impls::GetClientRect,
-            stack_consumed: 8u32,
-            is_async: false,
-        };
-        pub const GetDC: Shim = Shim {
+            func: Handler::Sync(wrappers::GetClientRect),
+        },
+        Shim {
             name: "GetDC",
-            func: impls::GetDC,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const GetDesktopWindow: Shim = Shim {
+            func: Handler::Sync(wrappers::GetDC),
+        },
+        Shim {
             name: "GetDesktopWindow",
-            func: impls::GetDesktopWindow,
-            stack_consumed: 0u32,
-            is_async: false,
-        };
-        pub const GetFocus: Shim = Shim {
+            func: Handler::Sync(wrappers::GetDesktopWindow),
+        },
+        Shim {
+            name: "GetDlgItem",
+            func: Handler::Sync(wrappers::GetDlgItem),
+        },
+        Shim {
+            name: "GetDlgItemInt",
+            func: Handler::Sync(wrappers::GetDlgItemInt),
+        },
+        Shim {
+            name: "GetDlgItemTextW",
+            func: Handler::Sync(wrappers::GetDlgItemTextW),
+        },
+        Shim {
             name: "GetFocus",
-            func: impls::GetFocus,
-            stack_consumed: 0u32,
-            is_async: false,
-        };
-        pub const GetForegroundWindow: Shim = Shim {
+            func: Handler::Sync(wrappers::GetFocus),
+        },
+        Shim {
             name: "GetForegroundWindow",
-            func: impls::GetForegroundWindow,
-            stack_consumed: 0u32,
-            is_async: false,
-        };
-        pub const GetKeyState: Shim = Shim {
+            func: Handler::Sync(wrappers::GetForegroundWindow),
+        },
+        Shim {
             name: "GetKeyState",
-            func: impls::GetKeyState,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const GetLastActivePopup: Shim = Shim {
+            func: Handler::Sync(wrappers::GetKeyState),
+        },
+        Shim {
             name: "GetLastActivePopup",
-            func: impls::GetLastActivePopup,
-            stack_consumed: 0u32,
-            is_async: false,
-        };
-        pub const GetMessageA: Shim = Shim {
+            func: Handler::Sync(wrappers::GetLastActivePopup),
+        },
+        Shim {
+            name: "GetMenu",
+            func: Handler::Sync(wrappers::GetMenu),
+        },
+        Shim {
+            name: "GetMenuItemRect",
+            func: Handler::Sync(wrappers::GetMenuItemRect),
+        },
+        Shim {
             name: "GetMessageA",
-            func: impls::GetMessageA,
-            stack_consumed: 16u32,
-            is_async: true,
-        };
-        pub const GetMessageW: Shim = Shim {
+            func: Handler::Async(wrappers::GetMessageA),
+        },
+        Shim {
             name: "GetMessageW",
-            func: impls::GetMessageW,
-            stack_consumed: 16u32,
-            is_async: true,
-        };
-        pub const GetSubMenu: Shim = Shim {
+            func: Handler::Async(wrappers::GetMessageW),
+        },
+        Shim {
             name: "GetSubMenu",
-            func: impls::GetSubMenu,
-            stack_consumed: 8u32,
-            is_async: false,
-        };
-        pub const GetSystemMenu: Shim = Shim {
+            func: Handler::Sync(wrappers::GetSubMenu),
+        },
+        Shim {
+            name: "GetSysColor",
+            func: Handler::Sync(wrappers::GetSysColor),
+        },
+        Shim {
             name: "GetSystemMenu",
-            func: impls::GetSystemMenu,
-            stack_consumed: 8u32,
-            is_async: false,
-        };
-        pub const GetSystemMetrics: Shim = Shim {
+            func: Handler::Sync(wrappers::GetSystemMenu),
+        },
+        Shim {
             name: "GetSystemMetrics",
-            func: impls::GetSystemMetrics,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const GetWindowDC: Shim = Shim {
+            func: Handler::Sync(wrappers::GetSystemMetrics),
+        },
+        Shim {
             name: "GetWindowDC",
-            func: impls::GetWindowDC,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const GetWindowLongA: Shim = Shim {
+            func: Handler::Sync(wrappers::GetWindowDC),
+        },
+        Shim {
             name: "GetWindowLongA",
-            func: impls::GetWindowLongA,
-            stack_consumed: 8u32,
-            is_async: false,
-        };
-        pub const GetWindowPlacement: Shim = Shim {
+            func: Handler::Sync(wrappers::GetWindowLongA),
+        },
+        Shim {
             name: "GetWindowPlacement",
-            func: impls::GetWindowPlacement,
-            stack_consumed: 8u32,
-            is_async: false,
-        };
-        pub const GetWindowRect: Shim = Shim {
+            func: Handler::Sync(wrappers::GetWindowPlacement),
+        },
+        Shim {
             name: "GetWindowRect",
-            func: impls::GetWindowRect,
-            stack_consumed: 8u32,
-            is_async: false,
-        };
-        pub const IntersectRect: Shim = Shim {
+            func: Handler::Sync(wrappers::GetWindowRect),
+        },
+        Shim {
+            name: "InflateRect",
+            func: Handler::Sync(wrappers::InflateRect),
+        },
+        Shim {
             name: "IntersectRect",
-            func: impls::IntersectRect,
-            stack_consumed: 12u32,
-            is_async: false,
-        };
-        pub const InvalidateRect: Shim = Shim {
+            func: Handler::Sync(wrappers::IntersectRect),
+        },
+        Shim {
             name: "InvalidateRect",
-            func: impls::InvalidateRect,
-            stack_consumed: 12u32,
-            is_async: false,
-        };
-        pub const InvalidateRgn: Shim = Shim {
+            func: Handler::Sync(wrappers::InvalidateRect),
+        },
+        Shim {
             name: "InvalidateRgn",
-            func: impls::InvalidateRgn,
-            stack_consumed: 12u32,
-            is_async: false,
-        };
-        pub const IsIconic: Shim = Shim {
+            func: Handler::Sync(wrappers::InvalidateRgn),
+        },
+        Shim {
+            name: "InvertRect",
+            func: Handler::Sync(wrappers::InvertRect),
+        },
+        Shim {
+            name: "IsDlgButtonChecked",
+            func: Handler::Sync(wrappers::IsDlgButtonChecked),
+        },
+        Shim {
             name: "IsIconic",
-            func: impls::IsIconic,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const IsRectEmpty: Shim = Shim {
+            func: Handler::Sync(wrappers::IsIconic),
+        },
+        Shim {
             name: "IsRectEmpty",
-            func: impls::IsRectEmpty,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const LoadAcceleratorsW: Shim = Shim {
+            func: Handler::Sync(wrappers::IsRectEmpty),
+        },
+        Shim {
+            name: "KillTimer",
+            func: Handler::Sync(wrappers::KillTimer),
+        },
+        Shim {
             name: "LoadAcceleratorsW",
-            func: impls::LoadAcceleratorsW,
-            stack_consumed: 8u32,
-            is_async: false,
-        };
-        pub const LoadBitmapA: Shim = Shim {
+            func: Handler::Sync(wrappers::LoadAcceleratorsW),
+        },
+        Shim {
             name: "LoadBitmapA",
-            func: impls::LoadBitmapA,
-            stack_consumed: 8u32,
-            is_async: false,
-        };
-        pub const LoadCursorA: Shim = Shim {
+            func: Handler::Sync(wrappers::LoadBitmapA),
+        },
+        Shim {
             name: "LoadCursorA",
-            func: impls::LoadCursorA,
-            stack_consumed: 8u32,
-            is_async: false,
-        };
-        pub const LoadCursorW: Shim = Shim {
+            func: Handler::Sync(wrappers::LoadCursorA),
+        },
+        Shim {
             name: "LoadCursorW",
-            func: impls::LoadCursorW,
-            stack_consumed: 8u32,
-            is_async: false,
-        };
-        pub const LoadIconA: Shim = Shim {
+            func: Handler::Sync(wrappers::LoadCursorW),
+        },
+        Shim {
             name: "LoadIconA",
-            func: impls::LoadIconA,
-            stack_consumed: 8u32,
-            is_async: false,
-        };
-        pub const LoadIconW: Shim = Shim {
+            func: Handler::Sync(wrappers::LoadIconA),
+        },
+        Shim {
             name: "LoadIconW",
-            func: impls::LoadIconW,
-            stack_consumed: 8u32,
-            is_async: false,
-        };
-        pub const LoadImageA: Shim = Shim {
+            func: Handler::Sync(wrappers::LoadIconW),
+        },
+        Shim {
             name: "LoadImageA",
-            func: impls::LoadImageA,
-            stack_consumed: 24u32,
-            is_async: false,
-        };
-        pub const LoadImageW: Shim = Shim {
+            func: Handler::Sync(wrappers::LoadImageA),
+        },
+        Shim {
             name: "LoadImageW",
-            func: impls::LoadImageW,
-            stack_consumed: 24u32,
-            is_async: false,
-        };
-        pub const LoadMenuA: Shim = Shim {
+            func: Handler::Sync(wrappers::LoadImageW),
+        },
+        Shim {
             name: "LoadMenuA",
-            func: impls::LoadMenuA,
-            stack_consumed: 8u32,
-            is_async: false,
-        };
-        pub const LoadMenuW: Shim = Shim {
+            func: Handler::Sync(wrappers::LoadMenuA),
+        },
+        Shim {
             name: "LoadMenuW",
-            func: impls::LoadMenuW,
-            stack_consumed: 8u32,
-            is_async: false,
-        };
-        pub const LoadStringA: Shim = Shim {
+            func: Handler::Sync(wrappers::LoadMenuW),
+        },
+        Shim {
             name: "LoadStringA",
-            func: impls::LoadStringA,
-            stack_consumed: 16u32,
-            is_async: false,
-        };
-        pub const LoadStringW: Shim = Shim {
+            func: Handler::Sync(wrappers::LoadStringA),
+        },
+        Shim {
             name: "LoadStringW",
-            func: impls::LoadStringW,
-            stack_consumed: 16u32,
-            is_async: false,
-        };
-        pub const MapWindowPoints: Shim = Shim {
+            func: Handler::Sync(wrappers::LoadStringW),
+        },
+        Shim {
             name: "MapWindowPoints",
-            func: impls::MapWindowPoints,
-            stack_consumed: 16u32,
-            is_async: false,
-        };
-        pub const MessageBoxA: Shim = Shim {
+            func: Handler::Sync(wrappers::MapWindowPoints),
+        },
+        Shim {
             name: "MessageBoxA",
-            func: impls::MessageBoxA,
-            stack_consumed: 16u32,
-            is_async: false,
-        };
-        pub const MessageBoxW: Shim = Shim {
+            func: Handler::Sync(wrappers::MessageBoxA),
+        },
+        Shim {
             name: "MessageBoxW",
-            func: impls::MessageBoxW,
-            stack_consumed: 16u32,
-            is_async: false,
-        };
-        pub const MoveWindow: Shim = Shim {
+            func: Handler::Sync(wrappers::MessageBoxW),
+        },
+        Shim {
             name: "MoveWindow",
-            func: impls::MoveWindow,
-            stack_consumed: 24u32,
-            is_async: false,
-        };
-        pub const MsgWaitForMultipleObjects: Shim = Shim {
+            func: Handler::Sync(wrappers::MoveWindow),
+        },
+        Shim {
             name: "MsgWaitForMultipleObjects",
-            func: impls::MsgWaitForMultipleObjects,
-            stack_consumed: 20u32,
-            is_async: false,
-        };
-        pub const PeekMessageA: Shim = Shim {
+            func: Handler::Sync(wrappers::MsgWaitForMultipleObjects),
+        },
+        Shim {
             name: "PeekMessageA",
-            func: impls::PeekMessageA,
-            stack_consumed: 20u32,
-            is_async: false,
-        };
-        pub const PeekMessageW: Shim = Shim {
+            func: Handler::Sync(wrappers::PeekMessageA),
+        },
+        Shim {
             name: "PeekMessageW",
-            func: impls::PeekMessageW,
-            stack_consumed: 20u32,
-            is_async: false,
-        };
-        pub const PostMessageW: Shim = Shim {
+            func: Handler::Sync(wrappers::PeekMessageW),
+        },
+        Shim {
             name: "PostMessageW",
-            func: impls::PostMessageW,
-            stack_consumed: 16u32,
-            is_async: false,
-        };
-        pub const PostQuitMessage: Shim = Shim {
+            func: Handler::Sync(wrappers::PostMessageW),
+        },
+        Shim {
             name: "PostQuitMessage",
-            func: impls::PostQuitMessage,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const PtInRect: Shim = Shim {
+            func: Handler::Sync(wrappers::PostQuitMessage),
+        },
+        Shim {
             name: "PtInRect",
-            func: impls::PtInRect,
-            stack_consumed: 12u32,
-            is_async: false,
-        };
-        pub const RegisterClassA: Shim = Shim {
+            func: Handler::Sync(wrappers::PtInRect),
+        },
+        Shim {
             name: "RegisterClassA",
-            func: impls::RegisterClassA,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const RegisterClassExA: Shim = Shim {
+            func: Handler::Sync(wrappers::RegisterClassA),
+        },
+        Shim {
             name: "RegisterClassExA",
-            func: impls::RegisterClassExA,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const RegisterClassExW: Shim = Shim {
+            func: Handler::Sync(wrappers::RegisterClassExA),
+        },
+        Shim {
             name: "RegisterClassExW",
-            func: impls::RegisterClassExW,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const RegisterClassW: Shim = Shim {
+            func: Handler::Sync(wrappers::RegisterClassExW),
+        },
+        Shim {
             name: "RegisterClassW",
-            func: impls::RegisterClassW,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const RegisterWindowMessageW: Shim = Shim {
+            func: Handler::Sync(wrappers::RegisterClassW),
+        },
+        Shim {
             name: "RegisterWindowMessageW",
-            func: impls::RegisterWindowMessageW,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const ReleaseCapture: Shim = Shim {
+            func: Handler::Sync(wrappers::RegisterWindowMessageW),
+        },
+        Shim {
             name: "ReleaseCapture",
-            func: impls::ReleaseCapture,
-            stack_consumed: 0u32,
-            is_async: false,
-        };
-        pub const ReleaseDC: Shim = Shim {
+            func: Handler::Sync(wrappers::ReleaseCapture),
+        },
+        Shim {
             name: "ReleaseDC",
-            func: impls::ReleaseDC,
-            stack_consumed: 8u32,
-            is_async: false,
-        };
-        pub const SendMessageA: Shim = Shim {
+            func: Handler::Sync(wrappers::ReleaseDC),
+        },
+        Shim {
             name: "SendMessageA",
-            func: impls::SendMessageA,
-            stack_consumed: 16u32,
-            is_async: true,
-        };
-        pub const SetCapture: Shim = Shim {
+            func: Handler::Async(wrappers::SendMessageA),
+        },
+        Shim {
+            name: "SendMessageW",
+            func: Handler::Async(wrappers::SendMessageW),
+        },
+        Shim {
             name: "SetCapture",
-            func: impls::SetCapture,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const SetCursor: Shim = Shim {
+            func: Handler::Sync(wrappers::SetCapture),
+        },
+        Shim {
             name: "SetCursor",
-            func: impls::SetCursor,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const SetFocus: Shim = Shim {
+            func: Handler::Sync(wrappers::SetCursor),
+        },
+        Shim {
+            name: "SetCursorPos",
+            func: Handler::Sync(wrappers::SetCursorPos),
+        },
+        Shim {
+            name: "SetDlgItemInt",
+            func: Handler::Sync(wrappers::SetDlgItemInt),
+        },
+        Shim {
+            name: "SetDlgItemTextA",
+            func: Handler::Sync(wrappers::SetDlgItemTextA),
+        },
+        Shim {
+            name: "SetDlgItemTextW",
+            func: Handler::Sync(wrappers::SetDlgItemTextW),
+        },
+        Shim {
             name: "SetFocus",
-            func: impls::SetFocus,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const SetForegroundWindow: Shim = Shim {
+            func: Handler::Sync(wrappers::SetFocus),
+        },
+        Shim {
             name: "SetForegroundWindow",
-            func: impls::SetForegroundWindow,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const SetMenu: Shim = Shim {
+            func: Handler::Sync(wrappers::SetForegroundWindow),
+        },
+        Shim {
             name: "SetMenu",
-            func: impls::SetMenu,
-            stack_consumed: 8u32,
-            is_async: false,
-        };
-        pub const SetMenuItemInfoA: Shim = Shim {
+            func: Handler::Sync(wrappers::SetMenu),
+        },
+        Shim {
             name: "SetMenuItemInfoA",
-            func: impls::SetMenuItemInfoA,
-            stack_consumed: 16u32,
-            is_async: false,
-        };
-        pub const SetRect: Shim = Shim {
+            func: Handler::Sync(wrappers::SetMenuItemInfoA),
+        },
+        Shim {
             name: "SetRect",
-            func: impls::SetRect,
-            stack_consumed: 20u32,
-            is_async: false,
-        };
-        pub const SetRectEmpty: Shim = Shim {
+            func: Handler::Sync(wrappers::SetRect),
+        },
+        Shim {
             name: "SetRectEmpty",
-            func: impls::SetRectEmpty,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const SetTimer: Shim = Shim {
+            func: Handler::Sync(wrappers::SetRectEmpty),
+        },
+        Shim {
             name: "SetTimer",
-            func: impls::SetTimer,
-            stack_consumed: 16u32,
-            is_async: false,
-        };
-        pub const SetWindowPos: Shim = Shim {
+            func: Handler::Sync(wrappers::SetTimer),
+        },
+        Shim {
             name: "SetWindowPos",
-            func: impls::SetWindowPos,
-            stack_consumed: 28u32,
-            is_async: true,
-        };
-        pub const SetWindowTextA: Shim = Shim {
+            func: Handler::Async(wrappers::SetWindowPos),
+        },
+        Shim {
             name: "SetWindowTextA",
-            func: impls::SetWindowTextA,
-            stack_consumed: 8u32,
-            is_async: false,
-        };
-        pub const ShowCursor: Shim = Shim {
+            func: Handler::Sync(wrappers::SetWindowTextA),
+        },
+        Shim {
             name: "ShowCursor",
-            func: impls::ShowCursor,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const ShowWindow: Shim = Shim {
+            func: Handler::Sync(wrappers::ShowCursor),
+        },
+        Shim {
             name: "ShowWindow",
-            func: impls::ShowWindow,
-            stack_consumed: 8u32,
-            is_async: true,
-        };
-        pub const TranslateAcceleratorW: Shim = Shim {
+            func: Handler::Async(wrappers::ShowWindow),
+        },
+        Shim {
             name: "TranslateAcceleratorW",
-            func: impls::TranslateAcceleratorW,
-            stack_consumed: 12u32,
-            is_async: false,
-        };
-        pub const TranslateMessage: Shim = Shim {
+            func: Handler::Sync(wrappers::TranslateAcceleratorW),
+        },
+        Shim {
             name: "TranslateMessage",
-            func: impls::TranslateMessage,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const UpdateWindow: Shim = Shim {
+            func: Handler::Sync(wrappers::TranslateMessage),
+        },
+        Shim {
             name: "UpdateWindow",
-            func: impls::UpdateWindow,
-            stack_consumed: 4u32,
-            is_async: true,
-        };
-        pub const ValidateRect: Shim = Shim {
+            func: Handler::Async(wrappers::UpdateWindow),
+        },
+        Shim {
             name: "ValidateRect",
-            func: impls::ValidateRect,
-            stack_consumed: 8u32,
-            is_async: false,
-        };
-        pub const WaitMessage: Shim = Shim {
+            func: Handler::Sync(wrappers::ValidateRect),
+        },
+        Shim {
             name: "WaitMessage",
-            func: impls::WaitMessage,
-            stack_consumed: 0u32,
-            is_async: false,
-        };
-        pub const wsprintfA: Shim = Shim {
+            func: Handler::Async(wrappers::WaitMessage),
+        },
+        Shim {
+            name: "WinHelpW",
+            func: Handler::Sync(wrappers::WinHelpW),
+        },
+        Shim {
             name: "wsprintfA",
-            func: impls::wsprintfA,
-            stack_consumed: 0u32,
-            is_async: false,
-        };
-    }
-    const SHIMS: [Shim; 93usize] = [
-        shims::AdjustWindowRect,
-        shims::AdjustWindowRectEx,
-        shims::AppendMenuA,
-        shims::BeginPaint,
-        shims::CheckMenuItem,
-        shims::ClientToScreen,
-        shims::CreateCursor,
-        shims::CreatePopupMenu,
-        shims::CreateWindowExA,
-        shims::CreateWindowExW,
-        shims::DefWindowProcA,
-        shims::DefWindowProcW,
-        shims::DestroyWindow,
-        shims::DialogBoxIndirectParamA,
-        shims::DialogBoxParamA,
-        shims::DispatchMessageA,
-        shims::DispatchMessageW,
-        shims::DrawTextW,
-        shims::EndPaint,
-        shims::FillRect,
-        shims::FindWindowA,
-        shims::FrameRect,
-        shims::GetActiveWindow,
-        shims::GetClientRect,
-        shims::GetDC,
-        shims::GetDesktopWindow,
-        shims::GetFocus,
-        shims::GetForegroundWindow,
-        shims::GetKeyState,
-        shims::GetLastActivePopup,
-        shims::GetMessageA,
-        shims::GetMessageW,
-        shims::GetSubMenu,
-        shims::GetSystemMenu,
-        shims::GetSystemMetrics,
-        shims::GetWindowDC,
-        shims::GetWindowLongA,
-        shims::GetWindowPlacement,
-        shims::GetWindowRect,
-        shims::IntersectRect,
-        shims::InvalidateRect,
-        shims::InvalidateRgn,
-        shims::IsIconic,
-        shims::IsRectEmpty,
-        shims::LoadAcceleratorsW,
-        shims::LoadBitmapA,
-        shims::LoadCursorA,
-        shims::LoadCursorW,
-        shims::LoadIconA,
-        shims::LoadIconW,
-        shims::LoadImageA,
-        shims::LoadImageW,
-        shims::LoadMenuA,
-        shims::LoadMenuW,
-        shims::LoadStringA,
-        shims::LoadStringW,
-        shims::MapWindowPoints,
-        shims::MessageBoxA,
-        shims::MessageBoxW,
-        shims::MoveWindow,
-        shims::MsgWaitForMultipleObjects,
-        shims::PeekMessageA,
-        shims::PeekMessageW,
-        shims::PostMessageW,
-        shims::PostQuitMessage,
-        shims::PtInRect,
-        shims::RegisterClassA,
-        shims::RegisterClassExA,
-        shims::RegisterClassExW,
-        shims::RegisterClassW,
-        shims::RegisterWindowMessageW,
-        shims::ReleaseCapture,
-        shims::ReleaseDC,
-        shims::SendMessageA,
-        shims::SetCapture,
-        shims::SetCursor,
-        shims::SetFocus,
-        shims::SetForegroundWindow,
-        shims::SetMenu,
-        shims::SetMenuItemInfoA,
-        shims::SetRect,
-        shims::SetRectEmpty,
-        shims::SetTimer,
-        shims::SetWindowPos,
-        shims::SetWindowTextA,
-        shims::ShowCursor,
-        shims::ShowWindow,
-        shims::TranslateAcceleratorW,
-        shims::TranslateMessage,
-        shims::UpdateWindow,
-        shims::ValidateRect,
-        shims::WaitMessage,
-        shims::wsprintfA,
+            func: Handler::Sync(wrappers::wsprintfA),
+        },
+        Shim {
+            name: "wsprintfW",
+            func: Handler::Sync(wrappers::wsprintfW),
+        },
     ];
     pub const DLL: BuiltinDLL = BuiltinDLL {
         file_name: "user32.dll",
@@ -6687,42 +14758,58 @@ pub mod user32 {
 }
 pub mod wininet {
     use super::*;
-    mod impls {
+    mod wrappers {
         use crate::{
             machine::Machine,
             winapi::{self, stack_args::*, types::*},
         };
         use memory::Extensions;
         use winapi::wininet::*;
-        pub unsafe fn InternetOpenA(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn InternetOpenA(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let lpszAgent = <Option<&str>>::from_stack(mem, esp + 4u32);
-            let dwAccessType = <u32>::from_stack(mem, esp + 8u32);
-            let lpszProxy = <Option<&str>>::from_stack(mem, esp + 12u32);
-            let lpszProxyBypass = <Option<&str>>::from_stack(mem, esp + 16u32);
-            let dwFlags = <u32>::from_stack(mem, esp + 20u32);
-            winapi::wininet::InternetOpenA(
+            let lpszAgent = <Option<&str>>::from_stack(mem, stack_args + 0u32);
+            let dwAccessType = <u32>::from_stack(mem, stack_args + 4u32);
+            let lpszProxy = <Option<&str>>::from_stack(mem, stack_args + 8u32);
+            let lpszProxyBypass = <Option<&str>>::from_stack(mem, stack_args + 12u32);
+            let dwFlags = <u32>::from_stack(mem, stack_args + 16u32);
+            let __trace_context = if crate::trace::enabled("wininet") {
+                Some(crate::trace::trace_begin(
+                    "wininet",
+                    "InternetOpenA",
+                    &[
+                        ("lpszAgent", &lpszAgent),
+                        ("dwAccessType", &dwAccessType),
+                        ("lpszProxy", &lpszProxy),
+                        ("lpszProxyBypass", &lpszProxyBypass),
+                        ("dwFlags", &dwFlags),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::wininet::InternetOpenA(
                 machine,
                 lpszAgent,
                 dwAccessType,
                 lpszProxy,
                 lpszProxyBypass,
                 dwFlags,
-            )
-            .to_raw()
+            );
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::wininet::InternetOpenA_pos.0,
+                    winapi::wininet::InternetOpenA_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
     }
-    mod shims {
-        use super::impls;
-        use super::Shim;
-        pub const InternetOpenA: Shim = Shim {
-            name: "InternetOpenA",
-            func: impls::InternetOpenA,
-            stack_consumed: 20u32,
-            is_async: false,
-        };
-    }
-    const SHIMS: [Shim; 1usize] = [shims::InternetOpenA];
+    const SHIMS: [Shim; 1usize] = [Shim {
+        name: "InternetOpenA",
+        func: Handler::Sync(wrappers::InternetOpenA),
+    }];
     pub const DLL: BuiltinDLL = BuiltinDLL {
         file_name: "wininet.dll",
         shims: &SHIMS,
@@ -6731,170 +14818,733 @@ pub mod wininet {
 }
 pub mod winmm {
     use super::*;
-    mod impls {
+    mod wrappers {
         use crate::{
             machine::Machine,
             winapi::{self, stack_args::*, types::*},
         };
         use memory::Extensions;
         use winapi::winmm::*;
-        pub unsafe fn timeBeginPeriod(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn PlaySoundW(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let uPeriod = <u32>::from_stack(mem, esp + 4u32);
-            winapi::winmm::timeBeginPeriod(machine, uPeriod).to_raw()
+            let pszSound = <Option<&Str16>>::from_stack(mem, stack_args + 0u32);
+            let hmod = <HMODULE>::from_stack(mem, stack_args + 4u32);
+            let fdwSound = <u32>::from_stack(mem, stack_args + 8u32);
+            let __trace_context = if crate::trace::enabled("winmm/misc") {
+                Some(crate::trace::trace_begin(
+                    "winmm/misc",
+                    "PlaySoundW",
+                    &[
+                        ("pszSound", &pszSound),
+                        ("hmod", &hmod),
+                        ("fdwSound", &fdwSound),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::winmm::PlaySoundW(machine, pszSound, hmod, fdwSound);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::winmm::PlaySoundW_pos.0,
+                    winapi::winmm::PlaySoundW_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn timeGetTime(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn mciSendCommandA(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            winapi::winmm::timeGetTime(machine).to_raw()
+            let __trace_context = if crate::trace::enabled("winmm/misc") {
+                Some(crate::trace::trace_begin(
+                    "winmm/misc",
+                    "mciSendCommandA",
+                    &[],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::winmm::mciSendCommandA(machine);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::winmm::mciSendCommandA_pos.0,
+                    winapi::winmm::mciSendCommandA_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn timeSetEvent(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn mixerClose(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let uDelay = <u32>::from_stack(mem, esp + 4u32);
-            let uResolution = <u32>::from_stack(mem, esp + 8u32);
-            let lpTimeProc = <u32>::from_stack(mem, esp + 12u32);
-            let dwUser = <u32>::from_stack(mem, esp + 16u32);
-            let fuEvent = <u32>::from_stack(mem, esp + 20u32);
-            winapi::winmm::timeSetEvent(machine, uDelay, uResolution, lpTimeProc, dwUser, fuEvent)
-                .to_raw()
+            let hmx = <u32>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("winmm/mixer") {
+                Some(crate::trace::trace_begin(
+                    "winmm/mixer",
+                    "mixerClose",
+                    &[("hmx", &hmx)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::winmm::mixerClose(machine, hmx);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::winmm::mixerClose_pos.0,
+                    winapi::winmm::mixerClose_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn waveOutClose(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn mixerGetControlDetailsA(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hwo = <HWAVEOUT>::from_stack(mem, esp + 4u32);
-            winapi::winmm::waveOutClose(machine, hwo).to_raw()
+            let __trace_context = if crate::trace::enabled("winmm/mixer") {
+                Some(crate::trace::trace_begin(
+                    "winmm/mixer",
+                    "mixerGetControlDetailsA",
+                    &[],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::winmm::mixerGetControlDetailsA(machine);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::winmm::mixerGetControlDetailsA_pos.0,
+                    winapi::winmm::mixerGetControlDetailsA_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn waveOutGetDevCapsA(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn mixerGetLineControlsA(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let uDeviceID = <u32>::from_stack(mem, esp + 4u32);
-            let pwoc = <Option<&mut WAVEOUTCAPS>>::from_stack(mem, esp + 8u32);
-            let cbwoc = <u32>::from_stack(mem, esp + 12u32);
-            winapi::winmm::waveOutGetDevCapsA(machine, uDeviceID, pwoc, cbwoc).to_raw()
+            let hmxobj = <u32>::from_stack(mem, stack_args + 0u32);
+            let pmxlc = <u32>::from_stack(mem, stack_args + 4u32);
+            let fdwControls = <u32>::from_stack(mem, stack_args + 8u32);
+            let __trace_context = if crate::trace::enabled("winmm/mixer") {
+                Some(crate::trace::trace_begin(
+                    "winmm/mixer",
+                    "mixerGetLineControlsA",
+                    &[
+                        ("hmxobj", &hmxobj),
+                        ("pmxlc", &pmxlc),
+                        ("fdwControls", &fdwControls),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::winmm::mixerGetLineControlsA(machine, hmxobj, pmxlc, fdwControls);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::winmm::mixerGetLineControlsA_pos.0,
+                    winapi::winmm::mixerGetLineControlsA_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn waveOutGetNumDevs(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn mixerGetLineInfoA(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            winapi::winmm::waveOutGetNumDevs(machine).to_raw()
+            let hmxobj = <HMIXEROBJ>::from_stack(mem, stack_args + 0u32);
+            let pmxl = <u32>::from_stack(mem, stack_args + 4u32);
+            let fdwInfo = <u32>::from_stack(mem, stack_args + 8u32);
+            let __trace_context = if crate::trace::enabled("winmm/mixer") {
+                Some(crate::trace::trace_begin(
+                    "winmm/mixer",
+                    "mixerGetLineInfoA",
+                    &[("hmxobj", &hmxobj), ("pmxl", &pmxl), ("fdwInfo", &fdwInfo)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::winmm::mixerGetLineInfoA(machine, hmxobj, pmxl, fdwInfo);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::winmm::mixerGetLineInfoA_pos.0,
+                    winapi::winmm::mixerGetLineInfoA_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn waveOutGetPosition(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn mixerOpen(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hwo = <HWAVEOUT>::from_stack(mem, esp + 4u32);
-            let pmmt = <Option<&mut MMTIME>>::from_stack(mem, esp + 8u32);
-            let cbmmt = <u32>::from_stack(mem, esp + 12u32);
-            winapi::winmm::waveOutGetPosition(machine, hwo, pmmt, cbmmt).to_raw()
+            let phmx = <u32>::from_stack(mem, stack_args + 0u32);
+            let uMxId = <u32>::from_stack(mem, stack_args + 4u32);
+            let dwCallback = <u32>::from_stack(mem, stack_args + 8u32);
+            let dwInstance = <u32>::from_stack(mem, stack_args + 12u32);
+            let fdwOpen = <u32>::from_stack(mem, stack_args + 16u32);
+            let __trace_context = if crate::trace::enabled("winmm/mixer") {
+                Some(crate::trace::trace_begin(
+                    "winmm/mixer",
+                    "mixerOpen",
+                    &[
+                        ("phmx", &phmx),
+                        ("uMxId", &uMxId),
+                        ("dwCallback", &dwCallback),
+                        ("dwInstance", &dwInstance),
+                        ("fdwOpen", &fdwOpen),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result =
+                winapi::winmm::mixerOpen(machine, phmx, uMxId, dwCallback, dwInstance, fdwOpen);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::winmm::mixerOpen_pos.0,
+                    winapi::winmm::mixerOpen_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn waveOutOpen(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn mixerSetControlDetails(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let phwo = <Option<&mut HWAVEOUT>>::from_stack(mem, esp + 4u32);
-            let uDeviceID = <u32>::from_stack(mem, esp + 8u32);
-            let pwfx = <Option<&WAVEFORMATEX>>::from_stack(mem, esp + 12u32);
-            let dwCallback = <u32>::from_stack(mem, esp + 16u32);
-            let dwInstance = <u32>::from_stack(mem, esp + 20u32);
-            let fdwOpen = <Result<WaveOutOpenFlags, u32>>::from_stack(mem, esp + 24u32);
-            winapi::winmm::waveOutOpen(
+            let hmxobj = <u32>::from_stack(mem, stack_args + 0u32);
+            let pmxcd = <u32>::from_stack(mem, stack_args + 4u32);
+            let fdwDetails = <u32>::from_stack(mem, stack_args + 8u32);
+            let __trace_context = if crate::trace::enabled("winmm/mixer") {
+                Some(crate::trace::trace_begin(
+                    "winmm/mixer",
+                    "mixerSetControlDetails",
+                    &[
+                        ("hmxobj", &hmxobj),
+                        ("pmxcd", &pmxcd),
+                        ("fdwDetails", &fdwDetails),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::winmm::mixerSetControlDetails(machine, hmxobj, pmxcd, fdwDetails);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::winmm::mixerSetControlDetails_pos.0,
+                    winapi::winmm::mixerSetControlDetails_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn timeBeginPeriod(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let uPeriod = <u32>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("winmm/time") {
+                Some(crate::trace::trace_begin(
+                    "winmm/time",
+                    "timeBeginPeriod",
+                    &[("uPeriod", &uPeriod)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::winmm::timeBeginPeriod(machine, uPeriod);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::winmm::timeBeginPeriod_pos.0,
+                    winapi::winmm::timeBeginPeriod_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn timeEndPeriod(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let uPeriod = <u32>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("winmm/time") {
+                Some(crate::trace::trace_begin(
+                    "winmm/time",
+                    "timeEndPeriod",
+                    &[("uPeriod", &uPeriod)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::winmm::timeEndPeriod(machine, uPeriod);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::winmm::timeEndPeriod_pos.0,
+                    winapi::winmm::timeEndPeriod_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn timeGetTime(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let __trace_context = if crate::trace::enabled("winmm/time") {
+                Some(crate::trace::trace_begin("winmm/time", "timeGetTime", &[]))
+            } else {
+                None
+            };
+            let result = winapi::winmm::timeGetTime(machine);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::winmm::timeGetTime_pos.0,
+                    winapi::winmm::timeGetTime_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn timeKillEvent(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let uTimerID = <u32>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("winmm/time") {
+                Some(crate::trace::trace_begin(
+                    "winmm/time",
+                    "timeKillEvent",
+                    &[("uTimerID", &uTimerID)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::winmm::timeKillEvent(machine, uTimerID);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::winmm::timeKillEvent_pos.0,
+                    winapi::winmm::timeKillEvent_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn timeSetEvent(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let uDelay = <u32>::from_stack(mem, stack_args + 0u32);
+            let uResolution = <u32>::from_stack(mem, stack_args + 4u32);
+            let lpTimeProc = <u32>::from_stack(mem, stack_args + 8u32);
+            let dwUser = <u32>::from_stack(mem, stack_args + 12u32);
+            let fuEvent = <u32>::from_stack(mem, stack_args + 16u32);
+            let __trace_context = if crate::trace::enabled("winmm/time") {
+                Some(crate::trace::trace_begin(
+                    "winmm/time",
+                    "timeSetEvent",
+                    &[
+                        ("uDelay", &uDelay),
+                        ("uResolution", &uResolution),
+                        ("lpTimeProc", &lpTimeProc),
+                        ("dwUser", &dwUser),
+                        ("fuEvent", &fuEvent),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::winmm::timeSetEvent(
+                machine,
+                uDelay,
+                uResolution,
+                lpTimeProc,
+                dwUser,
+                fuEvent,
+            );
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::winmm::timeSetEvent_pos.0,
+                    winapi::winmm::timeSetEvent_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn waveOutClose(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let hwo = <HWAVEOUT>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("winmm/wave") {
+                Some(crate::trace::trace_begin(
+                    "winmm/wave",
+                    "waveOutClose",
+                    &[("hwo", &hwo)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::winmm::waveOutClose(machine, hwo);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::winmm::waveOutClose_pos.0,
+                    winapi::winmm::waveOutClose_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn waveOutGetDevCapsA(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let uDeviceID = <u32>::from_stack(mem, stack_args + 0u32);
+            let pwoc = <Option<&mut WAVEOUTCAPS>>::from_stack(mem, stack_args + 4u32);
+            let cbwoc = <u32>::from_stack(mem, stack_args + 8u32);
+            let __trace_context = if crate::trace::enabled("winmm/wave") {
+                Some(crate::trace::trace_begin(
+                    "winmm/wave",
+                    "waveOutGetDevCapsA",
+                    &[
+                        ("uDeviceID", &uDeviceID),
+                        ("pwoc", &pwoc),
+                        ("cbwoc", &cbwoc),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::winmm::waveOutGetDevCapsA(machine, uDeviceID, pwoc, cbwoc);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::winmm::waveOutGetDevCapsA_pos.0,
+                    winapi::winmm::waveOutGetDevCapsA_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn waveOutGetNumDevs(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let __trace_context = if crate::trace::enabled("winmm/wave") {
+                Some(crate::trace::trace_begin(
+                    "winmm/wave",
+                    "waveOutGetNumDevs",
+                    &[],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::winmm::waveOutGetNumDevs(machine);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::winmm::waveOutGetNumDevs_pos.0,
+                    winapi::winmm::waveOutGetNumDevs_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn waveOutGetPosition(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let hwo = <HWAVEOUT>::from_stack(mem, stack_args + 0u32);
+            let pmmt = <Option<&mut MMTIME>>::from_stack(mem, stack_args + 4u32);
+            let cbmmt = <u32>::from_stack(mem, stack_args + 8u32);
+            let __trace_context = if crate::trace::enabled("winmm/wave") {
+                Some(crate::trace::trace_begin(
+                    "winmm/wave",
+                    "waveOutGetPosition",
+                    &[("hwo", &hwo), ("pmmt", &pmmt), ("cbmmt", &cbmmt)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::winmm::waveOutGetPosition(machine, hwo, pmmt, cbmmt);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::winmm::waveOutGetPosition_pos.0,
+                    winapi::winmm::waveOutGetPosition_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn waveOutGetVolume(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let hwo = <HWAVEOUT>::from_stack(mem, stack_args + 0u32);
+            let pdwVolume = <u32>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("winmm/wave") {
+                Some(crate::trace::trace_begin(
+                    "winmm/wave",
+                    "waveOutGetVolume",
+                    &[("hwo", &hwo), ("pdwVolume", &pdwVolume)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::winmm::waveOutGetVolume(machine, hwo, pdwVolume);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::winmm::waveOutGetVolume_pos.0,
+                    winapi::winmm::waveOutGetVolume_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn waveOutOpen(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let phwo = <Option<&mut HWAVEOUT>>::from_stack(mem, stack_args + 0u32);
+            let uDeviceID = <u32>::from_stack(mem, stack_args + 4u32);
+            let pwfx = <Option<&WAVEFORMATEX>>::from_stack(mem, stack_args + 8u32);
+            let dwCallback = <u32>::from_stack(mem, stack_args + 12u32);
+            let dwInstance = <u32>::from_stack(mem, stack_args + 16u32);
+            let fdwOpen = <Result<WaveOutOpenFlags, u32>>::from_stack(mem, stack_args + 20u32);
+            let __trace_context = if crate::trace::enabled("winmm/wave") {
+                Some(crate::trace::trace_begin(
+                    "winmm/wave",
+                    "waveOutOpen",
+                    &[
+                        ("phwo", &phwo),
+                        ("uDeviceID", &uDeviceID),
+                        ("pwfx", &pwfx),
+                        ("dwCallback", &dwCallback),
+                        ("dwInstance", &dwInstance),
+                        ("fdwOpen", &fdwOpen),
+                    ],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::winmm::waveOutOpen(
                 machine, phwo, uDeviceID, pwfx, dwCallback, dwInstance, fdwOpen,
-            )
-            .to_raw()
+            );
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::winmm::waveOutOpen_pos.0,
+                    winapi::winmm::waveOutOpen_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn waveOutPrepareHeader(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn waveOutPrepareHeader(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hwo = <HWAVEOUT>::from_stack(mem, esp + 4u32);
-            let pwh = <Option<&WAVEHDR>>::from_stack(mem, esp + 8u32);
-            let cbwh = <u32>::from_stack(mem, esp + 12u32);
-            winapi::winmm::waveOutPrepareHeader(machine, hwo, pwh, cbwh).to_raw()
+            let hwo = <HWAVEOUT>::from_stack(mem, stack_args + 0u32);
+            let pwh = <Option<&WAVEHDR>>::from_stack(mem, stack_args + 4u32);
+            let cbwh = <u32>::from_stack(mem, stack_args + 8u32);
+            let __trace_context = if crate::trace::enabled("winmm/wave") {
+                Some(crate::trace::trace_begin(
+                    "winmm/wave",
+                    "waveOutPrepareHeader",
+                    &[("hwo", &hwo), ("pwh", &pwh), ("cbwh", &cbwh)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::winmm::waveOutPrepareHeader(machine, hwo, pwh, cbwh);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::winmm::waveOutPrepareHeader_pos.0,
+                    winapi::winmm::waveOutPrepareHeader_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn waveOutReset(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn waveOutReset(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hwo = <HWAVEOUT>::from_stack(mem, esp + 4u32);
-            winapi::winmm::waveOutReset(machine, hwo).to_raw()
+            let hwo = <HWAVEOUT>::from_stack(mem, stack_args + 0u32);
+            let __trace_context = if crate::trace::enabled("winmm/wave") {
+                Some(crate::trace::trace_begin(
+                    "winmm/wave",
+                    "waveOutReset",
+                    &[("hwo", &hwo)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::winmm::waveOutReset(machine, hwo);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::winmm::waveOutReset_pos.0,
+                    winapi::winmm::waveOutReset_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
-        pub unsafe fn waveOutWrite(machine: &mut Machine, esp: u32) -> u32 {
+        pub unsafe fn waveOutSetVolume(machine: &mut Machine, stack_args: u32) -> u32 {
             let mem = machine.mem().detach();
-            let hwo = <HWAVEOUT>::from_stack(mem, esp + 4u32);
-            let pwh = <Option<&WAVEHDR>>::from_stack(mem, esp + 8u32);
-            let cbwh = <u32>::from_stack(mem, esp + 12u32);
-            winapi::winmm::waveOutWrite(machine, hwo, pwh, cbwh).to_raw()
+            let hwo = <HWAVEOUT>::from_stack(mem, stack_args + 0u32);
+            let dwVolume = <u32>::from_stack(mem, stack_args + 4u32);
+            let __trace_context = if crate::trace::enabled("winmm/wave") {
+                Some(crate::trace::trace_begin(
+                    "winmm/wave",
+                    "waveOutSetVolume",
+                    &[("hwo", &hwo), ("dwVolume", &dwVolume)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::winmm::waveOutSetVolume(machine, hwo, dwVolume);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::winmm::waveOutSetVolume_pos.0,
+                    winapi::winmm::waveOutSetVolume_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn waveOutUnprepareHeader(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let hwo = <HWAVEOUT>::from_stack(mem, stack_args + 0u32);
+            let pwh = <Option<&mut WAVEHDR>>::from_stack(mem, stack_args + 4u32);
+            let cbwh = <u32>::from_stack(mem, stack_args + 8u32);
+            let __trace_context = if crate::trace::enabled("winmm/wave") {
+                Some(crate::trace::trace_begin(
+                    "winmm/wave",
+                    "waveOutUnprepareHeader",
+                    &[("hwo", &hwo), ("pwh", &pwh), ("cbwh", &cbwh)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::winmm::waveOutUnprepareHeader(machine, hwo, pwh, cbwh);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::winmm::waveOutUnprepareHeader_pos.0,
+                    winapi::winmm::waveOutUnprepareHeader_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
+        }
+        pub unsafe fn waveOutWrite(machine: &mut Machine, stack_args: u32) -> u32 {
+            let mem = machine.mem().detach();
+            let hwo = <HWAVEOUT>::from_stack(mem, stack_args + 0u32);
+            let pwh = <Option<&WAVEHDR>>::from_stack(mem, stack_args + 4u32);
+            let cbwh = <u32>::from_stack(mem, stack_args + 8u32);
+            let __trace_context = if crate::trace::enabled("winmm/wave") {
+                Some(crate::trace::trace_begin(
+                    "winmm/wave",
+                    "waveOutWrite",
+                    &[("hwo", &hwo), ("pwh", &pwh), ("cbwh", &cbwh)],
+                ))
+            } else {
+                None
+            };
+            let result = winapi::winmm::waveOutWrite(machine, hwo, pwh, cbwh);
+            if let Some(__trace_context) = __trace_context {
+                crate::trace::trace_return(
+                    &__trace_context,
+                    winapi::winmm::waveOutWrite_pos.0,
+                    winapi::winmm::waveOutWrite_pos.1,
+                    &result,
+                );
+            }
+            result.to_raw()
         }
     }
-    mod shims {
-        use super::impls;
-        use super::Shim;
-        pub const timeBeginPeriod: Shim = Shim {
+    const SHIMS: [Shim; 24usize] = [
+        Shim {
+            name: "PlaySoundW",
+            func: Handler::Sync(wrappers::PlaySoundW),
+        },
+        Shim {
+            name: "mciSendCommandA",
+            func: Handler::Sync(wrappers::mciSendCommandA),
+        },
+        Shim {
+            name: "mixerClose",
+            func: Handler::Sync(wrappers::mixerClose),
+        },
+        Shim {
+            name: "mixerGetControlDetailsA",
+            func: Handler::Sync(wrappers::mixerGetControlDetailsA),
+        },
+        Shim {
+            name: "mixerGetLineControlsA",
+            func: Handler::Sync(wrappers::mixerGetLineControlsA),
+        },
+        Shim {
+            name: "mixerGetLineInfoA",
+            func: Handler::Sync(wrappers::mixerGetLineInfoA),
+        },
+        Shim {
+            name: "mixerOpen",
+            func: Handler::Sync(wrappers::mixerOpen),
+        },
+        Shim {
+            name: "mixerSetControlDetails",
+            func: Handler::Sync(wrappers::mixerSetControlDetails),
+        },
+        Shim {
             name: "timeBeginPeriod",
-            func: impls::timeBeginPeriod,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const timeGetTime: Shim = Shim {
+            func: Handler::Sync(wrappers::timeBeginPeriod),
+        },
+        Shim {
+            name: "timeEndPeriod",
+            func: Handler::Sync(wrappers::timeEndPeriod),
+        },
+        Shim {
             name: "timeGetTime",
-            func: impls::timeGetTime,
-            stack_consumed: 0u32,
-            is_async: false,
-        };
-        pub const timeSetEvent: Shim = Shim {
+            func: Handler::Sync(wrappers::timeGetTime),
+        },
+        Shim {
+            name: "timeKillEvent",
+            func: Handler::Sync(wrappers::timeKillEvent),
+        },
+        Shim {
             name: "timeSetEvent",
-            func: impls::timeSetEvent,
-            stack_consumed: 20u32,
-            is_async: false,
-        };
-        pub const waveOutClose: Shim = Shim {
+            func: Handler::Sync(wrappers::timeSetEvent),
+        },
+        Shim {
             name: "waveOutClose",
-            func: impls::waveOutClose,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const waveOutGetDevCapsA: Shim = Shim {
+            func: Handler::Sync(wrappers::waveOutClose),
+        },
+        Shim {
             name: "waveOutGetDevCapsA",
-            func: impls::waveOutGetDevCapsA,
-            stack_consumed: 12u32,
-            is_async: false,
-        };
-        pub const waveOutGetNumDevs: Shim = Shim {
+            func: Handler::Sync(wrappers::waveOutGetDevCapsA),
+        },
+        Shim {
             name: "waveOutGetNumDevs",
-            func: impls::waveOutGetNumDevs,
-            stack_consumed: 0u32,
-            is_async: false,
-        };
-        pub const waveOutGetPosition: Shim = Shim {
+            func: Handler::Sync(wrappers::waveOutGetNumDevs),
+        },
+        Shim {
             name: "waveOutGetPosition",
-            func: impls::waveOutGetPosition,
-            stack_consumed: 12u32,
-            is_async: false,
-        };
-        pub const waveOutOpen: Shim = Shim {
+            func: Handler::Sync(wrappers::waveOutGetPosition),
+        },
+        Shim {
+            name: "waveOutGetVolume",
+            func: Handler::Sync(wrappers::waveOutGetVolume),
+        },
+        Shim {
             name: "waveOutOpen",
-            func: impls::waveOutOpen,
-            stack_consumed: 24u32,
-            is_async: false,
-        };
-        pub const waveOutPrepareHeader: Shim = Shim {
+            func: Handler::Sync(wrappers::waveOutOpen),
+        },
+        Shim {
             name: "waveOutPrepareHeader",
-            func: impls::waveOutPrepareHeader,
-            stack_consumed: 12u32,
-            is_async: false,
-        };
-        pub const waveOutReset: Shim = Shim {
+            func: Handler::Sync(wrappers::waveOutPrepareHeader),
+        },
+        Shim {
             name: "waveOutReset",
-            func: impls::waveOutReset,
-            stack_consumed: 4u32,
-            is_async: false,
-        };
-        pub const waveOutWrite: Shim = Shim {
+            func: Handler::Sync(wrappers::waveOutReset),
+        },
+        Shim {
+            name: "waveOutSetVolume",
+            func: Handler::Sync(wrappers::waveOutSetVolume),
+        },
+        Shim {
+            name: "waveOutUnprepareHeader",
+            func: Handler::Sync(wrappers::waveOutUnprepareHeader),
+        },
+        Shim {
             name: "waveOutWrite",
-            func: impls::waveOutWrite,
-            stack_consumed: 12u32,
-            is_async: false,
-        };
-    }
-    const SHIMS: [Shim; 11usize] = [
-        shims::timeBeginPeriod,
-        shims::timeGetTime,
-        shims::timeSetEvent,
-        shims::waveOutClose,
-        shims::waveOutGetDevCapsA,
-        shims::waveOutGetNumDevs,
-        shims::waveOutGetPosition,
-        shims::waveOutOpen,
-        shims::waveOutPrepareHeader,
-        shims::waveOutReset,
-        shims::waveOutWrite,
+            func: Handler::Sync(wrappers::waveOutWrite),
+        },
     ];
     pub const DLL: BuiltinDLL = BuiltinDLL {
         file_name: "winmm.dll",

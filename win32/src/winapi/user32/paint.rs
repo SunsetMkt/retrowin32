@@ -1,4 +1,4 @@
-use super::{UpdateRegion, HBRUSH, HDC};
+use super::{WindowType, HBRUSH, HDC};
 use crate::str16::Str16;
 use crate::{
     winapi::{
@@ -9,8 +9,6 @@ use crate::{
     Machine,
 };
 
-const TRACE_CONTEXT: &'static str = "user32/paint";
-
 #[win32_derive::dllexport]
 pub fn InvalidateRect(
     machine: &mut Machine,
@@ -19,15 +17,19 @@ pub fn InvalidateRect(
     bErase: bool,
 ) -> bool {
     let window = machine.state.user32.windows.get_mut(hWnd).unwrap();
-    window.dirty = Some(UpdateRegion {
-        erase_background: bErase,
-    });
+    window.add_dirty(bErase);
     true // success
 }
 
 #[win32_derive::dllexport]
 pub fn ValidateRect(machine: &mut Machine, hWnd: HWND, lpRect: Option<&RECT>) -> bool {
-    let window = machine.state.user32.windows.get_mut(hWnd).unwrap();
+    let window = machine
+        .state
+        .user32
+        .windows
+        .get_mut(hWnd)
+        .unwrap()
+        .expect_toplevel_mut();
     match lpRect {
         Some(_rect) => {
             // TODO: ignored.
@@ -45,9 +47,7 @@ pub fn InvalidateRgn(machine: &mut Machine, hWnd: HWND, hRgn: HRGN, bErase: bool
         todo!("invalidate specific region");
     }
     let window = machine.state.user32.windows.get_mut(hWnd).unwrap();
-    window.dirty = Some(UpdateRegion {
-        erase_background: bErase,
-    });
+    window.add_dirty(bErase);
     true // success
 }
 
@@ -66,7 +66,6 @@ unsafe impl memory::Pod for PAINTSTRUCT {}
 #[win32_derive::dllexport]
 pub fn BeginPaint(machine: &mut Machine, hWnd: HWND, lpPaint: Option<&mut PAINTSTRUCT>) -> HDC {
     let window = machine.state.user32.windows.get_mut(hWnd).unwrap();
-    let update = window.dirty.as_ref().unwrap();
     // TODO: take from update region
     let dirty_rect = RECT {
         left: 0,
@@ -76,7 +75,13 @@ pub fn BeginPaint(machine: &mut Machine, hWnd: HWND, lpPaint: Option<&mut PAINTS
     };
 
     let mut background_drawn = false;
-    let hdc = window.hdc;
+
+    let WindowType::TopLevel(toplevel) = &window.typ else {
+        log::warn!("TODO: BeginPaint for child windows");
+        return HDC::null();
+    };
+    let hdc = machine.state.gdi32.new_window_dc(hWnd);
+    let update = toplevel.dirty.as_ref().unwrap();
 
     if update.erase_background {
         if let Some(hbrush) = window.wndclass.background.to_option() {
@@ -103,8 +108,16 @@ pub fn BeginPaint(machine: &mut Machine, hWnd: HWND, lpPaint: Option<&mut PAINTS
 #[win32_derive::dllexport]
 pub fn EndPaint(machine: &mut Machine, hWnd: HWND, lpPaint: Option<&PAINTSTRUCT>) -> bool {
     let window = machine.state.user32.windows.get_mut(hWnd).unwrap();
-    window.flush_pixels(machine.emu.memory.mem());
-    window.dirty = None;
+    match &mut window.typ {
+        WindowType::TopLevel(toplevel) => {
+            toplevel.dirty = None;
+            window.flush_backing_store(machine.emu.memory.mem());
+        }
+        _ => {
+            log::warn!("TODO: EndPaint for child windows");
+        }
+    }
+
     true
 }
 
@@ -156,9 +169,9 @@ impl BrushOrColor {
             BrushOrColor::Brush(hbr) => *hbr,
             BrushOrColor::Color(c) => {
                 let color = match c {
-                    COLOR::WINDOW => Some(COLORREF((0xc0, 0xc0, 0xc0))),
-                    COLOR::MENU => Some(COLORREF((0xc0, 0xc0, 0xc0))),
-                    COLOR::APPWORKSPACE => Some(COLORREF((0x80, 0x80, 0x80))),
+                    COLOR::WINDOW => Some(COLORREF::from_rgb(0xc0, 0xc0, 0xc0)),
+                    COLOR::MENU => Some(COLORREF::from_rgb(0xc0, 0xc0, 0xc0)),
+                    COLOR::APPWORKSPACE => Some(COLORREF::from_rgb(0x80, 0x80, 0x80)),
                     _ => todo!("{c:?}"),
                 };
                 machine
@@ -203,4 +216,9 @@ pub fn DrawTextW(
 ) -> i32 {
     log::info!("DrawTextW: {:?}", lpString);
     0
+}
+
+#[win32_derive::dllexport]
+pub fn InvertRect(_machine: &mut Machine, hDC: HDC, lpr: Option<&RECT>) -> bool {
+    todo!()
 }

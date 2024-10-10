@@ -1,14 +1,11 @@
 use super::{set_last_error, FILETIME};
-use crate::winapi::types::ERROR_INVALID_DATA;
-use crate::Machine;
+use crate::{winapi::ERROR, Machine};
 use chrono::{Datelike, Timelike};
-use memory::{Extensions, Pod};
-
-const TRACE_CONTEXT: &'static str = "kernel32/time";
+use memory::{ExtensionsMut, Pod};
 
 #[win32_derive::dllexport]
 pub fn GetTickCount(machine: &mut Machine) -> u32 {
-    machine.host.time()
+    machine.host.ticks()
 }
 
 // The number of "counts" per second, where counts are the units returned by
@@ -33,7 +30,7 @@ pub fn QueryPerformanceCounter(
     lpPerformanceCount: Option<&mut LARGE_INTEGER>,
 ) -> bool {
     let counter = lpPerformanceCount.unwrap();
-    let ms = machine.host.time();
+    let ms = machine.host.ticks();
     let counts = ms as u64 * (QUERY_PERFORMANCE_FREQ as u64 / 1000);
     counter.LowPart = counts as u32;
     counter.HighPart = (counts >> 32) as u32 as i32;
@@ -93,7 +90,7 @@ pub fn SystemTimeToFileTime(
 ) -> bool {
     let Some(lpSystemTime) = lpSystemTime else {
         log::warn!("SystemTimeToFileTime: lpSystemTime is null");
-        set_last_error(machine, ERROR_INVALID_DATA);
+        set_last_error(machine, ERROR::INVALID_DATA);
         return false;
     };
     let date_time = match chrono::NaiveDate::from_ymd_opt(
@@ -112,7 +109,7 @@ pub fn SystemTimeToFileTime(
         Some(dt) => dt.and_utc(),
         None => {
             log::warn!("SystemTimeToFileTime: invalid SYSTEMTIME");
-            set_last_error(machine, ERROR_INVALID_DATA);
+            set_last_error(machine, ERROR::INVALID_DATA);
             return false;
         }
     };
@@ -135,7 +132,7 @@ pub fn FileTimeToSystemTime(
 ) -> bool {
     let Some(lpFileTime) = lpFileTime else {
         log::warn!("FileTimeToSystemTime: lpFileTime is null");
-        set_last_error(machine, ERROR_INVALID_DATA);
+        set_last_error(machine, ERROR::INVALID_DATA);
         return false;
     };
     let nanos = lpFileTime.to_unix_nanos();
@@ -154,7 +151,7 @@ pub async fn Sleep(machine: &mut Machine, dwMilliseconds: u32) -> u32 {
 
     #[cfg(feature = "x86-emu")]
     {
-        let until = machine.host.time() + dwMilliseconds;
+        let until = machine.host.ticks() + dwMilliseconds;
         machine.emu.x86.cpu_mut().block(Some(until)).await;
     }
 

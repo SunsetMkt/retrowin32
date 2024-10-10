@@ -7,14 +7,12 @@ use crate::{
     machine::MemImpl,
     pe,
     segments::SegmentDescriptor,
-    winapi::{alloc::Arena, builtin::BuiltinDLL, handle::Handles, heap::Heap, kernel32, types::*},
+    winapi::{alloc::Arena, handle::Handles, heap::Heap, types::*},
     Machine,
 };
 use ::memory::Mem;
-use memory::ExtensionsMut;
+use memory::{Extensions, ExtensionsMut};
 use std::collections::HashMap;
-
-const TRACE_CONTEXT: &'static str = "kernel32/init";
 
 /// Process command line, as exposed in GetCommandLine() and also TEB.
 /// Gross: GetCommandLineA() needs to return a pointer that's never freed,
@@ -150,7 +148,7 @@ fn init_teb(cmdline: &CommandLine, arena: &mut Arena, mem: Mem) -> u32 {
         ),
         4,
     );
-    let params = mem.view_mut::<RTL_USER_PROCESS_PARAMETERS>(params_addr);
+    let params = mem.get_aligned_ref_mut::<RTL_USER_PROCESS_PARAMETERS>(params_addr);
     // x86.put::<u32>(params_addr + 0x10, console_handle);
     // x86.put::<u32>(params_addr + 0x14, console_flags);
     // x86.put::<u32>(params_addr + 0x18, stdin);
@@ -161,7 +159,7 @@ fn init_teb(cmdline: &CommandLine, arena: &mut Arena, mem: Mem) -> u32 {
 
     // PEB
     let peb_addr = arena.alloc(std::cmp::max(std::mem::size_of::<PEB>() as u32, 0x100), 4);
-    let peb = mem.view_mut::<PEB>(peb_addr);
+    let peb = mem.get_aligned_ref_mut::<PEB>(peb_addr);
     peb.ProcessParameters = params_addr;
     peb.ProcessHeap = 0; // TODO: we use state.process_heap instead
     peb.TlsCount = 0;
@@ -171,13 +169,13 @@ fn init_teb(cmdline: &CommandLine, arena: &mut Arena, mem: Mem) -> u32 {
         std::mem::size_of::<_EXCEPTION_REGISTRATION_RECORD>() as u32,
         4,
     );
-    let seh = mem.view_mut::<_EXCEPTION_REGISTRATION_RECORD>(seh_addr);
+    let seh = mem.get_aligned_ref_mut::<_EXCEPTION_REGISTRATION_RECORD>(seh_addr);
     seh.Prev = 0xFFFF_FFFF;
     seh.Handler = 0xFF5E_5EFF; // Hopefully easier to spot.
 
     // TEB
     let teb_addr = arena.alloc(std::cmp::max(std::mem::size_of::<TEB>() as u32, 0x100), 4);
-    let teb = mem.view_mut::<TEB>(teb_addr);
+    let teb = mem.get_aligned_ref_mut::<TEB>(teb_addr);
     teb.Tib.ExceptionList = seh_addr;
     teb.Tib._Self = teb_addr; // Confusing: it points to itself.
     teb.Peb = peb_addr;
@@ -225,10 +223,32 @@ pub struct State {
 }
 
 impl State {
-    pub fn new(mem: &mut MemImpl, cmdline: String) -> Self {
+    pub fn new(mem: &mut MemImpl, cmdline: String, retrowin32_syscall: &[u8]) -> Self {
         let mut mappings = Mappings::new();
         let mapping = mappings.alloc(0x1000, "kernel32 data".into(), mem);
         let mut arena = Arena::new(mapping.addr, mapping.size);
+
+        let mut dlls = HashMap::new();
+        let dll = {
+            let addr = arena.alloc(retrowin32_syscall.len() as u32, 8);
+            mem.mem()
+                .sub32_mut(addr, retrowin32_syscall.len() as u32)
+                .copy_from_slice(retrowin32_syscall);
+            let mut names = HashMap::new();
+            names.insert("retrowin32_syscall".into(), addr);
+            DLL {
+                name: "retrowin32.dll".into(),
+                dll: pe::DLL {
+                    base: 0, // unused
+                    names,
+                    ordinal_base: 0,         // unused
+                    fns: Default::default(), // unused
+                    resources: None,
+                    entry_point: None,
+                },
+            }
+        };
+        dlls.insert(HMODULE::from_raw(dll.dll.base), dll);
 
         let env = b"WINDIR=C:\\Windows\0\0";
         let env_addr = arena.alloc(env.len() as u32, 1);
@@ -247,7 +267,7 @@ impl State {
             process_heap: 0,
             mappings,
             heaps: HashMap::new(),
-            dlls: Default::default(),
+            dlls,
             event_handles: Default::default(),
             files: Default::default(),
             find_handles: Default::default(),
@@ -286,7 +306,7 @@ impl State {
     pub fn create_gdt(&mut self, mem: Mem) -> GDTEntries {
         const COUNT: usize = 5;
         let addr = self.arena.alloc(COUNT as u32 * 8, 8);
-        let gdt: &mut [u64; COUNT] = unsafe { &mut *(mem.ptr_mut::<u64>(addr) as *mut _) };
+        let gdt: &mut [u64; COUNT] = unsafe { &mut *(mem.get_ptr_mut::<u64>(addr) as *mut _) };
 
         gdt[0] = 0;
 
@@ -361,40 +381,21 @@ impl State {
             ss,
         }
     }
-
-    pub fn load_builtin_dll(&mut self, mem: &mut MemImpl, builtin: &'static BuiltinDLL) -> HMODULE {
-        let mapping = self
-            .mappings
-            .alloc(0x1000, format!("{} image", builtin.file_name), mem);
-        let hmodule = HMODULE::from_raw(mapping.addr);
-        self.dlls.insert(
-            hmodule,
-            DLL {
-                name: builtin.file_name.to_owned(),
-                dll: pe::DLL {
-                    base: mapping.addr,
-                    names: HashMap::new(),
-                    ordinal_base: 1,
-                    fns: Default::default(),
-                    resources: Default::default(),
-                    entry_point: None,
-                },
-                builtin: Some(builtin),
-            },
-        );
-        hmodule
-    }
 }
 
 pub fn teb(machine: &Machine) -> &TEB {
-    machine.mem().view::<TEB>(machine.state.kernel32.teb)
+    machine
+        .mem()
+        .get_aligned_ref::<TEB>(machine.state.kernel32.teb)
 }
 pub fn teb_mut(machine: &mut Machine) -> &mut TEB {
-    machine.mem().view_mut::<TEB>(machine.state.kernel32.teb)
+    machine
+        .mem()
+        .get_aligned_ref_mut::<TEB>(machine.state.kernel32.teb)
 }
 pub fn peb_mut(machine: &mut Machine) -> &mut PEB {
     let peb_addr = teb(machine).Peb;
-    machine.mem().view_mut::<PEB>(peb_addr)
+    machine.mem().get_aligned_ref_mut::<PEB>(peb_addr)
 }
 
 #[repr(C)]
@@ -468,7 +469,7 @@ pub fn GetCommandLineW(machine: &mut Machine) -> u32 {
 /// point for when retrowin32 starts/stops a process, initializing DLLs and calling main.
 /// It probably has some better name within ntdll.dll.
 #[win32_derive::dllexport]
-pub async fn retrowin32_main(machine: &mut Machine, entry_point: u32) -> u32 {
+pub async fn retrowin32_main(machine: &mut Machine, entry_point: u32) {
     struct DllData {
         base: u32,
         entry_point: u32,
@@ -498,14 +499,11 @@ pub async fn retrowin32_main(machine: &mut Machine, entry_point: u32) -> u32 {
     machine.call_x86(entry_point, vec![]).await;
     // TODO: if the entry point returns, the Windows behavior is to wait for any
     // spawned threads before exiting.
-    kernel32::exit_process(machine, 0);
-    0
+    machine.exit(0);
 }
 
 #[win32_derive::dllexport]
-pub async fn retrowin32_thread_main(machine: &mut Machine, entry_point: u32, param: u32) -> u32 {
+pub async fn retrowin32_thread_main(machine: &mut Machine, entry_point: u32, param: u32) {
     machine.call_x86(entry_point, vec![param]).await;
-    log::warn!("TODO: thread exiting, but we don't have a way to stop a single thread yet");
-    kernel32::exit_process(machine, 0);
-    0
+    machine.emu.x86.cpu_mut().state = x86::CPUState::Free;
 }

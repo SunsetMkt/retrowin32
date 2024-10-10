@@ -6,23 +6,21 @@ use std::path::{Path, PathBuf};
 use std::time::{SystemTime, UNIX_EPOCH};
 use std::{cell::RefCell, io::Write, rc::Rc};
 use typed_path::{UnixPath, WindowsPath, WindowsPathBuf};
-use win32::winapi::types::io_error_to_win32;
-use win32::{FileOptions, ReadDir, Stat};
+use win32::{FileOptions, ReadDir, Stat, ERROR};
 
 struct File {
     f: std::fs::File,
 }
 
 impl win32::File for File {
-    fn stat(&self) -> Result<Stat, u32> {
-        match self.f.metadata() {
-            Ok(ref meta) => Ok(metadata_to_stat(meta)),
-            Err(ref e) => Err(io_error_to_win32(e)),
-        }
+    fn stat(&self) -> Result<Stat, ERROR> {
+        let meta = self.f.metadata()?;
+        Ok(metadata_to_stat(&meta))
     }
 
-    fn set_len(&self, len: u64) -> Result<(), u32> {
-        self.f.set_len(len).map_err(|e| io_error_to_win32(&e))
+    fn set_len(&self, len: u64) -> Result<(), ERROR> {
+        self.f.set_len(len)?;
+        Ok(())
     }
 }
 
@@ -53,9 +51,10 @@ struct ReadDirIter {
 }
 
 impl ReadDir for ReadDirIter {
-    fn next(&mut self) -> Result<Option<win32::ReadDirEntry>, u32> {
+    fn next(&mut self) -> Result<Option<win32::ReadDirEntry>, ERROR> {
         match self.iter.next() {
-            Some(Ok(entry)) => {
+            Some(entry) => {
+                let entry = entry?;
                 let name = entry
                     .path()
                     .file_name()
@@ -68,7 +67,6 @@ impl ReadDir for ReadDirIter {
                     stat: metadata_to_stat(&meta),
                 }))
             }
-            Some(Err(ref e)) => Err(io_error_to_win32(e)),
             None => Ok(None),
         }
     }
@@ -80,7 +78,7 @@ struct ReadDirFile {
 }
 
 impl ReadDir for ReadDirFile {
-    fn next(&mut self) -> Result<Option<win32::ReadDirEntry>, u32> {
+    fn next(&mut self) -> Result<Option<win32::ReadDirEntry>, ERROR> {
         if self.consumed {
             Ok(None)
         } else {
@@ -92,15 +90,11 @@ impl ReadDir for ReadDirFile {
 
 pub struct Env {
     gui: Option<GUI>,
-    exit_code: Option<u32>,
 }
 
 impl Env {
     pub fn new() -> Self {
-        Env {
-            gui: None,
-            exit_code: None,
-        }
+        Env { gui: None }
     }
 
     pub fn ensure_gui(&mut self) -> anyhow::Result<&mut GUI> {
@@ -109,21 +103,13 @@ impl Env {
         }
         Ok(self.gui.as_mut().unwrap())
     }
-
-    pub fn exit_code(&self) -> Option<u32> {
-        self.exit_code
-    }
 }
 
 #[derive(Clone)]
 pub struct EnvRef(pub Rc<RefCell<Env>>);
 
 impl win32::Host for EnvRef {
-    fn exit(&self, code: u32) {
-        self.0.borrow_mut().exit_code = Some(code);
-    }
-
-    fn time(&self) -> u32 {
+    fn ticks(&self) -> u32 {
         let mut env = self.0.borrow_mut();
         let gui = env.ensure_gui().unwrap();
         gui.time()
@@ -145,81 +131,73 @@ impl win32::Host for EnvRef {
         gui.block(wait)
     }
 
-    fn current_dir(&self) -> Result<WindowsPathBuf, u32> {
-        let path = std::env::current_dir().map_err(|e| io_error_to_win32(&e))?;
+    fn current_dir(&self) -> Result<WindowsPathBuf, ERROR> {
+        let path = std::env::current_dir()?;
         Ok(host_to_windows_path(&path))
     }
 
-    fn open(&self, path: &WindowsPath, options: FileOptions) -> Result<Box<dyn win32::File>, u32> {
+    fn open(
+        &self,
+        path: &WindowsPath,
+        options: FileOptions,
+    ) -> Result<Box<dyn win32::File>, ERROR> {
         let path = windows_to_host_path(path);
-        let result = std::fs::File::options()
+        let f = std::fs::File::options()
             .read(options.read)
             .write(options.write)
             .truncate(options.truncate)
             .create(options.create)
             .create_new(options.create_new)
-            .open(path);
-        match result {
-            Ok(f) => Ok(Box::new(File { f })),
-            Err(ref e) => Err(io_error_to_win32(e)),
+            .open(path)?;
+        Ok(Box::new(File { f }))
+    }
+
+    fn stat(&self, path: &WindowsPath) -> Result<Stat, ERROR> {
+        let path = windows_to_host_path(path);
+        let meta = std::fs::metadata(path)?;
+        Ok(metadata_to_stat(&meta))
+    }
+
+    fn read_dir(&self, path: &WindowsPath) -> Result<Box<dyn ReadDir>, ERROR> {
+        let path = windows_to_host_path(path);
+        let full_path = std::fs::canonicalize(path)?;
+        let meta = std::fs::metadata(&full_path)?;
+        if meta.is_dir() {
+            let iter = std::fs::read_dir(&full_path)?;
+            Ok(Box::new(ReadDirIter { iter }))
+        } else {
+            let filename = full_path
+                .file_name()
+                .unwrap()
+                .to_string_lossy()
+                .into_owned();
+            let file = win32::ReadDirEntry {
+                name: filename,
+                stat: metadata_to_stat(&meta),
+            };
+            Ok(Box::new(ReadDirFile {
+                file,
+                consumed: false,
+            }))
         }
     }
 
-    fn stat(&self, path: &WindowsPath) -> Result<Stat, u32> {
+    fn create_dir(&self, path: &WindowsPath) -> Result<(), ERROR> {
         let path = windows_to_host_path(path);
-        match std::fs::metadata(path) {
-            Ok(ref meta) => Ok(metadata_to_stat(meta)),
-            Err(ref e) => Err(io_error_to_win32(e)),
-        }
+        std::fs::create_dir(path)?;
+        Ok(())
     }
 
-    fn read_dir(&self, path: &WindowsPath) -> Result<Box<dyn ReadDir>, u32> {
+    fn remove_file(&self, path: &WindowsPath) -> Result<(), ERROR> {
         let path = windows_to_host_path(path);
-        let full_path = match std::fs::canonicalize(path) {
-            Ok(p) => p,
-            Err(ref e) => return Err(io_error_to_win32(e)),
-        };
-        match std::fs::metadata(&full_path) {
-            Ok(meta) => {
-                if meta.is_dir() {
-                    let iter = match std::fs::read_dir(&full_path) {
-                        Ok(iter) => iter,
-                        Err(ref e) => return Err(io_error_to_win32(e)),
-                    };
-                    Ok(Box::new(ReadDirIter { iter }))
-                } else {
-                    let filename = full_path
-                        .file_name()
-                        .unwrap()
-                        .to_string_lossy()
-                        .into_owned();
-                    let file = win32::ReadDirEntry {
-                        name: filename,
-                        stat: metadata_to_stat(&meta),
-                    };
-                    Ok(Box::new(ReadDirFile {
-                        file,
-                        consumed: false,
-                    }))
-                }
-            }
-            Err(ref e) => Err(io_error_to_win32(e)),
-        }
+        std::fs::remove_file(path)?;
+        Ok(())
     }
 
-    fn create_dir(&self, path: &WindowsPath) -> Result<(), u32> {
+    fn remove_dir(&self, path: &WindowsPath) -> Result<(), ERROR> {
         let path = windows_to_host_path(path);
-        std::fs::create_dir(path).map_err(|e| io_error_to_win32(&e))
-    }
-
-    fn remove_file(&self, path: &WindowsPath) -> Result<(), u32> {
-        let path = windows_to_host_path(path);
-        std::fs::remove_file(path).map_err(|e| io_error_to_win32(&e))
-    }
-
-    fn remove_dir(&self, path: &WindowsPath) -> Result<(), u32> {
-        let path = windows_to_host_path(path);
-        std::fs::remove_dir(path).map_err(|e| io_error_to_win32(&e))
+        std::fs::remove_dir(path)?;
+        Ok(())
     }
 
     fn log(&self, buf: &[u8]) {
@@ -240,6 +218,12 @@ impl win32::Host for EnvRef {
         let mut env = self.0.borrow_mut();
         let gui = env.ensure_gui().unwrap();
         gui.create_surface(opts)
+    }
+
+    fn init_audio(&mut self, sample_rate: u32) -> Box<dyn win32::Audio> {
+        let mut env = self.0.borrow_mut();
+        let gui = env.ensure_gui().unwrap();
+        gui.init_audio(sample_rate)
     }
 }
 

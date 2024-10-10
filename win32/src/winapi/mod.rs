@@ -8,6 +8,7 @@ mod builtin;
 mod com;
 pub mod ddraw;
 pub mod dsound;
+mod error;
 pub mod gdi32;
 mod handle;
 mod heap;
@@ -24,6 +25,8 @@ mod vcruntime140;
 mod version;
 mod wininet;
 mod winmm;
+
+pub use error::ERROR;
 
 #[derive(Debug)]
 pub enum ImportSymbol<'a> {
@@ -86,6 +89,7 @@ pub struct State {
     pub gdi32: gdi32::State,
     pub kernel32: kernel32::State,
     pub user32: user32::State,
+    pub winmm: winmm::State,
 }
 
 impl State {
@@ -99,6 +103,7 @@ impl State {
             gdi32: gdi32::State::default(),
             kernel32,
             user32: user32::State::default(),
+            winmm: winmm::State::default(),
         }
     }
 }

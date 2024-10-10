@@ -1,23 +1,54 @@
-use super::{BitmapType, Object, HGDIOBJ, R2};
-use crate::winapi::types::POINT;
+use super::{Bitmap, Object, HGDIOBJ, R2};
 use crate::{
     machine::Machine,
     winapi::{
-        bitmap::{BitmapMono, PixelData},
-        types::{HANDLE, HWND},
+        bitmap::{BitmapMono, BitmapRGBA32, PixelData},
+        types::{HANDLE, HWND, POINT},
     },
 };
-
-const TRACE_CONTEXT: &'static str = "gdi32/dc";
+use std::rc::Rc;
 
 pub type HDC = HANDLE<DC>;
 
 /// Target device for a DC.
-#[derive(Debug)]
+/// TODO: remove Copy/Clone and make targeted objects refcounted.
+#[derive(Copy, Clone, Debug)]
 pub enum DCTarget {
     Memory(HGDIOBJ), // aka Bitmap
     Window(HWND),
     DirectDrawSurface(u32),
+}
+
+impl DCTarget {
+    /// If this target is backed by a bitmap, return it.
+    pub fn get_bitmap(&self, machine: &mut Machine) -> Option<Rc<BitmapRGBA32>> {
+        match *self {
+            DCTarget::Memory(bitmap) => {
+                let obj = machine.state.gdi32.objects.get(bitmap).unwrap();
+                match obj {
+                    Object::Bitmap(Bitmap::RGBA32(bmp)) => return Some(bmp.clone()),
+                    _ => {}
+                }
+            }
+            DCTarget::Window(hwnd) => {
+                let window = machine.state.user32.windows.get_mut(hwnd).unwrap();
+                return Some(window.bitmap().clone());
+            }
+            _ => {}
+        }
+        log::warn!("no bitmap found in {:?}", self);
+        None
+    }
+
+    pub fn flush(self, machine: &mut Machine) {
+        match self {
+            DCTarget::Window(hwnd) => {
+                let window = machine.state.user32.windows.get_mut(hwnd).unwrap();
+                window.flush_backing_store(machine.emu.memory.mem());
+            }
+            _ => {}
+        }
+    }
 }
 
 #[derive(Debug)]
@@ -28,9 +59,8 @@ pub struct DC {
     // Wine appears to use a vtable (for generic behavior).
     pub target: DCTarget,
 
-    pub r2: R2,
-    pub x: u32,
-    pub y: u32,
+    pub rop2: R2,
+    pub pos: POINT,
 
     // The SelectObject() API sets a drawing-related field on the DC and returns the
     // previously selected object of a given type, which means we need a storage field
@@ -43,9 +73,8 @@ impl DC {
     pub fn new(target: DCTarget) -> Self {
         DC {
             target,
-            r2: R2::default(),
-            x: 0,
-            y: 0,
+            rop2: R2::default(),
+            pos: Default::default(),
             brush: Default::default(),
             pen: Default::default(),
         }
@@ -63,7 +92,7 @@ impl DC {
             .state
             .gdi32
             .objects
-            .add(Object::Bitmap(BitmapType::Mono(bitmap)));
+            .add(Object::Bitmap(Bitmap::Mono(bitmap)));
         Self::new(DCTarget::Memory(hobj))
     }
 }
@@ -134,6 +163,7 @@ pub fn GetDeviceCaps(
         GetDeviceCapsArg::NUMCOLORS => -1i32 as u32, // true color
         GetDeviceCapsArg::HORZRES => 640,
         GetDeviceCapsArg::VERTRES => 480,
+        GetDeviceCapsArg::RASTERCAPS => 0, // none
         _ => unimplemented!(),
     }
 }
@@ -144,11 +174,15 @@ pub fn GetLayout(_machine: &mut Machine, hdc: HDC) -> u32 {
 }
 
 #[win32_derive::dllexport]
+pub fn SetLayout(_machine: &mut Machine, hdc: HDC, l: u32) -> u32 {
+    todo!();
+}
+
+#[win32_derive::dllexport]
 pub fn GetDCOrgEx(machine: &mut Machine, hdc: HDC, lpPoint: Option<&mut POINT>) -> bool {
     let dc = machine.state.gdi32.dcs.get_mut(hdc).unwrap();
     if let Some(lpPoint) = lpPoint {
-        lpPoint.x = dc.x;
-        lpPoint.y = dc.y;
+        *lpPoint = dc.pos;
         return true;
     }
     false

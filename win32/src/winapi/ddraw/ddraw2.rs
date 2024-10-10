@@ -6,13 +6,11 @@ use super::{
     DD_OK, GUID,
 };
 use crate::{
-    winapi::{com::vtable, ddraw, types::*},
+    winapi::{com::vtable, ddraw, kernel32::get_symbol, types::*},
     Machine,
 };
-use memory::Extensions;
+use memory::ExtensionsMut;
 use memory::Pod;
-
-const TRACE_CONTEXT: &'static str = "ddraw/2";
 
 pub const IID_IDirectDraw2: GUID = GUID {
     Data1: 0xb3a6f3e0,
@@ -21,11 +19,11 @@ pub const IID_IDirectDraw2: GUID = GUID {
     Data4: [0xa2, 0xde, 0x00, 0xaa, 0x00, 0xb9, 0x33, 0x56],
 };
 
-#[win32_derive::shims_from_x86]
+#[win32_derive::dllexport]
 pub mod IDirectDraw2 {
     use super::*;
 
-    vtable![IDirectDraw2 shims
+    vtable![
         QueryInterface: ok,
         AddRef: todo,
         Release: ok,
@@ -56,11 +54,7 @@ pub mod IDirectDraw2 {
     pub fn new(machine: &mut Machine) -> u32 {
         let ddraw = &mut machine.state.ddraw;
         let lpDirectDraw = ddraw.heap.alloc(machine.emu.memory.mem(), 4);
-        let vtable = *ddraw.vtable_IDirectDraw2.get_or_insert_with(|| {
-            vtable(machine.emu.memory.mem(), &mut ddraw.heap, |shim| {
-                machine.emu.shims.add(shim)
-            })
-        });
+        let vtable = get_symbol(machine, "ddraw.dll", "IDirectDraw2");
         machine.mem().put_pod::<u32>(lpDirectDraw, vtable);
         lpDirectDraw
     }
@@ -117,14 +111,8 @@ pub mod IDirectDraw2 {
         if lpSurfaceDesc.is_some() {
             todo!()
         }
-        let mem = machine.emu.memory.mem();
-        let desc_addr = machine
-            .state
-            .ddraw
-            .heap
-            .alloc(mem, std::mem::size_of::<DDSURFACEDESC>() as u32);
-        let desc = mem.view_mut::<DDSURFACEDESC>(desc_addr);
-        *desc = DDSURFACEDESC::zeroed();
+
+        let mut desc = DDSURFACEDESC::default();
         // TODO: offer multiple display modes rather than hardcoding this one.
         desc.dwSize = std::mem::size_of::<DDSURFACEDESC>() as u32;
         desc.dwWidth = 320;
@@ -139,6 +127,14 @@ pub mod IDirectDraw2 {
             dwBBitMask: 0x0000FF00,
             dwRGBAlphaBitMask: 0x000000FF,
         };
+
+        let mem = machine.emu.memory.mem();
+        let desc_addr = machine
+            .state
+            .ddraw
+            .heap
+            .alloc(mem, std::mem::size_of::<DDSURFACEDESC>() as u32);
+        mem.put_pod::<DDSURFACEDESC>(desc_addr, desc);
 
         machine
             .call_x86(lpEnumCallback, vec![desc_addr, lpContext])
@@ -192,11 +188,11 @@ pub mod IDirectDraw2 {
     }
 }
 
-#[win32_derive::shims_from_x86]
+#[win32_derive::dllexport]
 pub mod IDirectDrawSurface2 {
     use super::*;
 
-    vtable![IDirectDrawSurface2 shims
+    vtable![
         QueryInterface: todo,
         AddRef: todo,
         Release: ok,
@@ -242,11 +238,7 @@ pub mod IDirectDrawSurface2 {
     pub fn new(machine: &mut Machine) -> u32 {
         let ddraw = &mut machine.state.ddraw;
         let lpDirectDrawSurface = ddraw.heap.alloc(machine.emu.memory.mem(), 4);
-        let vtable = *ddraw.vtable_IDirectDrawSurface2.get_or_insert_with(|| {
-            vtable(machine.emu.memory.mem(), &mut ddraw.heap, |shim| {
-                machine.emu.shims.add(shim)
-            })
-        });
+        let vtable = get_symbol(machine, "ddraw.dll", "IDirectDrawSurface2");
         machine.mem().put_pod::<u32>(lpDirectDrawSurface, vtable);
         lpDirectDrawSurface
     }

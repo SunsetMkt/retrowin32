@@ -7,6 +7,8 @@ use memory::Extensions;
 pub type WORD = u16;
 pub type DWORD = u32;
 
+pub type HRESULT = u32;
+
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 pub struct HEVENTT;
 pub type HEVENT = HANDLE<HEVENTT>;
@@ -28,7 +30,7 @@ pub struct HWNDT;
 pub type HWND = HANDLE<HWNDT>;
 
 #[repr(C, packed)]
-#[derive(Debug, Default)]
+#[derive(Copy, Clone, Debug, Default, Eq, PartialEq)]
 pub struct RECT {
     pub left: i32,
     pub top: i32,
@@ -37,58 +39,87 @@ pub struct RECT {
 }
 unsafe impl memory::Pod for RECT {}
 
+impl RECT {
+    pub fn clip(&self, other: &RECT) -> RECT {
+        RECT {
+            left: self.left.max(other.left),
+            top: self.top.max(other.top),
+            right: self.right.min(other.right),
+            bottom: self.bottom.min(other.bottom),
+        }
+    }
+
+    pub fn origin(&self) -> POINT {
+        POINT {
+            x: self.left,
+            y: self.top,
+        }
+    }
+
+    pub fn size(&self) -> POINT {
+        POINT {
+            x: self.right - self.left,
+            y: self.bottom - self.top,
+        }
+    }
+
+    pub fn contains(&self, point: POINT) -> bool {
+        point.x >= self.left && point.x < self.right && point.y >= self.top && point.y < self.bottom
+    }
+
+    pub fn add(&self, delta: POINT) -> RECT {
+        RECT {
+            left: self.left + delta.x,
+            top: self.top + delta.y,
+            right: self.right + delta.x,
+            bottom: self.bottom + delta.y,
+        }
+    }
+}
+
 #[repr(C, packed)]
-#[derive(Debug)]
+#[derive(Copy, Clone, Debug, Default)]
 pub struct POINT {
-    pub x: DWORD,
-    pub y: DWORD,
+    pub x: i32,
+    pub y: i32,
 }
 unsafe impl memory::Pod for POINT {}
 
+impl POINT {
+    pub fn add(&self, delta: POINT) -> POINT {
+        POINT {
+            x: self.x + delta.x,
+            y: self.y + delta.y,
+        }
+    }
+
+    pub fn sub(&self, delta: POINT) -> POINT {
+        POINT {
+            x: self.x - delta.x,
+            y: self.y - delta.y,
+        }
+    }
+
+    pub fn mul(&self, o: POINT) -> POINT {
+        POINT {
+            x: self.x * o.x,
+            y: self.y * o.y,
+        }
+    }
+
+    pub fn div(&self, o: POINT) -> POINT {
+        POINT {
+            x: self.x / o.x,
+            y: self.y / o.y,
+        }
+    }
+}
+
 impl<'a> super::stack_args::FromStack<'a> for POINT {
     unsafe fn from_stack(mem: memory::Mem<'a>, sp: u32) -> Self {
-        let x = mem.get_pod::<u32>(sp);
-        let y = mem.get_pod::<u32>(sp + 4);
+        let x = mem.get_pod::<i32>(sp);
+        let y = mem.get_pod::<i32>(sp + 4);
         POINT { x, y }
-    }
-}
-
-// https://learn.microsoft.com/en-us/windows/win32/debug/system-error-codes--0-499-
-pub const ERROR_SUCCESS: u32 = 0;
-pub const ERROR_FILE_NOT_FOUND: u32 = 2;
-pub const ERROR_ACCESS_DENIED: u32 = 5;
-pub const ERROR_INVALID_HANDLE: u32 = 6;
-pub const ERROR_INVALID_ACCESS: u32 = 12;
-pub const ERROR_INVALID_DATA: u32 = 13;
-pub const ERROR_FILE_EXISTS: u32 = 80;
-pub const ERROR_OPEN_FAILED: u32 = 110;
-pub const ERROR_MOD_NOT_FOUND: u32 = 126;
-pub const ERROR_ALREADY_EXISTS: u32 = 183;
-
-pub fn win32_error_str(code: u32) -> &'static str {
-    match code {
-        ERROR_SUCCESS => "ERROR_SUCCESS",
-        ERROR_FILE_NOT_FOUND => "ERROR_FILE_NOT_FOUND",
-        ERROR_ACCESS_DENIED => "ERROR_ACCESS_DENIED",
-        ERROR_INVALID_HANDLE => "ERROR_INVALID_HANDLE",
-        ERROR_INVALID_ACCESS => "ERROR_INVALID_ACCESS",
-        ERROR_INVALID_DATA => "ERROR_INVALID_DATA",
-        ERROR_FILE_EXISTS => "ERROR_FILE_EXISTS",
-        ERROR_OPEN_FAILED => "ERROR_OPEN_FAILED",
-        ERROR_MOD_NOT_FOUND => "ERROR_MOD_NOT_FOUND",
-        ERROR_ALREADY_EXISTS => "ERROR_ALREADY_EXISTS",
-        _ => "ERROR_UNKNOWN",
-    }
-}
-
-pub fn io_error_to_win32(err: &std::io::Error) -> u32 {
-    match err.kind() {
-        std::io::ErrorKind::NotFound => ERROR_FILE_NOT_FOUND,
-        std::io::ErrorKind::PermissionDenied => ERROR_ACCESS_DENIED,
-        std::io::ErrorKind::InvalidData => ERROR_INVALID_DATA,
-        std::io::ErrorKind::AlreadyExists => ERROR_FILE_EXISTS,
-        std::io::ErrorKind::InvalidInput => ERROR_INVALID_ACCESS,
-        _ => ERROR_OPEN_FAILED,
     }
 }
 

@@ -1,11 +1,9 @@
 use super::DD_OK;
 use crate::{
-    winapi::{com::vtable, types::HWND},
+    winapi::{com::vtable, kernel32::get_symbol, types::HWND},
     Machine,
 };
-use memory::Extensions;
-
-const TRACE_CONTEXT: &'static str = "ddraw/clipper";
+use memory::ExtensionsMut;
 
 #[win32_derive::dllexport]
 pub fn DirectDrawCreateClipper(
@@ -19,11 +17,11 @@ pub fn DirectDrawCreateClipper(
     DD_OK
 }
 
-#[win32_derive::shims_from_x86]
+#[win32_derive::dllexport]
 pub mod IDirectDrawClipper {
     use super::*;
 
-    vtable![IDirectDrawClipper shims
+    vtable![
         QueryInterface: todo,
         AddRef: todo,
         Release: ok,
@@ -39,11 +37,7 @@ pub mod IDirectDrawClipper {
     pub fn new(machine: &mut Machine) -> u32 {
         let ddraw = &mut machine.state.ddraw;
         let clipper = ddraw.heap.alloc(machine.emu.memory.mem(), 4);
-        let vtable = *ddraw.vtable_IDirectDrawClipper.get_or_insert_with(|| {
-            vtable(machine.emu.memory.mem(), &mut ddraw.heap, |shim| {
-                machine.emu.shims.add(shim)
-            })
-        });
+        let vtable = get_symbol(machine, "ddraw.dll", "IDirectDrawClipper");
         machine.mem().put_pod::<u32>(clipper, vtable);
         clipper
     }

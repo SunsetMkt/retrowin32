@@ -2,7 +2,10 @@ use super::helpers::*;
 use crate::{registers::Flags, x86::CPU};
 use iced_x86::{Instruction, Register};
 use memory::Mem;
-use num_traits::ops::overflowing::OverflowingSub;
+use num_traits::{
+    ops::overflowing::{OverflowingMul, OverflowingSub},
+    Signed,
+};
 
 /// This trait is implemented for u32/u16/u8 and lets us write operations generically
 /// over all those bit sizes.
@@ -808,9 +811,13 @@ pub fn imul_rm8(cpu: &mut CPU, mem: Mem, instr: &Instruction) {
     cpu.regs.set16(Register::AX, res);
 }
 
-fn imul_trunc(x: i32, y: i32, _flags: &mut Flags) -> i32 {
-    // TODO: flags.
-    x.wrapping_mul(y)
+fn imul_trunc<I: OverflowingMul + Signed>(x: I, y: I, flags: &mut Flags) -> I {
+    let (result, flag) = x.overflowing_mul(&y);
+
+    flags.set(Flags::OF, flag);
+    flags.set(Flags::CF, flag);
+
+    result
 }
 
 pub fn imul_r32_rm32(cpu: &mut CPU, mem: Mem, instr: &Instruction) {
@@ -832,6 +839,13 @@ pub fn imul_r32_rm32_imm8(cpu: &mut CPU, mem: Mem, instr: &Instruction) {
     let y = instr.immediate8to32();
     let value = imul_trunc(x, y, &mut cpu.flags);
     cpu.regs.set32(instr.op0_register(), value as u32);
+}
+
+pub fn imul_r16_rm16(cpu: &mut CPU, mem: Mem, instr: &Instruction) {
+    let x = cpu.regs.get16(instr.op0_register()) as i16;
+    let y = op1_rm16(cpu, mem, instr) as i16;
+    let value = imul_trunc(x, y, &mut cpu.flags);
+    cpu.regs.set16(instr.op0_register(), value as u16);
 }
 
 pub fn idiv_rm32(cpu: &mut CPU, mem: Mem, instr: &Instruction) {

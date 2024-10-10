@@ -3,8 +3,6 @@
 use super::types::Str16;
 use crate::machine::Machine;
 
-const TRACE_CONTEXT: &'static str = "advapi32";
-
 pub type HKEY = u32;
 
 #[win32_derive::dllexport]
@@ -31,6 +29,18 @@ pub fn RegCreateKeyExW(
     lpdwDisposition: Option<&mut u32>,
 ) -> u32 {
     0 // success
+}
+
+#[win32_derive::dllexport]
+pub fn RegOpenKeyExA(
+    _machine: &mut Machine,
+    hKey: HKEY,
+    lpSubKey: Option<&str>,
+    ulOptions: u32,
+    samDesired: u32,
+    phkResult: Option<&mut HKEY>,
+) -> u32 {
+    todo!();
 }
 
 #[win32_derive::dllexport]

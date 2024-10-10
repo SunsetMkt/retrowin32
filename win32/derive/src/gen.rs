@@ -1,92 +1,177 @@
-use super::parse;
-use crate::parse::DllExport;
+//! Generates the 'builtins.rs' module with metadata/wrappers for builtin DLLs.
+
+use crate::parse;
 use proc_macro2::TokenStream;
 use quote::quote;
 
-/// Generate the wrapper function that calls a win32api function by taking arguments using from_x86.
+/// Generate the handler function that calls a win32api function by taking arguments using from_x86.
 ///
 /// The caller of winapi functions is responsible for pushing/popping the
 /// return address, because some callers actually 'jmp' directly.
 ///
-/// This macro generates shim wrappers of functions, taking their
-/// input args off the stack and forwarding their return values via eax.
-pub fn fn_wrapper(module: TokenStream, dllexport: &DllExport) -> (TokenStream, TokenStream) {
-    // Example: IDirectDraw::QueryInterface
+/// This macro generates handler wrappers of functions, taking their
+/// input args off the stack and returning their return values that belong in eax.
+fn fn_wrapper(module: TokenStream, dllexport: &parse::DllExport) -> (TokenStream, TokenStream) {
     let base_name = &dllexport.func.sig.ident; // QueryInterface
-    let impl_name = match dllexport.vtable {
-        Some(vtable) => quote!(#module::#vtable::#base_name), // winapi::ddraw::IDirectDraw::QueryInterface
-        None => quote!(#module::#base_name),                  // winapi::kernel32::LoadLibrary
+    let name_str = match dllexport.vtable {
+        Some(vtable) => format!("{}::{}", vtable, base_name), // "IDirectDraw::QueryInterface"
+        None => format!("{}", base_name),                     // "LoadLibrary"
+    };
+    let impls_mod = match dllexport.vtable {
+        Some(vtable) => quote!(#module::#vtable), // winapi::ddraw::IDirectDraw
+        None => quote!(#module),                  // winapi::kernel32
     };
     let sym_name = &dllexport.sym_name; // IDirectDraw_QueryInterface
 
-    let mut fetch_args = TokenStream::new();
-    fetch_args.extend(quote!(let mem = machine.mem().detach();));
-    let mut stack_offset = 4u32; // return address
+    let mut fetch_args = quote! {
+        let mem = machine.mem().detach();
+    };
+    let mut stack_offset = 0u32;
     for parse::Argument { name, ty, stack } in dllexport.args.iter() {
         // We expect all the stack_offset math to be inlined by the compiler into plain constants.
         // TODO: reading the args in reverse would produce fewer bounds checks...
         fetch_args.extend(quote! {
-            let #name = <#ty>::from_stack(mem, esp + #stack_offset);
+            let #name = <#ty>::from_stack(mem, stack_args + #stack_offset);
         });
         stack_offset += stack.consumed();
     }
 
-    let stack_consumed = dllexport.stack_consumed();
-
-    // If the function is async, we need to handle the return value a bit differently.
-    let is_async = dllexport.func.sig.asyncness.is_some();
     let args = dllexport
         .args
         .iter()
         .map(|arg| arg.name)
         .collect::<Vec<_>>();
-    let body = if dllexport.func.sig.asyncness.is_some() {
-        quote! {
-        #fetch_args
-        #[cfg(feature = "x86-emu")]
-        {
-            // Yuck: we know Machine will outlive the future, but Rust doesn't.
-            // At least we managed to isolate the yuck to this point.
-            let m: *mut Machine = machine;
-            let result = async move {
-                use memory::Extensions;
-                let machine = unsafe { &mut *m };
-                let result = #impl_name(machine, #(#args),*).await;
-                let cpu = &mut machine.emu.x86.cpu_mut();
-                cpu.regs.eip = x86::ops::pop(cpu, machine.emu.memory.mem());
-                *cpu.regs.get32_mut(x86::Register::ESP) += #stack_consumed;
-                cpu.regs.set32(x86::Register::EAX, result.to_raw());
+
+    {
+        let trace_module_name = dllexport.trace_module;
+        let trace_args = args
+            .iter()
+            .map(|arg| {
+                let mut name = arg.to_string();
+                if name.starts_with("_") {
+                    name.remove(0);
+                }
+                quote!((#name, &#arg))
+            })
+            .collect::<Vec<_>>();
+        fetch_args.extend(quote! {
+            let __trace_context = if crate::trace::enabled(#trace_module_name) {
+                Some(crate::trace::trace_begin(#trace_module_name, #name_str, &[#(#trace_args),*]))
+            } else {
+                None
             };
-            machine.emu.x86.cpu_mut().call_async(machine.emu.memory.mem(), Box::pin(result));
-            // async block will set up the stack and eip.
-            0
+        });
+    }
+
+    let pos_name = syn::Ident::new(&format!("{}_pos", base_name), base_name.span());
+    let return_result = quote! {
+        if let Some(__trace_context) = __trace_context {
+            crate::trace::trace_return(&__trace_context, #impls_mod::#pos_name.0, #impls_mod::#pos_name.1, &result);
         }
-        #[cfg(any(feature = "x86-64", feature = "x86-unicorn"))]
-        {
-            // In the non-emulated case, we synchronously evaluate the future.
-            let pin = std::pin::pin!(#impl_name(machine, #(#args),*));
-            crate::shims::call_sync(pin).to_raw()
-        }
-        }
-    } else {
-        quote! {
-            #fetch_args
-            #impl_name(machine, #(#args),*).to_raw()
-        }
+        result.to_raw()
     };
 
-    let name_str = match dllexport.vtable {
-        Some(vtable) => format!("{}::{}", vtable, base_name), // "IDirectDraw::QueryInterface"
-        None => format!("{}", base_name),                     // "LoadLibrary"
+    let (func, defn) = if dllexport.func.sig.asyncness.is_some() {
+        (
+            quote!(Handler::Async(wrappers::#sym_name)),
+            quote! {
+                pub unsafe fn #sym_name(machine: &mut Machine, stack_args: u32) -> std::pin::Pin<Box<dyn std::future::Future<Output = u32>>> {
+                    #fetch_args
+                    let machine: *mut Machine = machine;
+                    Box::pin(async move {
+                        let machine = unsafe { &mut *machine };
+                        let result = #impls_mod::#base_name(machine, #(#args),*).await;
+                        #return_result
+                    })
+                }
+            },
+        )
+    } else {
+        (
+            quote!(Handler::Sync(wrappers::#sym_name)),
+            quote! {
+                pub unsafe fn #sym_name(machine: &mut Machine, stack_args: u32) -> u32 {
+                    #fetch_args
+                    let result = #impls_mod::#base_name(machine, #(#args),*);
+                    #return_result
+                }
+            },
+        )
     };
 
     (
-        quote!(pub unsafe fn #sym_name(machine: &mut Machine, esp: u32) -> u32 { #body }),
-        quote!(pub const #sym_name: Shim = Shim {
+        defn,
+        quote!(Shim {
             name: #name_str,
-            func: impls::#sym_name,
-            stack_consumed: #stack_consumed,
-            is_async: #is_async,
-        };),
+            func: #func,
+        }),
     )
+}
+
+/// Generate one module (e.g. kernel32) of shim functions.
+pub fn shims_module(module_name: &str, dllexports: parse::DllExports) -> TokenStream {
+    let module = quote::format_ident!("{}", module_name);
+    let dll_name = format!("{}.dll", module_name);
+
+    let mut wrappers = Vec::new();
+    let mut shims = Vec::new();
+    for dllexport in &dllexports.fns {
+        let (wrapper, shim) = fn_wrapper(quote!(winapi::#module), dllexport);
+        wrappers.push(wrapper);
+        shims.push(shim);
+    }
+
+    let shims_count = shims.len();
+    let raw_dll_path = format!("../../dll/{}", dll_name);
+    quote! {
+        pub mod #module {
+            use super::*;
+
+            mod wrappers {
+                use memory::Extensions;
+                use crate::{machine::Machine, winapi::{self, stack_args::*, types::*}};
+                use winapi::#module::*;  // for types
+                #(#wrappers)*
+            }
+
+            const SHIMS: [Shim; #shims_count] = [
+                #(#shims),*
+            ];
+
+            pub const DLL: BuiltinDLL = BuiltinDLL {
+                file_name: #dll_name,
+                shims: &SHIMS,
+                raw: std::include_bytes!(#raw_dll_path),
+            };
+        }
+    }
+}
+
+pub fn builtins_module(mods: Vec<TokenStream>) -> anyhow::Result<TokenStream> {
+    let out = quote! {
+        #![allow(non_snake_case)]
+        #![allow(non_snake_case)]
+        #![allow(unused_imports)]
+        #![allow(unused_variables)]
+
+        /// Generated code, do not edit.
+        use crate::shims::{Shim, Handler};
+
+        pub struct BuiltinDLL {
+            pub file_name: &'static str,
+            /// The xth function in the DLL represents a call to shims[x].
+            pub shims: &'static [Shim],
+            /// Raw bytes of generated .dll.
+            pub raw: &'static [u8],
+        }
+
+        #(#mods)*
+    };
+
+    // Verify output parses correctly.
+    // if let Err(err) = syn::parse2::<syn::File>(out.clone()) {
+    //     anyhow::bail!("parsing macro-generated code: {}", err);
+    // };
+
+    Ok(out)
 }

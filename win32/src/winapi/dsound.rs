@@ -3,11 +3,12 @@
 
 use super::heap::Heap;
 pub use crate::winapi::com::GUID;
-use crate::{machine::Machine, winapi::com::vtable};
-use memory::Extensions;
+use crate::{
+    machine::Machine,
+    winapi::{com::vtable, kernel32::get_symbol},
+};
+use memory::ExtensionsMut;
 use std::collections::HashMap;
-
-const TRACE_CONTEXT: &'static str = "dsound";
 
 /// Set to true to make DirectSoundCreate report no sound device available.
 /// Doing this from the beginning would have been a better idea than trying to implement stubs here...
@@ -29,8 +30,6 @@ const fn make_dhsresult(code: u32) -> u32 {
 pub struct State {
     heap: Heap,
     buffers: HashMap<u32, Buffer>,
-    vtable_IDirectSound: Option<u32>,
-    vtable_IDirectSoundBuffer: Option<u32>,
 }
 
 impl State {
@@ -123,18 +122,14 @@ pub struct WAVEFORMATEX {
 }
 unsafe impl memory::Pod for WAVEFORMATEX {}
 
-#[win32_derive::shims_from_x86]
+#[win32_derive::dllexport]
 pub mod IDirectSound {
     use super::*;
 
     pub fn new(machine: &mut Machine) -> u32 {
         let dsound = &mut machine.state.dsound;
         let lpDirectSound = dsound.heap.alloc(machine.emu.memory.mem(), 4);
-        let vtable = *dsound.vtable_IDirectSound.get_or_insert_with(|| {
-            vtable(machine.emu.memory.mem(), &mut dsound.heap, |shim| {
-                machine.emu.shims.add(shim)
-            })
-        });
+        let vtable = get_symbol(machine, "dsound.dll", "IDirectSound");
         machine.mem().put_pod::<u32>(lpDirectSound, vtable);
         lpDirectSound
     }
@@ -177,7 +172,7 @@ pub mod IDirectSound {
         DS_OK
     }
 
-    vtable![IDirectSound shims
+    vtable![
         QueryInterface: todo,
         AddRef: todo,
         Release: ok,
@@ -192,18 +187,14 @@ pub mod IDirectSound {
     ];
 }
 
-#[win32_derive::shims_from_x86]
+#[win32_derive::dllexport]
 pub mod IDirectSoundBuffer {
     use super::*;
 
     pub fn new(machine: &mut Machine) -> u32 {
         let dsound = &mut machine.state.dsound;
         let lpDirectSoundBuffer = dsound.heap.alloc(machine.emu.memory.mem(), 4);
-        let vtable = *dsound.vtable_IDirectSoundBuffer.get_or_insert_with(|| {
-            vtable(machine.emu.memory.mem(), &mut dsound.heap, |shim| {
-                machine.emu.shims.add(shim)
-            })
-        });
+        let vtable = get_symbol(machine, "dsound.dll", "IDirectSoundBuffer");
         machine.mem().put_pod::<u32>(lpDirectSoundBuffer, vtable);
         lpDirectSoundBuffer
     }
@@ -320,7 +311,7 @@ pub mod IDirectSoundBuffer {
         DS_OK
     }
 
-    vtable![IDirectSoundBuffer shims
+    vtable![
         QueryInterface: todo,
         AddRef: todo,
         Release: ok,

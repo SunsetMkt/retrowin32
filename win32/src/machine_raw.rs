@@ -1,8 +1,9 @@
 use crate::{
     host,
-    machine::{LoadedAddrs, MachineX},
+    machine::{LoadedAddrs, MachineX, Status},
     pe,
-    shims_raw::Shims,
+    shims::Shims,
+    shims_raw::retrowin32_syscall,
     winapi,
 };
 use memory::Mem;
@@ -31,13 +32,8 @@ pub type Machine = MachineX<Emulator>;
 impl MachineX<Emulator> {
     pub fn new(host: Box<dyn host::Host>, cmdline: String) -> Self {
         let mut memory = MemImpl::default();
-        let mut kernel32 = winapi::kernel32::State::new(&mut memory, cmdline);
-        let shims = Shims::new(kernel32.teb, |size: usize| {
-            kernel32
-                .mappings
-                .alloc(size as u32, "shims x64 trampoline".into(), &mut memory)
-                .addr
-        });
+        let kernel32 = winapi::kernel32::State::new(&mut memory, cmdline, &retrowin32_syscall());
+        let shims = Shims::new(kernel32.teb);
         let state = winapi::State::new(&mut memory, kernel32);
 
         Machine {
@@ -45,6 +41,9 @@ impl MachineX<Emulator> {
             host,
             state,
             labels: HashMap::new(),
+            exe_path: Default::default(),
+            external_dlls: Default::default(),
+            status: Default::default(),
         }
     }
 
@@ -56,10 +55,10 @@ impl MachineX<Emulator> {
     pub fn load_exe(
         &mut self,
         buf: &[u8],
-        filename: &str,
+        path: &std::path::Path,
         relocate: Option<Option<u32>>,
     ) -> anyhow::Result<LoadedAddrs> {
-        let exe = pe::load_exe(self, buf, filename, relocate)?;
+        let exe = pe::load_exe(self, buf, path, relocate)?;
 
         let stack = self.state.kernel32.mappings.alloc(
             exe.stack_size,
@@ -94,5 +93,9 @@ impl MachineX<Emulator> {
 
         let pin = std::pin::pin!(self.call_x86(entry_point, vec![]));
         crate::shims::call_sync(pin);
+    }
+
+    pub fn exit(&mut self, exit_code: u32) {
+        self.status = Status::Exit(exit_code);
     }
 }

@@ -17,6 +17,7 @@ class Window implements glue.JsWindow {
     };
     this.canvas.onmousedown = stashEvent;
     this.canvas.onmouseup = stashEvent;
+    this.canvas.onmousemove = stashEvent;
     this.canvas.oncontextmenu = (ev) => {
       return false;
     };
@@ -24,14 +25,20 @@ class Window implements glue.JsWindow {
 
   title: string = '';
   canvas: HTMLCanvasElement = document.createElement('canvas');
+  size: [number, number] = [0, 0];
+  is_fullscreen = false;
 
-  set_size(w: number, h: number) {
+  private reset_canvas() {
+    const [w, h] = this.size;
+    let scale = 1;
+    if (this.is_fullscreen && w < 640) scale *= 2;
+
     // Note: the canvas must be sized to the size of physical pixels,
-    // or else it will be scaled up and pixels will be blurry.
+    // or else it will be scaled up with smoothing and pixels will be blurry.
     this.canvas.width = w * window.devicePixelRatio;
     this.canvas.height = h * window.devicePixelRatio;
-    this.canvas.style.width = `${w}px`;
-    this.canvas.style.height = `${h}px`;
+    this.canvas.style.width = `${w * scale}px`;
+    this.canvas.style.height = `${h * scale}px`;
 
     // The context scale seems preserved across calls to getContext, but then also
     // lost when the canvas is resized.  Rather than relying on this, always reset
@@ -40,8 +47,17 @@ class Window implements glue.JsWindow {
     ctx.reset();
     ctx.imageSmoothingEnabled = false;
     ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
-
     this.jsHost.emuHost.onWindowChanged();
+  }
+
+  set_size(w: number, h: number) {
+    this.size = [w, h];
+    this.reset_canvas();
+  }
+
+  fullscreen() {
+    this.is_fullscreen = true;
+    this.reset_canvas();
   }
 }
 
@@ -92,25 +108,23 @@ export abstract class JsHost implements glue.JsHost, glue.JsLogger {
 
   decoder = new TextDecoder();
 
-  constructor(public emuHost: EmulatorHost, readonly files: FileSet) {}
+  constructor(readonly emuHost: EmulatorHost, readonly files: FileSet) {}
 
   log(level: number, msg: string) {
     // TODO: surface this in the UI.
     switch (level) {
-      case 5:
+      case 1:
         console.error(msg);
         this.emuHost.onError(msg);
         break;
-      case 4:
+      case 2:
         console.warn(msg);
         break;
       case 3:
         console.info(msg);
         break;
-      case 2:
-        console.log(msg);
-        break;
-      case 1:
+      case 4:
+      case 5: // "trace"
         console.debug(msg);
         break;
       default:
@@ -118,6 +132,7 @@ export abstract class JsHost implements glue.JsHost, glue.JsLogger {
     }
   }
 
+  // TODO: now unused
   exit(code: number) {
     this.emuHost.exit(code);
   }
@@ -149,12 +164,11 @@ export abstract class JsHost implements glue.JsHost, glue.JsLogger {
     return this.events.shift();
   }
 
-  open(path: string): glue.JsFile {
+  open(path: string): glue.JsFile | null {
     // TODO: async file loading.
     let bytes = this.files.get(path);
     if (!bytes) {
-      console.error(`unknown file ${path}, returning empty file`);
-      bytes = new Uint8Array();
+      return null;
     }
     return new File(path, bytes);
   }
@@ -177,5 +191,9 @@ export abstract class JsHost implements glue.JsHost, glue.JsLogger {
     // The DirectDraw calls SetCooperativeLevel() on the hwnd, and then CreateSurface with primary,
     // but how to plumb that info across JS boundary?
     return this.windows[this.windows.length - 1].canvas.getContext('2d')!;
+  }
+
+  audio(buf: Int16Array) {
+    console.warn('TODO: audio');
   }
 }

@@ -7,8 +7,6 @@ use bitflags::bitflags;
 use memory::{Extensions, ExtensionsMut, Mem};
 use std::cmp::max;
 
-const TRACE_CONTEXT: &'static str = "kernel32/memory";
-
 pub fn round_up_to_page_granularity(size: u32) -> u32 {
     size + (0x1000 - 1) & !(0x1000 - 1)
 }
@@ -307,6 +305,11 @@ pub fn HeapDestroy(_machine: &mut Machine, hHeap: u32) -> u32 {
     1 // success
 }
 
+#[win32_derive::dllexport]
+pub fn HeapValidate(_machine: &mut Machine, hHeap: u32, dwFlags: u32, lpMem: u32) -> bool {
+    todo!();
+}
+
 bitflags! {
     pub struct MEM: u32 {
         const COMMIT = 0x00001000;
@@ -428,6 +431,11 @@ pub fn IsBadWritePtr(_machine: &mut Machine, lp: u32, ucb: u32) -> bool {
     false // all pointers are valid
 }
 
+#[win32_derive::dllexport]
+pub fn IsBadCodePtr(_machine: &mut Machine, lpfn: u32) -> bool {
+    false // all pointers are valid
+}
+
 bitflags! {
     pub struct GMEM: u32 {
         const MOVEABLE = 0x2;
@@ -443,8 +451,7 @@ impl<'a> stack_args::FromArg<'a> for GMEM {
     }
 }
 
-#[win32_derive::dllexport]
-pub fn GlobalAlloc(machine: &mut Machine, uFlags: GMEM, dwBytes: u32) -> u32 {
+fn alloc(machine: &mut Machine, uFlags: GMEM, dwBytes: u32) -> u32 {
     if uFlags.contains(GMEM::MOVEABLE) {
         todo!("GMEM_MOVEABLE");
     }
@@ -457,6 +464,11 @@ pub fn GlobalAlloc(machine: &mut Machine, uFlags: GMEM, dwBytes: u32) -> u32 {
         machine.mem().sub32_mut(addr, dwBytes).fill(0);
     }
     addr
+}
+
+#[win32_derive::dllexport]
+pub fn GlobalAlloc(machine: &mut Machine, uFlags: GMEM, dwBytes: u32) -> u32 {
+    alloc(machine, uFlags, dwBytes)
 }
 
 #[win32_derive::dllexport]
@@ -482,8 +494,7 @@ pub fn GlobalReAlloc(machine: &mut Machine, hMem: u32, dwBytes: u32, uFlags: GME
     addr
 }
 
-#[win32_derive::dllexport]
-pub fn GlobalFree(machine: &mut Machine, hMem: u32) -> u32 {
+fn free(machine: &mut Machine, hMem: u32) -> u32 {
     let heap = machine
         .state
         .kernel32
@@ -493,18 +504,24 @@ pub fn GlobalFree(machine: &mut Machine, hMem: u32) -> u32 {
 }
 
 #[win32_derive::dllexport]
+pub fn GlobalFree(machine: &mut Machine, hMem: u32) -> u32 {
+    free(machine, hMem)
+}
+
+#[win32_derive::dllexport]
 pub fn GlobalFlags(_machine: &mut Machine, hMem: u32) -> u32 {
     0 // stub
 }
 
 #[win32_derive::dllexport]
 pub fn LocalAlloc(machine: &mut Machine, uFlags: GMEM, dwBytes: u32) -> u32 {
-    GlobalAlloc(machine, uFlags, dwBytes)
+    // In theory this takes LMEM_* flags, but they are the same as GMEM_*.
+    alloc(machine, uFlags, dwBytes)
 }
 
 #[win32_derive::dllexport]
 pub fn LocalFree(machine: &mut Machine, hMem: u32) -> u32 {
-    GlobalFree(machine, hMem)
+    free(machine, hMem)
 }
 
 #[win32_derive::dllexport]

@@ -1,6 +1,7 @@
-use crate::{winapi::types::HWND, Machine};
-
-const TRACE_CONTEXT: &'static str = "user32/menu";
+use crate::{
+    winapi::types::{HWND, RECT},
+    Machine,
+};
 
 pub type HMENU = u32;
 
@@ -12,6 +13,21 @@ pub fn CreatePopupMenu(_machine: &mut Machine) -> HMENU {
 #[win32_derive::dllexport]
 pub fn CheckMenuItem(_machine: &mut Machine, hMenu: HMENU, uIDCheckItem: u32, uCheck: u32) -> u32 {
     0 // previous state: unchecked
+}
+
+#[win32_derive::dllexport]
+pub fn EnableMenuItem(
+    _machine: &mut Machine,
+    hMenu: HMENU,
+    uIDEnableItem: u32,
+    uEnable: u32,
+) -> bool {
+    todo!()
+}
+
+#[win32_derive::dllexport]
+pub fn GetMenu(_machine: &mut Machine, hWnd: HWND) -> HMENU {
+    0 // null
 }
 
 #[win32_derive::dllexport]
@@ -54,4 +70,15 @@ pub fn AppendMenuA(
     lpNewItem: Option<&str>,
 ) -> bool {
     false // fail
+}
+
+#[win32_derive::dllexport]
+pub fn GetMenuItemRect(
+    _machine: &mut Machine,
+    hWnd: HWND,
+    hMenu: HMENU,
+    uItem: u32,
+    lprcItem: Option<&mut RECT>,
+) -> bool {
+    todo!();
 }

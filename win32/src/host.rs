@@ -1,5 +1,6 @@
 //! Interfaces expected of the x86 host.
 
+pub use crate::winapi::ERROR;
 pub use typed_path::{WindowsPath, WindowsPathBuf};
 
 /// DirectDraw surface.
@@ -9,7 +10,7 @@ pub trait Surface {
     fn write_pixels(&mut self, pixels: &[[u8; 4]]);
 
     /// Show the this surface as the foreground.  Called by ::Flip().
-    fn show(&mut self);
+    fn show(&self);
 
     // TODO: the trait object here means we end up needing to cast, but the alternative
     // isn't object safe, bleh.
@@ -65,12 +66,12 @@ impl FileOptions {
 }
 
 pub trait File: std::io::Read + std::io::Write + std::io::Seek {
-    fn stat(&self) -> Result<Stat, u32>;
-    fn set_len(&self, len: u64) -> Result<(), u32>;
+    fn stat(&self) -> Result<Stat, ERROR>;
+    fn set_len(&self, len: u64) -> Result<(), ERROR>;
 }
 
 pub trait ReadDir {
-    fn next(&mut self) -> Result<Option<ReadDirEntry>, u32>;
+    fn next(&mut self) -> Result<Option<ReadDirEntry>, ERROR>;
 }
 
 #[derive(Debug, Clone)]
@@ -125,9 +126,13 @@ pub struct Message {
     pub time: u32, // in units of Host::time()
 }
 
+pub trait Audio {
+    fn write(&mut self, buf: &[u8]);
+}
+
 pub trait Host {
-    fn exit(&self, code: u32);
-    fn time(&self) -> u32;
+    /// Get an arbitrary time counter, measured in milliseconds.
+    fn ticks(&self) -> u32;
     fn system_time(&self) -> chrono::DateTime<chrono::Local>;
 
     /// Get the next pending message, or None if no message waiting.
@@ -140,21 +145,23 @@ pub trait Host {
     fn block(&self, wait: Option<u32>) -> bool;
 
     /// Retrieves the absolute (Windows-style) path of the current working directory.
-    fn current_dir(&self) -> Result<WindowsPathBuf, u32>;
+    fn current_dir(&self) -> Result<WindowsPathBuf, ERROR>;
     /// Open a file at the given (Windows-style) path.
-    fn open(&self, path: &WindowsPath, options: FileOptions) -> Result<Box<dyn File>, u32>;
+    fn open(&self, path: &WindowsPath, options: FileOptions) -> Result<Box<dyn File>, ERROR>;
     /// Retrieve file or directory metadata at the given (Windows-style) path.
-    fn stat(&self, path: &WindowsPath) -> Result<Stat, u32>;
+    fn stat(&self, path: &WindowsPath) -> Result<Stat, ERROR>;
     /// Iterate the contents of a directory at the given (Windows-style) path.
-    fn read_dir(&self, path: &WindowsPath) -> Result<Box<dyn ReadDir>, u32>;
+    fn read_dir(&self, path: &WindowsPath) -> Result<Box<dyn ReadDir>, ERROR>;
     /// Create a new directory at the given (Windows-style) path.
-    fn create_dir(&self, path: &WindowsPath) -> Result<(), u32>;
+    fn create_dir(&self, path: &WindowsPath) -> Result<(), ERROR>;
     /// Remove a file at the given (Windows-style) path.
-    fn remove_file(&self, path: &WindowsPath) -> Result<(), u32>;
+    fn remove_file(&self, path: &WindowsPath) -> Result<(), ERROR>;
     /// Remove a directory at the given (Windows-style) path.
-    fn remove_dir(&self, path: &WindowsPath) -> Result<(), u32>;
+    fn remove_dir(&self, path: &WindowsPath) -> Result<(), ERROR>;
     fn log(&self, buf: &[u8]);
 
     fn create_window(&mut self, hwnd: u32) -> Box<dyn Window>;
     fn create_surface(&mut self, hwnd: u32, opts: &SurfaceOptions) -> Box<dyn Surface>;
+
+    fn init_audio(&mut self, sample_rate: u32) -> Box<dyn Audio>;
 }

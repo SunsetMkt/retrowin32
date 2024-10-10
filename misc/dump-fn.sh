@@ -1,10 +1,9 @@
 #!/bin/bash
 
 # Dumps assembly of a given function in a Mac binary.
+# See also lldb-dump-fn.sh, possibly better output.
 
 set -e
-
-bin=~/.local/opt/llvm/bin
 
 path="$1"
 if [[ ! $path ]]; then
@@ -13,7 +12,7 @@ if [[ ! $path ]]; then
 fi
 
 nm() {
-    $bin/llvm-nm "$@" | cut -w -f3 | grep -v '^$' | uniq
+    llvm-nm "$@" | cut -w -f3 | grep -v '^$' | uniq
 }
 
 filter="$2"
@@ -25,8 +24,9 @@ fi
 index="$3"
 if [[ ! $index ]]; then
     i=1
-    for sym in $(nm "$path" | grep "$filter" | c++filt); do
-        echo "$i $sym"
+    for sym in $(nm "$path" | grep "$filter"); do
+        demangled=$(c++filt "$sym")
+        echo "$i $sym ($demangled)"
         i=$((i + 1))
         if ((i > 10)); then
             break
@@ -36,4 +36,4 @@ if [[ ! $index ]]; then
 fi
 
 sym=$(nm "$path" | grep "$filter" | sed "${index}q;d")
-$bin/llvm-otool -tV -p "$sym" "$path" | c++filt
+llvm-otool -tV -p "$sym" "$path" | c++filt

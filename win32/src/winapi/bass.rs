@@ -13,8 +13,6 @@ use crate::machine::Machine;
 /// Hack: time since BASS_Start etc. was called.
 static mut T: u32 = 0;
 
-const TRACE_CONTEXT: &'static str = "bass";
-
 #[win32_derive::dllexport]
 pub fn BASS_Init(_machine: &mut Machine, arg1: u32, arg2: u32, arg3: u32, arg4: u32) -> u32 {
     1
@@ -57,7 +55,7 @@ pub fn BASS_ChannelGetPosition(machine: &mut Machine, mode: u32) -> u32 {
             (dur as f32 * 44.1) as u32 // 44.1khz
         }
         1 => {
-            log::error!("unimpl: BASS_POS_MUSIC_ORDER");
+            // TODO: BASS_POS_MUSIC_ORDER
             0
         }
         _ => 0,
@@ -66,5 +64,10 @@ pub fn BASS_ChannelGetPosition(machine: &mut Machine, mode: u32) -> u32 {
 
 #[win32_derive::dllexport]
 pub fn BASS_MusicSetPositionScaler(_machine: &mut Machine, arg1: u32, arg2: u32) -> u32 {
+    1
+}
+
+#[win32_derive::dllexport]
+pub fn BASS_Free(_machine: &mut Machine, arg1: u32) -> u32 {
     1
 }

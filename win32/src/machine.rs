@@ -20,4 +20,40 @@ pub struct MachineX<Emu> {
     pub state: winapi::State,
     pub labels: HashMap<u32, String>,
     pub exe_path: PathBuf,
+    pub external_dlls: Vec<String>,
+    pub status: Status,
+}
+
+impl<Emu> MachineX<Emu> {
+    pub fn set_external_dlls(&mut self, dlls: &[String]) {
+        self.external_dlls = dlls
+            .iter()
+            .map(|dll| winapi::kernel32::normalize_module_name(dll))
+            .collect();
+    }
+}
+
+/// Status of the machine/process.  Separate from CPU state because multiple threads
+/// can be in different states.
+#[derive(Default)]
+pub enum Status {
+    /// Running normally.
+    #[default]
+    Running,
+    /// All threads are blocked awaiting results.
+    Blocked,
+    /// CPU error.
+    Error {
+        message: String,
+        // TODO:
+        // signal: u8
+    },
+    /// Process exited.
+    Exit(u32),
+}
+
+impl Status {
+    pub fn is_running(&self) -> bool {
+        matches!(self, Status::Running)
+    }
 }
